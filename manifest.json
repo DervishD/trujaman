@@ -1,0 +1,26 @@
+{
+  "name": "Trujamán",
+  "short_name": "Trujamán",
+  "description": "Traduce catálogos XML et alii.",
+  "categories": [ "utilities", "productivity", "xmltranslation" ],
+
+  "lang": "es-ES",
+  "dir": "ltr",
+  
+  "display": "minimal-ui",
+  "orientation": "any",
+  "background_color": "#073642",
+  "theme_color": "#073642",
+
+  "icons": [
+    {
+      "src": "appicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots" : [],
+
+  "start_url": "index.html"
+}

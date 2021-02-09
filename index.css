@@ -1,0 +1,72 @@
+/*
+    solarized palette:
+        base03    #002B36   L*a*b: 15 -12 -12   HSV: 193 100  21
+        base02    #073642   L*a*b: 20 -12 -12   HSV: 192  90  26
+        base01    #586E75   L*a*b: 45 -07 -07   HSV: 194  25  46
+        base00    #657B83   L*a*b: 50 -07 -07   HSV: 195  23  51
+        base0     #839496   L*a*b: 60 -06 -03   HSV: 186  13  59
+        base1     #93A1A1   L*a*b: 65 -05 -02   HSV: 180   9  63
+        base2     #EEE8D5   L*a*b: 92 -00  10   HSV:  44  11  93
+        base3     #FDF6E3   L*a*b: 97  00  10   HSV:  44  10  99
+        yellow    #B58900   L*a*b: 60  10  65   HSV:  45 100  71
+        orange    #CB4B16   L*a*b: 50  50  55   HSV:  18  89  80
+        red       #DC322F   L*a*b: 50  65  45   HSV:   1  79  86
+        magenta   #D33682   L*a*b: 50  65 -05   HSV: 331  74  83
+        violet    #6C71C4   L*a*b: 50  15 -45   HSV: 237  45  77
+        blue      #268BD2   L*a*b: 55 -10 -45   HSV: 205  82  82
+        cyan      #2AA198   L*a*b: 60 -35 -05   HSV: 175  74  63
+        green     #859900   L*a*b: 60 -20  65   HSV:  68 100  60
+*/
+
+@media (prefers-color-scheme: light) {
+    body {
+        color: #657B83;  /* base00 */
+        background-color: #FDF6E3;  /* base3 */
+    }
+    
+    ::selection {
+        color: #FDF6E3;  /* base3 */
+        background-color: rgba(101,123,131,0.99);  /* base00 */
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        color: #839496;  /* base0 */
+        background-color: #002B36;  /* base03 */
+    }
+
+    ::selection {
+        color: #002B36;  /* base03 */
+        background-color: rgba(131,148,150,0.99);  /* base0 */
+    }
+}         
+
+:root {
+    font-family: "Noto Sans", sans-serif;
+    font-size : clamp(1em, 1vw + 1vh + .5vmin, 3em);  /* A good starting point... */
+    /* And some other alternatives... */
+    /*
+    font-size: calc(1vw + 1vh + .5vmin);
+    font-size: calc((.4em + 1vmin) + (.4em + 1vmax));
+    */
+}
+
+html {
+    width: 100%;
+}
+
+body {
+    padding: 1rem;
+}
+
+h1 {
+    font-size: 16vw;  /* Totally arbitrary... */
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+p {
+    text-align: justify;
+}

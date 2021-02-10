@@ -23,7 +23,7 @@
         color: #657B83;  /* base00 */
         background-color: #FDF6E3;  /* base3 */
     }
-    
+
     ::selection {
         color: #FDF6E3;  /* base3 */
         background-color: rgba(101,123,131,0.99);  /* base00 */
@@ -40,7 +40,7 @@
         color: #002B36;  /* base03 */
         background-color: rgba(131,148,150,0.99);  /* base0 */
     }
-}         
+}
 
 :root {
     font-family: "Noto Sans", sans-serif;
@@ -69,4 +69,36 @@ h1 {
 
 p {
     text-align: justify;
+    text-indent: 0;
+}
+
+div#version {
+    margin: 1rem 0;
+    text-align: center;
+    font-family: "Source Code Pro", monospace;
+    font-size: 0.9rem;
+}
+
+div#status {
+    font-family: "Source Code Pro", monospace;
+    text-align: left;
+    display: grid;
+    grid-template-columns: max-content max-content;
+    grid-column-gap: 1rem;
+    align-items: center;
+    width: min-content;
+    margin: 0 auto;
+    padding: 0.5rem;
+    border: 1px solid;
+}
+
+div#status div {
+    line-height: 1.5rem;
+}
+
+div#status div.status_item {
+    justify-self: right;
+}
+div#status div.status_value {
+    justify-self: left;
 }

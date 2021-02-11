@@ -8,4 +8,10 @@ self.addEventListener('activate', event => {
     event.waitUntil(self.clients.claim());  // Brutal, but effective for now.
 });
 
-self.addEventListener('fetch', () => {});  // Just a placeholder for now.
+
+// As a first step, a 'pass-through' fetch handler is implemented.
+// This is ABSOLUTELY discouraged, for a whole variety of reasons, but here it's just used as a starting point.
+self.addEventListener('fetch', event => {
+    console.debug('Fetching', event.request.url);
+    event.respondWith(fetch(event.request));
+});

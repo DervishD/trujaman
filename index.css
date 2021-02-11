@@ -75,12 +75,13 @@ p {
 div#version {
     margin: 1rem 0;
     text-align: center;
-    font-family: "Source Code Pro", monospace;
+    font-family: "Roboto Mono", monospace;
     font-size: 0.9rem;
 }
 
 div#status {
-    font-family: "Source Code Pro", monospace;
+    font-family: "Roboto Mono", monospace;
+    font-size: 0.9rem;
     text-align: left;
     display: grid;
     grid-template-columns: max-content max-content;

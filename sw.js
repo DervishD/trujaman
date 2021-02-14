@@ -9,13 +9,13 @@ self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(trujaman.staticCache).then(cache => {
             return cache.addAll([
-                '/',
-                '/index.html',
-                '/index.css',
-                '/index.js',
-                '/manifest.json',
-                '/appicon.png',
-                '/favicon.ico',
+                new URL(self.registration.scope).pathname,
+                'index.html',
+                'index.css',
+                'index.js',
+                'manifest.json',
+                'appicon.png',
+                'favicon.ico',
           ]);
         })
     );

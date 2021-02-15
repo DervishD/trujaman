@@ -1,15 +1,16 @@
+'use strict';
+
 const trujaman = {
     staticCache: 'trujaman-alpha-v0',  // MUST start with 'trujaman-'.
-}
+};
 
 
 // Precache assets and take control (for now)
 self.addEventListener('install', event => {
     console.debug('Installing service worker.');
-    self.skipWaiting();  // Brutal, but effective for now.
     event.waitUntil(
-        caches.open(trujaman.staticCache).then(cache => {
-            return cache.addAll([
+        caches.open(trujaman.staticCache).then(cache =>
+            cache.addAll([
                 new URL(self.registration.scope).pathname,
                 'index.html',
                 'index.css',
@@ -21,8 +22,8 @@ self.addEventListener('install', event => {
                 'manifest.json',
                 'appicon.png',
                 'favicon.ico',
-          ]);
-        })
+          ])
+        ).then(self.skipWaiting())  // Brutal, but effective for now.
     );
 });
 
@@ -35,9 +36,7 @@ self.addEventListener('activate', event => {
             // Only old caches from this PWA are deleted. Check the prefix!
             keys = keys.filter(key => key.startsWith('trujaman-')).filter(key => key != trujaman.staticCache);
             return Promise.all(keys.map(key => caches.delete(key)));
-        }).then(
-            self.clients.claim()  // Brutal, but effective for now.
-        )
+        }).then(self.clients.claim())  // Brutal, but effective for now.
     );
 });
 

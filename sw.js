@@ -2,6 +2,7 @@ const trujaman = {
     staticCache: 'trujaman-alpha-v0',  // MUST start with 'trujaman-'.
 }
 
+
 // Precache assets and take control (for now)
 self.addEventListener('install', event => {
     console.debug('Installing service worker.');
@@ -21,6 +22,8 @@ self.addEventListener('install', event => {
     );
 });
 
+
+// Delete old caches and take control of uncontrolled pages.
 self.addEventListener('activate', event => {
     console.debug('New service worker activated!');
     event.waitUntil(

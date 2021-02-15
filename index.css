@@ -166,6 +166,7 @@ div#status div {
 div#status div.status_item {
     justify-self: right;
 }
+
 div#status div.status_value {
     justify-self: left;
 }

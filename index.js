@@ -3,6 +3,7 @@
 const trujaman = {
     version: '0.0.5-alpha',
     setStatus: (status, value) => document.getElementById(status).textContent = value ? ' YES' : ' NO',
+    sleep: milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds)),  // For debugging...
 };
 
 

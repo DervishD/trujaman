@@ -2,6 +2,7 @@
 
 const trujaman = {
     staticCache: 'trujaman-alpha-v0',  // MUST start with 'trujaman-'.
+    sleep: milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds)),  // For debugging...
 };
 
 

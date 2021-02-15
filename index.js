@@ -1,9 +1,10 @@
-"use strict";
+'use strict';
 
 const trujaman = {
-    version: '0.0.3-alpha',
+    version: '0.0.5-alpha',
     setStatus: (status, value) => document.getElementById(status).textContent = value ? ' YES' : ' NO',
-}
+};
+
 
 // Show current version on page.
 document.addEventListener('DOMContentLoaded', () => {
@@ -17,8 +18,12 @@ if ('serviceWorker' in navigator) {
 
         // For now, set a flag to show whether this page is being controlled or not.
         trujaman.setStatus('page_controlled', navigator.serviceWorker.controller);
+        trujaman.refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', event => {
             trujaman.setStatus('page_controlled', true);
+            if (trujaman.refreshing) return;
+            trujaman.refreshing = true;
+            window.location.reload();
         });
 
         // For now, set a flag to show that the PWA is, in fact, installable.

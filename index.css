@@ -18,6 +18,74 @@
         green     #859900   L*a*b: 60 -20  65   HSV:  68 100  60
 */
 
+/* About self-hosting Google Fonts typefaces:
+
+In order to get the font files for self-hosting the typeface a service can be used, like 'google-webfonts-helper', which
+is hosted on GitHub at https://github.com/majodev/google-webfonts-helper and provides an easy way of getting the proper
+subsets and fonts from the Google Fonts project for self-hosting. Not perfect, though, because by default it won't get a
+@font-face spec containing unicode-range property.
+
+For this project, a Bash script has been used instead, because it was more convenient.
+
+But the process is very easy, as it is just a matter of getting the CSS from the Google Fonts project for the desired
+web fonts. The URL is https://fonts.googleapis.com/css2?family=<family>:<axes>&subset=<subset> so it's just a matter of
+replacing <family>, <axes> and <subset> as needed. For this project, right now, the values are Noto+Sans for <family>,
+latin for the <subset> and ital,wght@0,400;0,700;1,400;1,700 for the <axes>.
+
+The returned CSS will contain suitable @font-face specifications, containing the URLs needed to download the font files.
+
+The only important point when getting this CSS is that the Google Fonts project will serve a different CSS depending on
+the User-Agent string used in the request. In order to get both woff2 support and unicode-range property support, the
+minimal User-Agent string working (to date) is "Firefox/999", but this may change in the future. Other valid User-Agent
+strings are the following:
+    Mozilla/5.0 (Windows NT 6.3; rv:39.0) Gecko/20100101 Firefox/39.0
+    From google-webfont-helper (https://github.com/majodev/google-webfonts-helper). No unicode-range support, though.
+
+    Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36
+    From gfonts.php (https://gist.github.com/nikoskip/bcf58106f728a3e7b7f9dcb6edaa1e82). Supports unicode-range.
+
+    Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0
+    From google-font-download BASH script (https://github.com/neverpanic/google-font-download). No unicode-range.
+
+    Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36
+    From latest Google Chrome version (to date) for Windows 10. Full unicode-range support.
+
+The returned CSS may contain @font-face specifications and URLs for subsets other than the requested, specially if the
+unicode-range property is supported. In any case, after downloading, it's just a matter of downloading the appropriate
+font files from the URLs contained in the CSS file and adapt the @font-face specifications as needed.
+*/
+@font-face {
+    font-family: 'Trujaman';
+    font-style: normal;
+    font-weight: 400;
+    src: url('index_n400.woff2') format('woff2');
+    unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+    font-family: 'Trujaman';
+    font-style: normal;
+    font-weight: 700;
+    src: url('index_n700.woff2') format('woff2');
+    unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+    font-family: 'Trujaman';
+    font-style: italic;
+    font-weight: 400;
+    src: url('index_i400.woff2') format('woff2');
+    unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+    font-family: 'Trujaman';
+    font-style: italic;
+    font-weight: 700;
+    src: url('index_i700.woff2') format('woff2');
+    unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
 @media (prefers-color-scheme: light) {
     body {
         color: #657B83;  /* base00 */
@@ -43,7 +111,7 @@
 }
 
 :root {
-    font-family: sans-serif;
+    font-family: "Trujaman", sans-serif;
     font-size : clamp(1em, 1vw + 1vh + .5vmin, 3em);  /* A good starting point... */
     /* And some other alternatives... */
     /*

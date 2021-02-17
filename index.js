@@ -35,7 +35,8 @@ if ('serviceWorker' in navigator) {
             trujaman.setStatus('pwa_installable', true);
         });
 
-        navigator.serviceWorker.register('sw.js').then(registration => {
+        navigator.serviceWorker.register('sw.js')
+        .then(registration => {
             trujaman.setStatus('sw_registered', true);
 
             // This is a starting point, to show the status after page load.
@@ -54,7 +55,8 @@ if ('serviceWorker' in navigator) {
                     }
                 }
             });
-        }).catch(error => {
+        })
+        .catch(error => {
             trujaman.setStatus('sw_registered', false);
             console.error('Service worker registration failed:', error);
         });

@@ -1,19 +1,22 @@
 'use strict';
 
+const staticCacheVersion = 0;
+const staticCachePrefix = `trujaman@${self.registration.scope}`;
+const staticCacheName = `${staticCachePrefix} v${staticCacheVersion}`;
+const staticAssets = [
+    '.',  // Maybe: "new URL(self.registration.scope).pathname"???
+    'index.css',
+    'index_n400.woff2',
+    'index_n700.woff2',
+    'index_i400.woff2',
+    'index_i700.woff2',
+    'index.js',
+    'manifest.json',
+    'appicon.png',
+    'favicon.ico',
+];
+
 const trujaman = {
-    staticCache: 'trujaman-alpha-v0',  // MUST start with 'trujaman-'.
-    staticAssets: [
-        '.',  // Maybe: "new URL(self.registration.scope).pathname"
-        'index.css',
-        'index_n400.woff2',
-        'index_n700.woff2',
-        'index_i400.woff2',
-        'index_i700.woff2',
-        'index.js',
-        'manifest.json',
-        'appicon.png',
-        'favicon.ico',
-    ],
     sleep: milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds)),  // For debugging...
 };
 
@@ -22,7 +25,7 @@ const trujaman = {
 self.addEventListener('install', event => {
     console.debug('Installing service worker.');
     event.waitUntil(
-        caches.open(trujaman.staticCache)
+        caches.open(staticCacheName)
         .then(cache => cache.addAll(staticAssets))
         .then(self.skipWaiting())  // Brutal, but effective for now.
     );
@@ -36,7 +39,7 @@ self.addEventListener('activate', event => {
         caches.keys()
         .then(keys => {
             // Only old caches from this PWA are deleted. Check the prefix!
-            keys = keys.filter(key => key.startsWith('trujaman-')).filter(key => key != trujaman.staticCache);
+            keys = keys.filter(key => key.startsWith(staticCachePrefix)).filter(key => key != staticCacheName);
             return Promise.all(keys.map(key => caches.delete(key)));
         })
         .then(self.clients.claim())  // Brutal, but effective for now.
@@ -49,7 +52,7 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
     console.debug('Fetching', event.request.url);
     event.respondWith(
-        caches.open(trujaman.staticCache)
+        caches.open(staticCacheName)
         .then(cache => cache.match(event.request))
         .then(response => {
             // For now, just detect uncached assets, but always fetch from network.

@@ -1,67 +1,75 @@
 'use strict';
 
-const trujaman = {
-    version: '0.0.5-alpha',
-    setStatus: (status, value) => document.getElementById(status).textContent = value ? ' YES' : ' NO',
-    sleep: milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds)),  // For debugging...
-};
+const trujamanVersion = '0.0.6-alpha';
+
+
+// Show status flags on main page, for debugging.
+function trujamanShowStatusFlag (statusFlag, value) {
+    document.getElementById(statusFlag).textContent = value ? ' YES' : ' NO';
+}
+
+
+// Helper for add arbitrary delays, for debugging.
+function trujamanSleep (milliseconds) {
+    return new Promise(resolve => setTimeout(resolve, milliseconds));  // For debugging...
+}
 
 
 // Show current version on page.
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('version').textContent = 'version ' + trujaman.version;
+    document.getElementById('version').textContent = 'version ' + trujamanVersion;
 });
 
 // Register service worker.
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        trujaman.setStatus('sw_supported', true);  // Indicate service worker (PWA) support.
+        trujamanShowStatusFlag('sw_supported', true);  // Indicate service worker (PWA) support.
 
         // For now, set a flag to show whether this page is being controlled or not.
-        trujaman.setStatus('page_controlled', navigator.serviceWorker.controller);
-        trujaman.refreshing = false;
+        trujamanShowStatusFlag('page_controlled', navigator.serviceWorker.controller);
+        let refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', event => {
-            trujaman.setStatus('page_controlled', true);
-            if (trujaman.refreshing) return;
-            trujaman.refreshing = true;
+            trujamanShowStatusFlag('page_controlled', true);
+            if (refreshing) return;
+            refreshing = true;
             window.location.reload();
         });
 
         // For now, set a flag to show that the PWA is, in fact, installable.
-        trujaman.setStatus('pwa_installable', false);  // By default...
+        trujamanShowStatusFlag('pwa_installable', false);  // By default...
         window.addEventListener('beforeinstallprompt', event => {
             // Prevent the default install handler to appear for now.
             event.preventDefault();
-            trujaman.setStatus('pwa_installable', true);
+            trujamanShowStatusFlag('pwa_installable', true);
         });
 
         navigator.serviceWorker.register('sw.js')
         .then(registration => {
-            trujaman.setStatus('sw_registered', true);
+            trujamanShowStatusFlag('sw_registered', true);
 
             // This is a starting point, to show the status after page load.
-            trujaman.setStatus('sw_active', registration.active);
-            trujaman.setStatus('sw_waiting', registration.waiting);
-            trujaman.setStatus('sw_installing', registration.installing);
+            trujamanShowStatusFlag('sw_active', registration.active);
+            trujamanShowStatusFlag('sw_waiting', registration.waiting);
+            trujamanShowStatusFlag('sw_installing', registration.installing);
 
             // Handle state changes for new service workers, including the first one.
             registration.addEventListener('updatefound', () => {
-                trujaman.setStatus('sw_installing', true);
+                trujamanShowStatusFlag('sw_installing', true);
                 registration.installing.onstatechange = event => {
                     if (event.target.state == 'installed' || event.target.state == 'activated') {
-                        trujaman.setStatus('sw_active', registration.active);
-                        trujaman.setStatus('sw_waiting', registration.waiting);
-                        trujaman.setStatus('sw_installing', registration.installing);
+                        trujamanShowStatusFlag('sw_active', registration.active);
+                        trujamanShowStatusFlag('sw_waiting', registration.waiting);
+                        trujamanShowStatusFlag('sw_installing', registration.installing);
                     }
                 }
             });
         })
         .catch(error => {
-            trujaman.setStatus('sw_registered', false);
+            trujamanShowStatusFlag('sw_registered', false);
             console.error('Service worker registration failed:', error);
         });
     });
 } else {
     // Indicate that there's no service worker (PWA) support.
-    window.addEventListener('load', () => trujaman.setStatus('sw_supported', false));
+    window.addEventListener('load', () => trujamanShowStatusFlag('sw_supported', false));
 }

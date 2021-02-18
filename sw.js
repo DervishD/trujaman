@@ -2,6 +2,18 @@
 
 const trujaman = {
     staticCache: 'trujaman-alpha-v0',  // MUST start with 'trujaman-'.
+    staticAssets: [
+        '.',  // Maybe: "new URL(self.registration.scope).pathname"
+        'index.css',
+        'index_n400.woff2',
+        'index_n700.woff2',
+        'index_i400.woff2',
+        'index_i700.woff2',
+        'index.js',
+        'manifest.json',
+        'appicon.png',
+        'favicon.ico',
+    ],
     sleep: milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds)),  // For debugging...
 };
 
@@ -11,21 +23,7 @@ self.addEventListener('install', event => {
     console.debug('Installing service worker.');
     event.waitUntil(
         caches.open(trujaman.staticCache)
-        .then(cache =>
-            cache.addAll([
-                new URL(self.registration.scope).pathname,
-                'index.html',
-                'index.css',
-                'index_n400.woff2',
-                'index_n700.woff2',
-                'index_i400.woff2',
-                'index_i700.woff2',
-                'index.js',
-                'manifest.json',
-                'appicon.png',
-                'favicon.ico',
-          ])
-        )
+        .then(cache => cache.addAll(staticAssets))
         .then(self.skipWaiting())  // Brutal, but effective for now.
     );
 });

@@ -50,6 +50,14 @@ self.addEventListener('activate', event => {
 // As a first step, a 'pass-through' fetch handler is implemented.
 // This is ABSOLUTELY discouraged, for a whole variety of reasons, but here it's just used as a starting point.
 self.addEventListener('fetch', event => {
+    if (event.request.method != 'GET') {
+        console.error('Fetch with non-GET method!');  // Should NEVER happen in production.
+        return;
+    }
+    if (!event.request.url.startsWith(self.location.origin)) {
+        console.error('Cross-origin fetch!');  // Should NEVER happen in production.
+        return;
+    }
     console.debug('Fetching', event.request.url);
     event.respondWith(
         caches.open(staticCacheName)

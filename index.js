@@ -1,6 +1,6 @@
 'use strict';
 
-const trujamanVersion = '0.0.6-alpha';
+const trujamanVersion = '0.0.7-alpha';
 
 
 // Show status flags on main page, for debugging.

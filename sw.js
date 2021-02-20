@@ -1,9 +1,11 @@
 'use strict';
 
-const staticCacheVersion = 0;
-const staticCachePrefix = `trujaman@${self.registration.scope}`;
-const staticCacheName = `${staticCachePrefix} v${staticCacheVersion}`;
-const staticAssets = [
+const serviceworkerVersion = 0;
+
+const cachePrefix = `trujaman@${self.registration.scope}`;
+
+const coreCacheName = `${cachePrefix} v${serviceworkerVersion}`;
+const coreAssets = [
     '.',  // Maybe: "new URL(self.registration.scope).pathname"???
     'index.css',
     'index_n400.woff2',
@@ -25,8 +27,8 @@ const trujaman = {
 self.addEventListener('install', event => {
     console.debug('Installing service worker.');
     event.waitUntil(
-        caches.open(staticCacheName)
-        .then(cache => cache.addAll(staticAssets))
+        caches.open(coreCacheName)
+        .then(cache => cache.addAll(coreAssets))
         .then(self.skipWaiting())  // Brutal, but effective for now.
     );
 });
@@ -39,7 +41,7 @@ self.addEventListener('activate', event => {
         caches.keys()
         .then(keys => {
             // Only old caches from this PWA are deleted. Check the prefix!
-            keys = keys.filter(key => key.startsWith(staticCachePrefix)).filter(key => key != staticCacheName);
+            keys = keys.filter(key => key.startsWith(cachePrefix)).filter(key => key != coreCacheName);
             return Promise.all(keys.map(key => caches.delete(key)));
         })
         .then(self.clients.claim())  // Brutal, but effective for now.
@@ -47,8 +49,9 @@ self.addEventListener('activate', event => {
 });
 
 
-// As a first step, a 'pass-through' fetch handler is implemented.
-// This is ABSOLUTELY discouraged, for a whole variety of reasons, but here it's just used as a starting point.
+// The next step in caching is switching to a 'cache-only' strategy.
+// This makes sure the PWA fully works when offline, and it's perfect for the static assets.
+// For now, a network-fallback is kept, anyway.
 self.addEventListener('fetch', event => {
     if (event.request.method != 'GET') {
         console.error('Fetch with non-GET method!');  // Should NEVER happen in production.
@@ -60,12 +63,12 @@ self.addEventListener('fetch', event => {
     }
     console.debug('Fetching', event.request.url);
     event.respondWith(
-        caches.open(staticCacheName)
+        caches.open(coreCacheName)
         .then(cache => cache.match(event.request))
         .then(response => {
             // For now, just detect uncached assets, but always fetch from network.
             if (!response) console.error('UNCACHED request for', event.request.url);
-            return fetch(event.request);
+            return response || fetch(event.request);
         })
     );
 });

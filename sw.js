@@ -66,8 +66,7 @@ self.addEventListener('fetch', event => {
         caches.open(coreCacheName)
         .then(cache => cache.match(event.request))
         .then(response => {
-            // For now, just detect uncached assets, but always fetch from network.
-            if (!response) console.error('UNCACHED request for', event.request.url);
+            if (!response) console.warn('UNCACHED request for', event.request.url);
             return response || fetch(event.request);
         })
     );

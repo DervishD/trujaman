@@ -17,7 +17,7 @@ function trujamanSleep (milliseconds) {
 
 // Show current version on page.
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('version').textContent = 'version ' + trujamanVersion;
+    document.getElementById('version').textContent = 'v' + trujamanVersion;
 });
 
 // Register service worker.

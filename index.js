@@ -1,6 +1,6 @@
 'use strict';
 
-const trujamanVersion = '0.0.7-alpha';
+const trujamanVersion = '0.0.8-alpha';
 
 
 // Show status flags on main page, for debugging.
@@ -15,9 +15,10 @@ function trujamanSleep (milliseconds) {
 }
 
 
-// Show current version on page.
+// Show current version and status on page.
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('version').textContent = 'v' + trujamanVersion;
+    document.getElementById('status').style.display = 'grid';
 });
 
 // Register service worker.

@@ -9,6 +9,27 @@ function trujamanShowStatusFlag (statusFlag, value) {
 }
 
 
+// Helper to print a message ("say things") on the main page, within the "console" HTML element.
+function trujamanSay (...things) {
+
+    let message = things.reduce((output, thing) => {
+        return output + ' ' + (typeof thing === "object" ? JSON.stringify(thing) : thing)
+    })
+
+    let theConsole = document.getElementById('console');
+
+    // This has to be calculated BEFORE inserting the new content...
+    let mustScroll = theConsole.scrollHeight - theConsole.clientHeight - theConsole.scrollTop <= 0;
+
+    theConsole.insertAdjacentHTML('beforeend', `<p>${message}</p>`);
+
+    if (mustScroll) {
+        // This has to be calculated AFTER inserting the new content...
+        theConsole.scrollTop = theConsole.scrollHeight - theConsole.clientHeight;
+    }
+}
+
+
 // Helper for add arbitrary delays, for debugging.
 function trujamanSleep (milliseconds) {
     return new Promise(resolve => setTimeout(resolve, milliseconds));  // For debugging...

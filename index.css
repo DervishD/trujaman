@@ -44,6 +44,11 @@
         color: #FDF6E3;  /* base3 */
         background-color: rgba(101,123,131,0.99);  /* base00 */
     }
+
+    #console {
+        color: #FDF6E3;  /* base3 */
+        background-color: rgba(101,123,131);  /* base00 */
+    }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -55,6 +60,11 @@
     ::selection {
         color: #002B36;  /* base03 */
         background-color: rgba(131,148,150,0.99);  /* base0 */
+    }
+
+    #console {
+        color: #002B36;  /* base03 */
+        background-color: rgba(131,148,150);  /* base0 */
     }
 }
 
@@ -94,7 +104,7 @@ p {
 header {
     display: flex;
     flex-wrap: wrap;
-    font-size: 4em;
+    font-size: 3em;
     margin: 0 0.5em 0.5em;
     align-items: baseline;
     justify-content: center;
@@ -112,6 +122,7 @@ div#version {
 
 div#status {
     font-family: monospace;
+    font-size: 0.5em;
     text-align: left;
     display: none;
     grid-template-columns: max-content max-content;
@@ -133,4 +144,24 @@ div#status div.status_item {
 
 div#status div.status_value {
     justify-self: left;
+}
+
+#console {
+    font-size: 0.8em;
+    font-family: monospace;
+    width: 80ch;
+    height: 25ch;
+    margin: 1em auto;
+    padding: 1ch;
+    border: 2px solid;
+    overflow: auto;
+    white-space: nowrap;
+}
+
+#console p {
+    text-align: left;
+    text-indent: 0;
+    margin: 0;
+    padding: 0;
+    line-height: 3ex;
 }

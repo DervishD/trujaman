@@ -2,11 +2,14 @@
 
 const serviceworkerVersion = 0;
 
+const landingPage = '.';  // Maybe: "new URL(self.registration.scope).pathname"???
+
 const cachePrefix = `trujaman@${self.registration.scope}`;
 
 const coreCacheName = `${cachePrefix} v${serviceworkerVersion}`;
+
 const coreAssets = [
-    '.',  // Maybe: "new URL(self.registration.scope).pathname"???
+    landingPage,
     'index.css',
     'index_n400.woff2',
     'index_n700.woff2',
@@ -49,9 +52,8 @@ self.addEventListener('activate', event => {
 });
 
 
-// The next step in caching is switching to a 'cache-only' strategy.
-// This makes sure the PWA fully works when offline, and it's perfect for the static assets.
-// For now, a network-fallback is kept, anyway.
+// A 'cache-only' caching strategy is used for now.
+// This makes sure the PWA fully works when offline, and it's perfect for the core assets.
 self.addEventListener('fetch', event => {
     if (event.request.method != 'GET') {
         console.error('Fetch with non-GET method!');  // Should NEVER happen in production.
@@ -62,12 +64,9 @@ self.addEventListener('fetch', event => {
         return;
     }
     console.debug('Fetching', event.request.url);
-    event.respondWith(
-        caches.open(coreCacheName)
-        .then(cache => cache.match(event.request))
-        .then(response => {
-            if (!response) console.warn('UNCACHED request for', event.request.url);
-            return response || fetch(event.request);
-        })
-    );
+    event.respondWith(async function () {
+        let cache = await caches.open(coreCacheName);
+        let response = await cache.match(event.request);
+        return response || cache.match(landingPage);
+    }());
 });

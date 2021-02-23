@@ -47,7 +47,12 @@
 
     #console {
         color: #FDF6E3;  /* base3 */
-        background-color: rgba(101,123,131);  /* base00 */
+        background-color: #657B83;  /* base00 */
+    }
+
+    #console p::selection {
+        color: #657B83;  /* base00 */
+        background-color: rgba(253, 246, 227, 0.99);  /* base3 */
     }
 }
 
@@ -64,7 +69,12 @@
 
     #console {
         color: #002B36;  /* base03 */
-        background-color: rgba(131,148,150);  /* base0 */
+        background-color: #839496;  /* base0 */
+    }
+
+    #console p::selection {
+        color: #839496;  /* base0 */
+        background-color: rgba(0, 43, 54, 0.99);  /* base03 */
     }
 }
 
@@ -152,7 +162,6 @@ div#status div.status_value {
     font-family: monospace;
     margin: 1em auto;
     padding: 1ch;
-    border: 2px solid;
     overflow: auto;
     white-space: pre-wrap;
     overflow-wrap: break-word;

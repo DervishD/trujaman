@@ -148,20 +148,21 @@ div#status div.status_value {
 
 #console {
     font-size: 0.8em;
+    width: 90%;
     font-family: monospace;
-    width: 80ch;
-    height: 25ch;
     margin: 1em auto;
     padding: 1ch;
     border: 2px solid;
     overflow: auto;
-    white-space: nowrap;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    flex: 1;
 }
 
 #console p {
     text-align: left;
-    text-indent: 0;
-    margin: 0;
+    text-indent: -2ch;
+    margin: 0 0 0 2ch;
     padding: 0;
     line-height: 3ex;
 }

@@ -14,8 +14,8 @@ function trujamanSay (...things) {
     let message = things.reduce((output, thing) => {
         if (typeof thing === "object" && thing.toString === Object.prototype.toString)
             thing = JSON.stringify(thing);
-        return output + ' ' + thing;
-    }, '');
+        return output + thing + ' ';
+    }, '').trim();
 
     let theConsole = document.getElementById('console');
 

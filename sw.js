@@ -15,6 +15,7 @@ const coreAssets = [
     'index_n700.woff2',
     'index_i400.woff2',
     'index_i700.woff2',
+    'index_n400m.woff2',
     'index.js',
     'manifest.json',
     'appicon.png',

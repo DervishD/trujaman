@@ -11,16 +11,16 @@ function trujamanSay (...things) {
         return output + thing + ' ';
     }, '').trim();
 
-    let theConsole = document.getElementById('console');
+    let trujamanConsole = document.getElementById('trujaman_console');
 
     // This has to be calculated BEFORE inserting the new content...
-    let mustScroll = theConsole.scrollHeight - theConsole.clientHeight - theConsole.scrollTop <= 0;
+    let mustScroll = trujamanConsole.scrollHeight - trujamanConsole.clientHeight - trujamanConsole.scrollTop <= 0;
 
-    theConsole.insertAdjacentHTML('beforeend', `<p>· ${message}</p>`);
+    trujamanConsole.insertAdjacentHTML('beforeend', `<p>· ${message}</p>`);
 
     if (mustScroll) {
         // This has to be calculated AFTER inserting the new content...
-        theConsole.scrollTop = theConsole.scrollHeight - theConsole.clientHeight;
+        trujamanConsole.scrollTop = trujamanConsole.scrollHeight - trujamanConsole.clientHeight;
     }
 }
 

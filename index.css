@@ -53,12 +53,12 @@
         background-color: rgba(101,123,131,0.99);  /* base00 */
     }
 
-    #console {
+    #trujaman_console {
         color: #FDF6E3;  /* base3 */
         background-color: #657B83;  /* base00 */
     }
 
-    #console p::selection {
+    #trujaman_console p::selection {
         color: #657B83;  /* base00 */
         background-color: rgba(253, 246, 227, 0.99);  /* base3 */
     }
@@ -75,12 +75,12 @@
         background-color: rgba(131,148,150,0.99);  /* base0 */
     }
 
-    #console {
+    #trujaman_console {
         color: #002B36;  /* base03 */
         background-color: #839496;  /* base0 */
     }
 
-    #console p::selection {
+    #trujaman_console p::selection {
         color: #839496;  /* base0 */
         background-color: rgba(0, 43, 54, 0.99);  /* base03 */
     }
@@ -136,17 +136,17 @@ header {
     justify-content: center;
 }
 
-div#trujaman {
+div#trujaman_logo {
     font-weight: bold;
 }
 
-div#version {
+div#trujaman_version {
     font-family: "Trujaman Mono";
     font-size: 0.5em;
     min-width: max-content;
 }
 
-#console {
+#trujaman_console {
     font-size: 0.8em;
     font-family: "Trujaman Mono";
     margin: 2.5vw;
@@ -159,7 +159,7 @@ div#version {
     flex: 1;
 }
 
-#console p {
+#trujaman_console p {
     text-align: left;
     text-indent: -2ch;
     margin: 0 0 0 2ch;

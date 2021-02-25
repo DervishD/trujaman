@@ -1,7 +1,5 @@
 'use strict';
 
-const trujamanVersion = '0.0.10-alpha';
-
 
 // Helper to print a message ("say things") on the main page, within the "console" HTML element.
 function trujamanSay (...things) {
@@ -31,26 +29,27 @@ function trujamanSleep (milliseconds) {
 }
 
 
-// Show current version and status on page.
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('version').textContent = 'v' + trujamanVersion;
-});
-
-
 // Register service worker.
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         trujamanSay('Service workers are supported.');
 
         // Indicate wether the page is currently controlled or not.
-        trujamanSay(`The page has${navigator.serviceWorker.controller?'':' not'} a controller.`)
+        trujamanSay(`The page has${navigator.serviceWorker.controller?'':' not'} a controller.`);
+
+        navigator.serviceWorker.ready
+        .then(registration => {
+            fetch('version')
+            .then(response => response.text())
+            .then(version => document.getElementById('trujaman_version').textContent = 'v' + version);
+        });
 
         let refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', event => {
             trujamanSay('The page has a new controller.');
             if (refreshing) return;
             refreshing = true;
-            trujamanSleep(5*1000).then(() => window.location.reload());  // Debugging only, FIXME!
+            trujamanSleep(1000).then(() => window.location.reload());  // Debugging only, FIXME!
         });
 
         window.addEventListener('beforeinstallprompt', event => {

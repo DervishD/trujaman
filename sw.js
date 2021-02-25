@@ -1,6 +1,6 @@
 'use strict';
 
-const serviceworkerVersion = 0;
+const serviceworkerVersion = '20210224.11';
 
 const landingPage = '.';  // Maybe: "new URL(self.registration.scope).pathname"???
 
@@ -66,6 +66,7 @@ self.addEventListener('fetch', event => {
     }
     console.debug('Fetching', event.request.url);
     event.respondWith(async function () {
+        if (event.request.url.endsWith('version')) return new Response(serviceworkerVersion);
         let cache = await caches.open(coreCacheName);
         let response = await cache.match(event.request);
         return response || cache.match(landingPage);

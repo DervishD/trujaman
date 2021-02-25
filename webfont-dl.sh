@@ -78,6 +78,7 @@ FONT_CSS='fonts.css'
 
 if [[ ! -d "$1" ]];
 then
+    echo "Creating directory for typeface $1"
     mkdir -p "$1"
 fi
 
@@ -108,6 +109,7 @@ do
     fi
     if [[ "$FONT_STYLE" && "$FONT_WEIGHT" && "$FONT_RANGE" && "$FONT_URL" ]];
     then
+        echo "Dumping font ${FONT_STYLE} ${FONT_WEIGHT}"
         FONT_FILE="index_${FONT_STYLE:0:1}${FONT_WEIGHT}.woff2"
         curl -sSf -A "$UA" --get "$FONT_URL" -o $FONT_FILE
         (

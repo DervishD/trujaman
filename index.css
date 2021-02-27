@@ -53,6 +53,15 @@
         background-color: rgba(101,123,131,0.99);  /* base00 */
     }
 
+    form {
+        background-color: #EEE8D5 /* base2 */
+    }
+
+    input ~ button {
+        color: #FDF6E3;  /* base3 */
+        background-color: #657B83;  /* base00 */
+    }
+
     #trujaman_console {
         color: #FDF6E3;  /* base3 */
         background-color: #657B83;  /* base00 */
@@ -73,6 +82,15 @@
     ::selection {
         color: #002B36;  /* base03 */
         background-color: rgba(131,148,150,0.99);  /* base0 */
+    }
+
+    form {
+        background-color: #073642 /* base02 */
+    }
+
+    input ~ button {
+        color: #002B36;  /* base03 */
+        background-color: #839496;  /* base0 */
     }
 
     #trujaman_console {
@@ -111,6 +129,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    min-width: min-content;
 }
 
 noscript p {
@@ -146,11 +165,51 @@ div#trujaman_version {
     min-width: max-content;
 }
 
+form {
+    margin: 2.5vw 2.5vw 0;
+    padding: 2ch;
+    border: 1px dotted;
+    width: min-content;
+    align-self: center;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+input {
+    width: 0px;
+    height: 0px;
+    margin: 0;
+    padding: 0;
+    display: block;  /* So surrounding whitespace is not a problem. */
+}
+
+input ~ label {
+    white-space: nowrap;
+}
+
+input ~ label > #trujaman_file_chooser {
+    font-weight: bold;
+    cursor: pointer;
+}
+
+input:focus ~ label {
+    outline: 1px solid;
+}
+
+input ~ button {
+    font-size: 0.75em;
+    font-weight: bold;
+    display: block;
+    border: none;
+    margin: 2ch auto 1ch;
+    padding: 1ch 2ch;
+}
+
 #trujaman_console {
     font-size: 0.8em;
     font-family: "Trujaman Mono";
-    margin: 2.5vw;
-    width: 95vw;
+    margin: 2.5% auto;
+    width: 95%;
     box-sizing: border-box;
     padding: 1ch;
     overflow: auto;

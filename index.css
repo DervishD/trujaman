@@ -125,18 +125,19 @@ body {
     width: 100%;
     height: 100%;
     margin: 0;
-    padding: 0;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
     justify-content: center;
     min-width: min-content;
+    box-sizing: border-box;
 }
 
 noscript p {
     text-align: center;
     text-indent: 0;
-    margin: 1em;
-    padding: 1em;
+    margin: 1em 0;
+    padding: 1ch;
     border: 2px solid;
 }
 
@@ -149,8 +150,8 @@ p {
 header {
     display: flex;
     flex-wrap: wrap;
-    font-size: 3em;
-    margin: 0 0.5em;
+    font-size: 3rem;
+    margin: 0;
     align-items: baseline;
     justify-content: center;
 }
@@ -166,7 +167,7 @@ div#trujaman_version {
 }
 
 form {
-    margin: 2.5vw 2.5vw 0;
+    margin: 1rem 0 0;
     padding: 2ch;
     border: 1px dotted;
     width: min-content;
@@ -201,15 +202,15 @@ input ~ button {
     font-weight: bold;
     display: block;
     border: none;
-    margin: 2ch auto 1ch;
+    margin: 3ch auto 1ch;
     padding: 1ch 2ch;
 }
 
 #trujaman_console {
-    font-size: 0.8em;
+    font-size: 0.8rem;
     font-family: "Trujaman Mono";
-    margin: 2.5% auto;
-    width: 95%;
+    margin: 1rem 0 0;
+    width: 100%;
     box-sizing: border-box;
     padding: 1ch;
     overflow: auto;

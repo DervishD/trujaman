@@ -54,12 +54,21 @@
     }
 
     form {
-        background-color: #EEE8D5 /* base2 */
+        background-color: #EEE8D5;  /* base2 */
     }
 
     input ~ button {
         color: #FDF6E3;  /* base3 */
-        background-color: #657B83;  /* base00 */
+        background-color: #268BD2;  /* blue */
+    }
+
+    input ~ label:hover > span, input:focus ~ label > span {
+        color: #268BD2;  /* blue */
+    }
+
+    input:focus ~ label > span, input ~ button:focus {
+        outline: 1px solid #657B83;  /* base00 */
+        outline-offset: 1px;
     }
 
     #trujaman_console {
@@ -89,8 +98,17 @@
     }
 
     input ~ button {
-        color: #002B36;  /* base03 */
-        background-color: #839496;  /* base0 */
+        color: #EEE8D5;  /* base2 */
+        background-color: #268BD2;  /* blue */
+    }
+
+    input ~ label:hover > span, input:focus ~ label > span {
+        color: #268BD2;  /* blue */
+    }
+
+    input:focus ~ label > span, input ~ button:focus {
+        outline: 1px solid #839496;  /* base0 */
+        outline-offset: 1px;
     }
 
     #trujaman_console {
@@ -169,7 +187,7 @@ div#trujaman_version {
 form {
     margin: 1rem 0 0;
     padding: 2ch;
-    border: 1px dotted;
+    border: 1px dashed;
     width: min-content;
     align-self: center;
     text-align: center;
@@ -188,22 +206,24 @@ input ~ label {
     white-space: nowrap;
 }
 
-input ~ label > #trujaman_file_chooser {
+input ~ label > span {
     font-weight: bold;
     cursor: pointer;
 }
 
-input:focus ~ label {
-    outline: 1px solid;
-}
-
 input ~ button {
+    font-family: Trujaman;
     font-size: 0.75em;
     font-weight: bold;
     display: block;
+    opacity: 75%;
     border: none;
     margin: 3ch auto 1ch;
     padding: 1ch 2ch;
+}
+
+input ~ button:hover, input ~ button:focus {
+    opacity: 100%;
 }
 
 #trujaman_console {

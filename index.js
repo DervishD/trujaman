@@ -81,6 +81,17 @@ if ('serviceWorker' in navigator) {
             trujamanSay('Service worker registration failed with', error);  // Only for debugging, FIXME!
             console.error('Service worker registration failed with', error);
         });
+
+        let theInput = document.getElementsByTagName('input')[0];
+        let theButton = document.getElementsByTagName('button')[0];
+
+        theInput.addEventListener('change', event => {
+            theButton.innerText += ' ' + event.target.files[0].name;
+        });
+
+        theButton.addEventListener('click', () => {
+            console.debug('Conversion requested of file', theInput.files[0]);
+        });
     });
 } else {
     // Indicate that there's no service worker (PWA) support.

@@ -191,11 +191,11 @@ label > span {
     cursor: pointer;
 }
 
-label:hover > span, input:focus ~ label > span {
+label:hover > span, label > input:focus ~ span {
     color: #268BD2;  /* blue */
 }
 
-input:focus ~ label > span, button:hover, button:focus {
+label > input:focus ~ span, button:hover, button:focus {
     outline: 1px solid #268BD2;  /* blue */
     outline-offset: 1px;
 }

@@ -115,6 +115,7 @@
 html {
     width: 100vw;
     height: 100vh;
+    height: -webkit-fill-available;
     margin: 0;
     padding: 0;
 }
@@ -128,6 +129,7 @@ body {
     flex-direction: column;
     justify-content: center;
     min-width: min-content;
+    min-height: -webkit-fill-available;
     box-sizing: border-box;
 }
 

@@ -57,18 +57,8 @@
         background-color: #EEE8D5;  /* base2 */
     }
 
-    input ~ button {
+    button {
         color: #FDF6E3;  /* base3 */
-        background-color: #268BD2;  /* blue */
-    }
-
-    input ~ label:hover > span, input:focus ~ label > span {
-        color: #268BD2;  /* blue */
-    }
-
-    input:focus ~ label > span, input ~ button:focus {
-        outline: 1px solid #657B83;  /* base00 */
-        outline-offset: 1px;
     }
 
     #trujaman_console {
@@ -97,18 +87,8 @@
         background-color: #073642 /* base02 */
     }
 
-    input ~ button {
-        color: #EEE8D5;  /* base2 */
-        background-color: #268BD2;  /* blue */
-    }
-
-    input ~ label:hover > span, input:focus ~ label > span {
-        color: #268BD2;  /* blue */
-    }
-
-    input:focus ~ label > span, input ~ button:focus {
-        outline: 1px solid #839496;  /* base0 */
-        outline-offset: 1px;
+    button {
+        color: #002B36;  /* base03 */
     }
 
     #trujaman_console {
@@ -202,28 +182,39 @@ input {
     display: block;  /* So surrounding whitespace is not a problem. */
 }
 
-input ~ label {
+label {
     white-space: nowrap;
 }
 
-input ~ label > span {
+label > span {
     font-weight: bold;
     cursor: pointer;
 }
 
-input ~ button {
+label:hover > span, input:focus ~ label > span {
+    color: #268BD2;  /* blue */
+}
+
+input:focus ~ label > span, button:hover, button:focus {
+    outline: 1px solid #268BD2;  /* blue */
+    outline-offset: 1px;
+}
+
+button {
     font-family: Trujaman;
     font-size: 0.75em;
     font-weight: bold;
     display: block;
-    opacity: 75%;
+    cursor: pointer;
     border: none;
     margin: 3ch auto 1ch;
     padding: 1ch 2ch;
+    background-color: #268BD2;  /* blue */
 }
 
-input ~ button:hover, input ~ button:focus {
-    opacity: 100%;
+button:active {
+    outline: 2px solid #268BD2;  /* blue */
+    outline-offset: 2px;
 }
 
 #trujaman_console {

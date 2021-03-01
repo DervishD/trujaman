@@ -29,6 +29,23 @@ function trujamanSleep (milliseconds) {
 }
 
 
+if (window.FileReader) {
+    window.addEventListener('load', () => {
+        // Make all necessary elements of page visible.
+        document.querySelector('form').hidden = false;
+        document.querySelector('#trujaman_console').hidden = false;
+        trujamanSay('HTML5 File API is supported.');
+    });
+} else {
+    window.addEventListener('load', () => {
+        document.querySelector('p#noFileAPI').hidden = false;
+    });
+
+    window.onerror = () => true;
+    throw true;
+}
+
+
 // Register service worker.
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

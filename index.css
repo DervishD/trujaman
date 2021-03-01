@@ -131,7 +131,7 @@ body {
     box-sizing: border-box;
 }
 
-noscript p {
+noscript p, p#noFileAPI {
     text-align: center;
     text-indent: 0;
     margin: 1em 0;

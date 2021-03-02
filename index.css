@@ -43,62 +43,24 @@
 }
 
 @media (prefers-color-scheme: light) {
-    body {
-        color: #657B83;  /* base00 */
-        background-color: #FDF6E3;  /* base3 */
-    }
-
-    ::selection {
-        color: #FDF6E3;  /* base3 */
-        background-color: rgba(101,123,131,0.99);  /* base00 */
-    }
-
-    form {
-        background-color: #EEE8D5;  /* base2 */
-    }
-
-    button {
-        color: #FDF6E3;  /* base3 */
-    }
-
-    #trujaman_console {
-        color: #FDF6E3;  /* base3 */
-        background-color: #657B83;  /* base00 */
-    }
-
-    #trujaman_console p::selection {
-        color: #657B83;  /* base00 */
-        background-color: rgba(253, 246, 227, 0.99);  /* base3 */
+    :root {
+        --fg:     var(--base00);
+        --fg_lo:  var(--base1);
+        --bg:     var(--base3);
+        --bg_hi:  var(--base2);
+        --em:     var(--base01);
+        --accent: var(--blue);
     }
 }
 
 @media (prefers-color-scheme: dark) {
-    body {
-        color: #839496;  /* base0 */
-        background-color: #002B36;  /* base03 */
-    }
-
-    ::selection {
-        color: #002B36;  /* base03 */
-        background-color: rgba(131,148,150,0.99);  /* base0 */
-    }
-
-    form {
-        background-color: #073642 /* base02 */
-    }
-
-    button {
-        color: #002B36;  /* base03 */
-    }
-
-    #trujaman_console {
-        color: #002B36;  /* base03 */
-        background-color: #839496;  /* base0 */
-    }
-
-    #trujaman_console p::selection {
-        color: #839496;  /* base0 */
-        background-color: rgba(0, 43, 54, 0.99);  /* base03 */
+    :root {
+        --fg:     var(--base0);
+        --fg_lo:  var(--base01);
+        --bg:     var(--base03);
+        --bg_hi:  var(--base02);
+        --em:     var(--base1);
+        --accent: var(--violet);
     }
 }
 
@@ -110,6 +72,23 @@
     font-size: calc(1vw + 1vh + .5vmin);
     font-size: calc((.4em + 1vmin) + (.4em + 1vmax));
     */
+    /* Solarized palette https://ethanschoonover.com/solarized/ */
+    --base03:  #002B36; /* base03  */
+    --base02:  #073642; /* base02  */
+    --base01:  #586E75; /* base01  */
+    --base00:  #657B83; /* base00  */
+    --base0:   #839496; /* base0   */
+    --base1:   #93A1A1; /* base1   */
+    --base2:   #EEE8D5; /* base2   */
+    --base3:   #FDF6E3; /* base3   */
+    --yellow:  #B58900; /* yellow  */
+    --orange:  #CB4B16; /* orange  */
+    --red:     #DC322F; /* red     */
+    --magenta: #D33682; /* magenta */
+    --violet:  #6C71C4; /* violet  */
+    --blue:    #268BD2; /* blue    */
+    --cyan:    #2AA198; /* cyan    */
+    --green:   #859900; /* green   */
 }
 
 html {
@@ -131,6 +110,13 @@ body {
     min-width: min-content;
     min-height: -webkit-fill-available;
     box-sizing: border-box;
+    color: var(--fg);
+    background-color: var(--bg);
+}
+
+::selection {
+    color: var(--bg);
+    background-color: var(--fg);
 }
 
 noscript p, p#noFileAPI {
@@ -166,16 +152,6 @@ div#trujaman_version {
     min-width: max-content;
 }
 
-form {
-    margin: 1rem 0 0;
-    padding: 2ch;
-    border: 1px dashed;
-    width: min-content;
-    align-self: center;
-    text-align: center;
-    box-sizing: border-box;
-}
-
 input {
     width: 0px;
     height: 0px;
@@ -184,17 +160,21 @@ input {
     display: block;  /* So surrounding whitespace is not a problem. */
 }
 
-label {
-    white-space: nowrap;
-}
-
-label > span {
+button {
+    font-family: Trujaman;
     font-weight: bold;
     cursor: pointer;
+    font-size: 0.75em;
+    display: block;
+    margin: 1rem auto 0;
+    padding: 1ch 2ch;
+    border: none;
+    color: var(--bg);
+    background-color: var(--accent);
 }
 
-label:hover > span, label > input:focus ~ span {
-    color: #268BD2;  /* blue */
+button:hover {
+    filter: brightness(111%);
 }
 
 label > input:focus ~ span, button:hover, button:focus {
@@ -230,6 +210,8 @@ button:active {
     white-space: pre-wrap;
     overflow-wrap: break-word;
     flex: 1;
+    color: var(--bg);
+    background-color: var(--fg);
 }
 
 #trujaman_console p {
@@ -238,4 +220,9 @@ button:active {
     margin: 0 0 0 2ch;
     padding: 0;
     line-height: 3ex;
+}
+
+#trujaman_console p::selection {
+    color: var(--fg);
+    background-color: var(--bg);
 }

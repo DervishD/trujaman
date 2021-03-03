@@ -1,25 +1,46 @@
 'use strict';
 
 
-// Helper to print a debugging message within the "console" element of the main page.
-function trujamanDebug (...things) {
-    let message = things.reduce((output, thing) => {
-        if (typeof thing === "object" && thing.toString === Object.prototype.toString)
-            thing = JSON.stringify(thing);
-        return output + thing + ' ';
-    }, '').trim();
+// Change to 'false' in production.
+let DEBUG = true;
 
-    let trujamanConsole = document.getElementById('trujaman_console');
+
+// Helper to print a message for the end user on the main page.
+// The message is added in the HTML element whose selector is 'where'.
+// The message is added within a '<p>' element of class 'mark'.
+function trujamanPrint (where, mark, message) {
+
+    let theConsole = document.querySelector(where);
 
     // This has to be calculated BEFORE inserting the new content...
-    let mustScroll = trujamanConsole.scrollHeight - trujamanConsole.clientHeight - trujamanConsole.scrollTop <= 0;
+    let mustScroll = theConsole.scrollHeight - theConsole.clientHeight - theConsole.scrollTop <= 0;
 
-    trujamanConsole.insertAdjacentHTML('beforeend', `<p>> ${message}</p>`);
+    // New content is inserted at the end...
+    theConsole.insertAdjacentHTML('beforeend', `<p${`${mark?` class="${mark}"`:''}`}>${message}</p>`);
 
-    if (mustScroll) {
-        // This has to be calculated AFTER inserting the new content...
-        trujamanConsole.scrollTop = trujamanConsole.scrollHeight - trujamanConsole.clientHeight;
-    }
+    // This has to be calculated AFTER inserting the new content...
+    if (mustScroll) theConsole.scrollTop = theConsole.scrollHeight - theConsole.clientHeight;
+}
+
+
+// Helper to print log messages to "stdlog".
+function trujamanLog (message) {
+    if (DEBUG) trujamanPrint('div#trujaman_stdlog', 'trujaman_logmsg', '$ ' + message);
+}
+
+
+// Helper to print normal messages to "stdtty".
+function trujamanSay (message) {
+    trujamanPrint('div#trujaman_stdtty', 'trujaman_stdmsg', message);
+}
+
+
+// Helper to print error messages to "stdtty" and terminate execution.
+function trujamanDie (message) {
+    trujamanPrint('div#trujaman_stdtty', 'trujaman_errmsg', '⚠<br>' + message);
+    // One of the many ways of stopping execution. This is terse and effective.
+    window.onerror=()=>true;
+    throw true;
 }
 
 
@@ -29,27 +50,28 @@ function trujamanSleep (milliseconds) {
 }
 
 
-if (window.FileReader) {
-    window.addEventListener('load', () => {
+window.addEventListener('load', () => {
+    // Show logging console during development.
+    if (DEBUG) document.querySelector('div#trujaman_stdlog').hidden = false;
+
+    if (window.FileReader) {
         // Show all needed page elements.
         document.querySelector('div#trujaman_fileloader').hidden = false;
-        document.querySelector('div#trujaman_console').hidden = false;
-        trujamanDebug('HTML5 File API is supported.');
+        trujamanLog('HTML5 File API is supported.');
+        trujamanSay('OK');
     } else {
-        document.querySelector('p#noFileAPI').hidden = false;
-    });
-    window.onerror = () => true;
-    throw true;
-}
+        trujamanDie('Lo siento, trujamán no funcionará porque el navegador no es compatible con File API.');
+    }
+});
 
 
 // Register service worker.
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        trujamanDebug('Service workers are supported.');
+        trujamanLog('Service workers are supported.');
 
         // Indicate wether the page is currently controlled or not.
-        trujamanDebug(`The page has${navigator.serviceWorker.controller?'':' not'} a controller.`);
+        trujamanLog(`The page has${navigator.serviceWorker.controller?'':' not'} a controller.`);
 
         navigator.serviceWorker.ready
         .then(registration => {
@@ -60,7 +82,7 @@ if ('serviceWorker' in navigator) {
 
         let refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', event => {
-            trujamanDebug('The page has a new controller.');
+            trujamanLog('The page has a new controller.');
             if (refreshing) return;
             refreshing = true;
             trujamanSleep(1000).then(() => window.location.reload());  // Debugging only, FIXME!
@@ -69,30 +91,30 @@ if ('serviceWorker' in navigator) {
         window.addEventListener('beforeinstallprompt', event => {
             event.preventDefault();  // Prevent the default install handler to appear for now.
             // Indicate the PWA is installable.
-            trujamanDebug('PWA trujamán seems installable.');
+            trujamanLog('PWA trujamán seems installable.');
         });
 
         navigator.serviceWorker.register('sw.js')
         .then(registration => {
-            trujamanDebug('Successful service worker registration.')
+            trujamanLog('Successful service worker registration.')
 
-            trujamanDebug(`There is${registration.active?'':' not'} an active service worker.`);
+            trujamanLog(`There is${registration.active?'':' not'} an active service worker.`);
 
-            if (registration.waiting) trujamanDebug('There is a service worker waiting.');
+            if (registration.waiting) trujamanLog('There is a service worker waiting.');
 
             // Handle state changes for new service workers, including the first one.
             registration.addEventListener('updatefound', () => {
-                trujamanDebug('Updated service worker found.');
+                trujamanLog('Updated service worker found.');
                 registration.installing.onstatechange = event => {
                     if (event.target.state == 'installed')
-                        trujamanDebug('New service worker installed.');
+                        trujamanLog('New service worker installed.');
                     if (event.target.state == 'activated')
-                        trujamanDebug('New active service worker.');
+                        trujamanLog('New active service worker.');
                 }
             });
         })
         .catch(error => {
-            trujamanDebug('Service worker registration failed with', error);  // Only for debugging, FIXME!
+            trujamanLog('Service worker registration failed with', error);  // Only for debugging, FIXME!
             console.error('Service worker registration failed with', error);
         });
 
@@ -116,5 +138,5 @@ if ('serviceWorker' in navigator) {
     });
 } else {
     // Indicate that there's no service worker (PWA) support.
-    window.addEventListener('load', () => trujamanDebug('Service workers are NOT supported.'));
+    window.addEventListener('load', () => trujamanLog('Service workers are NOT supported.'));
 }

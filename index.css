@@ -114,23 +114,11 @@ body {
     background-color: var(--bg);
 }
 
-::selection {
-    color: var(--bg);
-    background-color: var(--fg);
-}
-
-noscript p, p#noFileAPI {
-    text-align: center;
-    text-indent: 0;
-    margin: 1rem 0;
-    padding: 1ch;
-    border: 2px solid;
-}
-
 p {
-    text-align: justify;
+    text-align: left;
     text-indent: 0;
-    margin: 1rem;
+    margin: 0;
+    padding: 0;
 }
 
 header {
@@ -166,8 +154,6 @@ div#trujaman_version {
 #trujaman_fileloader p {
     text-align: center;
     white-space: nowrap;
-    margin: 0;
-    padding: 0;
 }
 
 input {
@@ -217,31 +203,38 @@ button > span {
     padding: 0 1ch;
 }
 
-#trujaman_console {
+.trujaman_console {
+    box-sizing: border-box;
+    overflow: auto;
+    margin: 1rem 0 0;
+    padding: 1rem;
+    width: 100%;
+}
+
+.trujaman_console p {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+#trujaman_stdtty {
+    background-color: var(--bg_hi);
+}
+
+#trujaman_stdlog {
     font-size: 0.8rem;
     font-family: "Trujaman Mono";
-    margin: 1rem 0 0;
-    width: 100%;
-    box-sizing: border-box;
-    padding: 1rem;
-    overflow: auto;
-    white-space: pre-wrap;
-    overflow-wrap: break-word;
     color: var(--bg);
     background-color: var(--fg);
 }
 
-#trujaman_console p {
-    text-align: left;
+p.trujaman_logmsg {
     text-indent: -2ch;
-    margin: 0;
-    padding: 0;
     padding-left: 2ch;
-    line-height: 3ex;
-    color: var(--bg);
 }
 
-#trujaman_console p::selection {
-    color: var(--fg);
-    background-color: var(--bg);
+p.trujaman_errmsg, noscript p {
+    font-size: 1rem;
+    font-weight: bold;
+    text-align: center;
+    margin: 1rem 0;
 }

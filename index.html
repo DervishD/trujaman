@@ -23,12 +23,6 @@
         <div id="trujaman_version"></div>
     </header>
 
-    <noscript>
-        <p>Lo siento, trujamán no funcionará porque el navegador no soporta JavaScript.</p>
-    </noscript>
-
-    <p hidden id='noFileAPI'>Lo siento, trujamán no funcionará porque el navegador no soporta File API.</p>
-
     <div hidden id="trujaman_fileloader">
         <input type="file">
         <p>Escoja un fichero</p> <!--  <br>o<br>arrástrelo y suéltelo en esta zona.</p> -->
@@ -36,8 +30,11 @@
         <button disabled id="trujaman_convert">Convertir fichero <span>&hellip;</span></button>
     </div>
 
-    <div hidden id="trujaman_console"></div>
+    <div class="trujaman_console" id="trujaman_stdtty">
+        <noscript><p>Lo siento, trujamán no funcionará porque el navegador no admite JavaScript.</p></noscript>
+    </div>
 
+    <div hidden class="trujaman_console" id="trujaman_stdlog"></div>
 </body>
 
 </html>

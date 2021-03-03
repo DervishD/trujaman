@@ -25,7 +25,7 @@ function trujamanPrint (where, mark, message) {
 
 // Helper to print log messages to "stdlog".
 function trujamanLog (message) {
-    if (DEBUG) trujamanPrint('div#trujaman_stdlog', 'trujaman_logmsg', '$ ' + message);
+    if (DEBUG) trujamanPrint('div#trujaman_stdlog', 'trujaman_logmsg', '• ' + message);
 }
 
 
@@ -35,10 +35,15 @@ function trujamanSay (message) {
 }
 
 
-// Helper to print error messages to "stdtty" and terminate execution.
-function trujamanDie (message) {
-    trujamanPrint('div#trujaman_stdtty', 'trujaman_errmsg', '⚠<br>' + message);
-    // One of the many ways of stopping execution. This is terse and effective.
+// Helper to print error messages to "stdtty".
+function trujamanErr (message) {
+    trujamanPrint('div#trujaman_stdtty', 'trujaman_errmsg', '¡ERROR!<br>' + message);
+}
+
+
+// Helper to terminate script execution.
+// This is one of the many ways of stopping execution. This is terse and effective.
+function trujamanDie () {
     window.onerror=()=>true;
     throw true;
 }
@@ -51,18 +56,28 @@ function trujamanSleep (milliseconds) {
 
 
 window.addEventListener('load', () => {
+    let trujamanMissingFeatures = [];
+
+    // Feature detection: HTML5 File API.
+    if (!window.FileReader) trujamanMissingFeatures.push('HTML5 File API');
+    // Feature detection: service workers (PWA support).
+    if ('serviceWorker' in navigator === false) trujamanMissingFeatures.push('Progressive Web Apps');
+
+    if (trujamanMissingFeatures.length) {
+        let message = 'trujamán no puede funcionar en este navegador.<br>';
+
+        message += '<br>El navegador no es compatible con:';
+        message += trujamanMissingFeatures.reduce((string, item) => {
+            return string + '<br>' + item;
+        },'');
+        trujamanErr(message);
+        trujamanDie();
+    }
+
     // Show logging console during development.
     if (DEBUG) document.querySelector('div#trujaman_stdlog').hidden = false;
 
     trujamanLog('Versión de desarrollo.');
-
-    // Feature detection
-    if (!window.FileReader)  // HTML5 File API.
-        trujamanDie('Lo siento, trujamán no funcionará porque el navegador no es compatible con File API.');
-
-    if (!'serviceWorker' in navigator)   // Service workers (PWA support).
-        trujamanDie('Service workers are NOT supported.')
-
     trujamanLog('Hay compatibilidad con File API.');
     trujamanLog('Se permiten service workers.');
     trujamanLog(`La página${navigator.serviceWorker.controller?'':' no'} está controlada.`);

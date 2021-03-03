@@ -31,16 +31,15 @@ function trujamanSleep (milliseconds) {
 
 if (window.FileReader) {
     window.addEventListener('load', () => {
-        // Make all necessary elements of page visible.
-        document.querySelector('form').hidden = false;
-        document.querySelector('#trujaman_console').hidden = false;
+        // Show all needed page elements.
+        document.querySelector('div#trujaman_fileloader').hidden = false;
+        document.querySelector('div#trujaman_console').hidden = false;
         trujamanSay('HTML5 File API is supported.');
     });
 } else {
     window.addEventListener('load', () => {
         document.querySelector('p#noFileAPI').hidden = false;
     });
-
     window.onerror = () => true;
     throw true;
 }
@@ -100,14 +99,21 @@ if ('serviceWorker' in navigator) {
         });
 
         let theInput = document.getElementsByTagName('input')[0];
-        let theButton = document.getElementsByTagName('button')[0];
+        let theBrowseButton = document.querySelector('button#trujaman_browse');
+        let theConvertButton = document.querySelector('button#trujaman_convert');
 
         theInput.addEventListener('change', event => {
-            theButton.innerText += ' ' + event.target.files[0].name;
+            theConvertButton.disabled = false;
+            theConvertButton.firstElementChild.innerText = `«${event.target.files[0].name}»`;
+            theConvertButton.focus();
         });
 
-        theButton.addEventListener('click', () => {
-            console.debug('Conversion requested of file', theInput.files[0]);
+        theBrowseButton.addEventListener('click', event => {
+            theInput.click(event);
+        });
+
+        theConvertButton.addEventListener('click', event => {
+            console.log('Must convert, aaagh.');
         });
     });
 } else {

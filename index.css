@@ -152,12 +152,31 @@ div#trujaman_version {
     min-width: max-content;
 }
 
+#trujaman_fileloader {
+    margin: 1rem 0 0;
+    padding: 1rem;
+    border: 1px dashed;
+    width: min-content;
+    align-self: center;
+    text-align: center;
+    box-sizing: border-box;
+    background-color: var(--bg_hi);
+}
+
+#trujaman_fileloader p {
+    text-align: center;
+    white-space: nowrap;
+    margin: 0;
+    padding: 0;
+}
+
 input {
     width: 0px;
     height: 0px;
     margin: 0;
     padding: 0;
     display: block;  /* So surrounding whitespace is not a problem. */
+    display: none;  /* So it skips tabbing. */
 }
 
 button {
@@ -171,32 +190,31 @@ button {
     border: none;
     color: var(--bg);
     background-color: var(--accent);
+    white-space: nowrap;
 }
 
-button:hover {
+button:disabled {
+    filter: grayscale(100%) contrast(50%) brightness(75%) blur(2px);
+}
+
+button:enabled:hover {
     filter: brightness(111%);
 }
 
-label > input:focus ~ span, button:hover, button:focus {
-    outline: 1px solid #268BD2;  /* blue */
+button:enabled:active {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    filter: brightness(100%);
+}
+
+button:focus {
+    outline: 1px solid var(--accent);
     outline-offset: 1px;
 }
 
-button {
-    font-family: Trujaman;
-    font-size: 0.75em;
-    font-weight: bold;
-    display: block;
-    cursor: pointer;
-    border: none;
-    margin: 3ch auto 1ch;
-    padding: 1ch 2ch;
-    background-color: #268BD2;  /* blue */
-}
-
-button:active {
-    outline: 2px solid #268BD2;  /* blue */
-    outline-offset: 2px;
+button > span {
+    font-style: italic;
+    padding: 0 1ch;
 }
 
 #trujaman_console {

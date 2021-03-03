@@ -29,10 +29,12 @@
 
     <p hidden id='noFileAPI'>Lo siento, trujamán no funcionará porque el navegador no soporta File API.</p>
 
-    <form hidden>
-        <label><input type="file"><span>Escoja un fichero</span> o arrástrelo aquí.</label>
-        <button type="button">Convertir</button>
-    </form>
+    <div hidden id="trujaman_fileloader">
+        <input type="file">
+        <p>Escoja un fichero</p> <!--  <br>o<br>arrástrelo y suéltelo en esta zona.</p> -->
+        <button id="trujaman_browse">Escoger un fichero</button>
+        <button disabled id="trujaman_convert">Convertir fichero <span>&hellip;</span></button>
+    </div>
 
     <div hidden id="trujaman_console"></div>
 

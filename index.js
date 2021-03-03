@@ -54,6 +54,8 @@ window.addEventListener('load', () => {
     // Show logging console during development.
     if (DEBUG) document.querySelector('div#trujaman_stdlog').hidden = false;
 
+    trujamanLog('Versión de desarrollo.');
+
     // Feature detection
     if (!window.FileReader)  // HTML5 File API.
         trujamanDie('Lo siento, trujamán no funcionará porque el navegador no es compatible con File API.');
@@ -61,9 +63,9 @@ window.addEventListener('load', () => {
     if (!'serviceWorker' in navigator)   // Service workers (PWA support).
         trujamanDie('Service workers are NOT supported.')
 
-    trujamanLog('HTML5 File API is supported.');
-    trujamanLog('Service workers are supported.');
-    trujamanLog(`The page has${navigator.serviceWorker.controller?'':' not'} a controller.`);
+    trujamanLog('Hay compatibilidad con File API.');
+    trujamanLog('Se permiten service workers.');
+    trujamanLog(`La página${navigator.serviceWorker.controller?'':' no'} está controlada.`);
 
     // Show all needed page elements.
     document.querySelector('div#trujaman_fileloader').hidden = false;
@@ -79,7 +81,7 @@ window.addEventListener('load', () => {
     // Handle controller change.
     let refreshing = false;
     navigator.serviceWorker.addEventListener('controllerchange', event => {
-        trujamanLog('The page has a new controller.');
+        trujamanLog('La página tiene un nuevo controlador.');
         if (refreshing) return;
         refreshing = true;
         trujamanSleep(1000).then(() => window.location.reload());  // Debugging only, FIXME!
@@ -89,31 +91,31 @@ window.addEventListener('load', () => {
     window.addEventListener('beforeinstallprompt', event => {
         event.preventDefault();  // Prevent the default install handler to appear for now.
         // Indicate the PWA is installable.
-        trujamanLog('PWA trujamán seems installable.');
+        trujamanLog('Parece que trujamán puede ser instalado.');
     });
 
     // Register service worker.
     navigator.serviceWorker.register('sw.js')
     .then(registration => {
-        trujamanLog('Successful service worker registration.')
+        trujamanLog('El service worker se registró con éxito.')
 
-        trujamanLog(`There is${registration.active?'':' not'} an active service worker.`);
+        trujamanLog(`${registration.active?'Hay':'No hay'} un service worker activo.`);
 
-        if (registration.waiting) trujamanLog('There is a service worker waiting.');
+        if (registration.waiting) trujamanLog('Hay un service worker esperando.');
 
         // Handle state changes for new service workers, including the first one.
         registration.addEventListener('updatefound', () => {
-            trujamanLog('Updated service worker found.');
+            trujamanLog('Se encontró un nuevo service worker.');
             registration.installing.onstatechange = event => {
                 if (event.target.state == 'installed')
-                    trujamanLog('New service worker installed.');
+                    trujamanLog('Se ha instalado un nuevo service worker.');
                 if (event.target.state == 'activated')
-                    trujamanLog('New active service worker.');
+                    trujamanLog('Hay un nuevo service worker activo.');
             }
         });
     })
     .catch(error => {
-        trujamanLog('Service worker registration failed with', error);  // Only for debugging, FIXME!
+        trujamanLog('El registro del service worker falló: ' + error);  // Only for debugging, FIXME!
         console.error('Service worker registration failed with', error);
     });
 

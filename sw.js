@@ -67,6 +67,7 @@ self.addEventListener('fetch', event => {
     console.debug('Fetching', event.request.url);
     event.respondWith(async function () {
         if (event.request.url.endsWith('version')) return new Response(serviceworkerVersion);
+        return fetch(event.request);
         let cache = await caches.open(coreCacheName);
         let response = await cache.match(event.request);
         return response || cache.match(landingPage);

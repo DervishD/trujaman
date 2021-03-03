@@ -14,7 +14,7 @@ function trujamanDebug (...things) {
     // This has to be calculated BEFORE inserting the new content...
     let mustScroll = trujamanConsole.scrollHeight - trujamanConsole.clientHeight - trujamanConsole.scrollTop <= 0;
 
-    trujamanConsole.insertAdjacentHTML('beforeend', `<p>· ${message}</p>`);
+    trujamanConsole.insertAdjacentHTML('beforeend', `<p>> ${message}</p>`);
 
     if (mustScroll) {
         // This has to be calculated AFTER inserting the new content...

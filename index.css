@@ -106,7 +106,7 @@ body {
     padding: 1rem;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    align-items: center;
     min-width: min-content;
     min-height: -webkit-fill-available;
     box-sizing: border-box;
@@ -122,7 +122,7 @@ body {
 noscript p, p#noFileAPI {
     text-align: center;
     text-indent: 0;
-    margin: 1em 0;
+    margin: 1rem 0;
     padding: 1ch;
     border: 2px solid;
 }
@@ -130,7 +130,7 @@ noscript p, p#noFileAPI {
 p {
     text-align: justify;
     text-indent: 0;
-    margin: 1em;
+    margin: 1rem;
 }
 
 header {
@@ -183,7 +183,7 @@ button {
     font-family: Trujaman;
     font-weight: bold;
     cursor: pointer;
-    font-size: 0.75em;
+    font-size: 0.75rem;
     display: block;
     margin: 1rem auto 0;
     padding: 1ch 2ch;
@@ -223,11 +223,10 @@ button > span {
     margin: 1rem 0 0;
     width: 100%;
     box-sizing: border-box;
-    padding: 1ch;
+    padding: 1rem;
     overflow: auto;
     white-space: pre-wrap;
     overflow-wrap: break-word;
-    flex: 1;
     color: var(--bg);
     background-color: var(--fg);
 }
@@ -235,9 +234,11 @@ button > span {
 #trujaman_console p {
     text-align: left;
     text-indent: -2ch;
-    margin: 0 0 0 2ch;
+    margin: 0;
     padding: 0;
+    padding-left: 2ch;
     line-height: 3ex;
+    color: var(--bg);
 }
 
 #trujaman_console p::selection {

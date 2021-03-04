@@ -180,7 +180,7 @@ button {
 }
 
 button:disabled {
-    filter: grayscale(100%) contrast(50%) brightness(75%) blur(2px);
+    filter: grayscale(100%) contrast(50%) brightness(75%);
 }
 
 button:enabled:hover {

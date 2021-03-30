@@ -127,11 +127,11 @@ header {
     justify-content: center;
 }
 
-div#trujaman_logo {
+#trujaman_logo {
     font-weight: bold;
 }
 
-div#trujaman_version {
+#trujaman_version {
     font-family: "Trujaman Mono";
     font-size: 0.5em;
     min-width: max-content;
@@ -224,12 +224,12 @@ button > span {
     background-color: var(--fg);
 }
 
-p.trujaman_logmsg {
+.trujaman_logmsg {
     text-indent: -2ch;
     padding-left: 2ch;
 }
 
-p.trujaman_errmsg, noscript p {
+.trujaman_errmsg, noscript p {
     font-size: 1rem;
     font-weight: bold;
     text-align: center;

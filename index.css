@@ -104,9 +104,6 @@ body {
     height: 100%;
     margin: 0;
     padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     min-width: min-content;
     min-height: -webkit-fill-available;
     box-sizing: border-box;

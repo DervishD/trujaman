@@ -25,19 +25,19 @@ function trujamanPrint (where, mark, message) {
 
 // Helper to print log messages to "stdlog".
 function trujamanLog (message) {
-    if (DEBUG) trujamanPrint('div#trujaman_stdlog', 'trujaman_logmsg', '• ' + message);
+    if (DEBUG) trujamanPrint('#trujaman_stdlog', 'trujaman_logmsg', '• ' + message);
 }
 
 
 // Helper to print normal messages to "stdtty".
 function trujamanSay (message) {
-    trujamanPrint('div#trujaman_stdtty', 'trujaman_stdmsg', message);
+    trujamanPrint('#trujaman_stdtty', 'trujaman_stdmsg', message);
 }
 
 
 // Helper to print error messages to "stdtty".
 function trujamanErr (message) {
-    trujamanPrint('div#trujaman_stdtty', 'trujaman_errmsg', '¡ERROR!<br>' + message);
+    trujamanPrint('#trujaman_stdtty', 'trujaman_errmsg', '¡ERROR!<br>' + message);
 }
 
 
@@ -75,7 +75,7 @@ window.addEventListener('load', () => {
     }
 
     // Show logging console during development.
-    if (DEBUG) document.querySelector('div#trujaman_stdlog').classList.remove('trujaman_hidden');
+    if (DEBUG) document.querySelector('#trujaman_stdlog').classList.remove('trujaman_hidden');
 
     trujamanLog('Versión de desarrollo.');
     trujamanLog('Hay compatibilidad con File API.');
@@ -132,9 +132,9 @@ window.addEventListener('load', () => {
     });
 
     // Set up file picker.
-    let filePicker = document.querySelector('div#trujaman_filepicker');
+    let filePicker = document.querySelector('#trujaman_filepicker');
     filePicker.classList.remove('trujaman_hidden');
-    document.querySelector('div#trujaman_jobs').classList.remove('trujaman_hidden');
+    document.querySelector('#trujaman_jobs').classList.remove('trujaman_hidden');
     filePicker.lastElementChild.addEventListener('click', event => {
         // Propagate the click.
         event.target.previousElementSibling.click();

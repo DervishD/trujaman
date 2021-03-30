@@ -75,15 +75,12 @@ window.addEventListener('load', () => {
     }
 
     // Show logging console during development.
-    if (DEBUG) document.querySelector('div#trujaman_stdlog').hidden = false;
+    if (DEBUG) document.querySelector('div#trujaman_stdlog').classList.remove('trujaman_hidden');
 
     trujamanLog('Versión de desarrollo.');
     trujamanLog('Hay compatibilidad con File API.');
     trujamanLog('Se permiten service workers.');
     trujamanLog(`La página${navigator.serviceWorker.controller?'':' no'} está controlada.`);
-
-    // Show all needed page elements.
-    document.querySelector('div#trujaman_fileloader').hidden = false;
 
     // Show version number.
     navigator.serviceWorker.ready

@@ -235,3 +235,7 @@ button > span {
     text-align: center;
     margin: 1rem 0;
 }
+
+.trujaman_hidden {
+    display: none;
+}

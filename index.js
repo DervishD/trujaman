@@ -131,20 +131,24 @@ window.addEventListener('load', () => {
         console.error('Service worker registration failed with', error);
     });
 
-    // Set up the file loader.
-    let theInput = document.getElementsByTagName('input')[0];
-    let theBrowseButton = document.querySelector('button#trujaman_browse');
-    let theConvertButton = document.querySelector('button#trujaman_convert');
+    // Set up file picker.
+    let filePicker = document.querySelector('div#trujaman_filepicker');
+    filePicker.classList.remove('trujaman_hidden');
+    document.querySelector('div#trujaman_jobs').classList.remove('trujaman_hidden');
+    filePicker.lastElementChild.addEventListener('click', event => {
+        // Propagate the click.
+        event.target.previousElementSibling.click();
+    });
+    // Create new file processor with the selected file.
+    filePicker.firstElementChild.addEventListener('change', event => {
 
     theInput.addEventListener('change', event => {
         theConvertButton.disabled = false;
         theConvertButton.firstElementChild.innerText = `«${event.target.files[0].name}»`;
         theConvertButton.focus();
     });
+});
 
-    theBrowseButton.addEventListener('click', event => {
-        theInput.click(event);
-    });
 
     theConvertButton.addEventListener('click', event => {
         console.log('Must convert, aaagh.');

@@ -137,20 +137,12 @@ header {
     min-width: max-content;
 }
 
-#trujaman_fileloader {
-    margin: 1rem 0 0;
-    padding: 1rem;
-    border: 1px dashed;
-    width: min-content;
-    align-self: center;
-    text-align: center;
-    box-sizing: border-box;
-    background-color: var(--bg_hi);
+#trujaman_filepicker {
+    margin: 1rem;
 }
 
-#trujaman_fileloader p {
-    text-align: center;
-    white-space: nowrap;
+#trujaman_filepicker button {
+    display: block;
 }
 
 input {

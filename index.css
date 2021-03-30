@@ -167,7 +167,6 @@ button {
     font-weight: bold;
     cursor: pointer;
     font-size: 0.75rem;
-    display: block;
     margin: 1rem auto 0;
     padding: 1ch 2ch;
     border: none;

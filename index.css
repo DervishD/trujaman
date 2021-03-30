@@ -154,6 +154,40 @@ input {
     display: none;  /* So it skips tabbing. */
 }
 
+.trujaman_job {
+    background-color: var(--bg_hi);
+}
+
+.trujaman_job > * {
+    font-size: 0.75rem;
+    padding: 0.5rem;
+}
+
+.trujaman_job_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid;
+    border-bottom: none;
+}
+
+.trujaman_job_header > p {
+    font-weight: bold;
+}
+
+.trujaman_job_dismiss_button {
+    font-size: 1rem;
+    padding: 0;
+    margin: 0;
+    color: var(--accent);
+    background-color: unset;
+    float: right;
+}
+
+.trujaman_job_body {
+    border: 1px solid;
+}
+
 button {
     font-family: Trujaman;
     font-weight: bold;

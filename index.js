@@ -141,16 +141,26 @@ window.addEventListener('load', () => {
     });
     // Create new file processor with the selected file.
     filePicker.firstElementChild.addEventListener('change', event => {
-
-    theInput.addEventListener('change', event => {
-        theConvertButton.disabled = false;
-        theConvertButton.firstElementChild.innerText = `«${event.target.files[0].name}»`;
-        theConvertButton.focus();
+        // Single file per job, for now...
+        let trujamanJob = new TrujamanJob(event.target.files[0].name);
+        // Add the container itself to the page.
+        document.querySelector('#trujaman_jobs').appendChild(trujamanJob.element);
     });
 });
 
+class TrujamanJob {
+    constructor(filename) {
+        // Create the UI elements for the job by copying the existing template.
+        // That way, this code can be more agnostic about the particular layout of the UI elements.
+        this.element = document.querySelector('div#trujaman_job_template').cloneNode(true);
+        this.element.classList.remove('trujaman_hidden');
+        this.element.removeAttribute('id');
 
-    theConvertButton.addEventListener('click', event => {
-        console.log('Must convert, aaagh.');
-    });
-});
+        this.element.querySelector('.trujaman_job_filename').innerText = filename;
+
+        this.element.querySelector('.trujaman_job_dismiss_button').addEventListener('click', event => {
+            let theJob = event.target.closest('.trujaman_job');
+            theJob.parentNode.removeChild(theJob);
+        }, {once: true});
+    }
+}

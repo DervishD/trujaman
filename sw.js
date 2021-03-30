@@ -1,6 +1,6 @@
 'use strict';
 
-const serviceworkerVersion = '20210330.0';
+const serviceworkerVersion = '20210330.1';
 
 const landingPage = '.';  // Maybe: "new URL(self.registration.scope).pathname"???
 
@@ -65,11 +65,15 @@ self.addEventListener('fetch', event => {
         return;
     }
     console.debug('Fetching', event.request.url);
-    event.respondWith(async function () {
+    event.respondWith(function () {
         if (event.request.url.endsWith('version')) return new Response(serviceworkerVersion);
-        return fetch(event.request);
-        let cache = await caches.open(coreCacheName);
-        let response = await cache.match(event.request);
-        return response || cache.match(landingPage);
+
+        // This is TEMPORARY!
+        // This is needed to be able to test changes fast and at the same time having offline functionality.
+        return fetch(event.request).catch(async () => {
+            let cache = await caches.open(coreCacheName);
+            let response = await cache.match(event.request);
+            return response || cache.match(landingPage);
+        });
     }());
 });

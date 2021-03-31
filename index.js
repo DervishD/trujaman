@@ -142,7 +142,7 @@ window.addEventListener('load', () => {
     // Create new file processor with the selected file.
     filePicker.firstElementChild.addEventListener('change', event => {
         // Single file per job, for now...
-        let trujamanJob = new TrujamanJob(event.target.files[0].name);
+        let trujamanJob = new TrujamanJob(event.target.files[0]);
         // Add the container itself to the page.
         document.querySelector('#trujaman_jobs').appendChild(trujamanJob.element);
 
@@ -152,18 +152,24 @@ window.addEventListener('load', () => {
 });
 
 class TrujamanJob {
-    constructor(filename) {
+    constructor(file) {
         // Create the UI elements for the job by copying the existing template.
         // That way, this code can be more agnostic about the particular layout of the UI elements.
         this.element = document.querySelector('div#trujaman_job_template').cloneNode(true);
         this.element.classList.remove('trujaman_hidden');
         this.element.removeAttribute('id');
 
-        this.element.querySelector('.trujaman_job_filename').innerText = filename;
+        this.element.querySelector('.trujaman_job_filename').innerText = file.name;
+
 
         this.element.querySelector('.trujaman_job_dismiss_button').addEventListener('click', event => {
             let theJob = event.target.closest('.trujaman_job');
             theJob.parentNode.removeChild(theJob);
         }, {once: true});
+
+        this.reader = new FileReader();
+        this.reader.onerror = (event) => {
+            console.log('Error reading file with error', event.target.error.name);
+        }
     }
 }

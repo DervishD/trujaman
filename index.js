@@ -153,6 +153,14 @@ window.addEventListener('load', () => {
 
 class TrujamanJob {
     constructor(file) {
+        this.file = file;
+
+        // Create the file reader.
+        this.reader = new FileReader();
+        this.reader.onerror = event => {
+            console.log('Error reading file with error', event.target.error.name);
+        }
+
         // Create the UI elements for the job by copying the existing template.
         // That way, this code can be more agnostic about the particular layout of the UI elements.
         this.element = document.querySelector('div#trujaman_job_template').cloneNode(true);
@@ -161,15 +169,13 @@ class TrujamanJob {
 
         this.element.querySelector('.trujaman_job_filename').innerText = file.name;
 
-
         this.element.querySelector('.trujaman_job_dismiss_button').addEventListener('click', event => {
+            // Remove job UI element.
             let theJob = event.target.closest('.trujaman_job');
             theJob.parentNode.removeChild(theJob);
-        }, {once: true});
 
-        this.reader = new FileReader();
-        this.reader.onerror = (event) => {
-            console.log('Error reading file with error', event.target.error.name);
-        }
+            // Abort file reading, just in case.
+            this.reader.abort();
+        }, {once: true});
     }
 }

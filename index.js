@@ -145,6 +145,9 @@ window.addEventListener('load', () => {
         let trujamanJob = new TrujamanJob(event.target.files[0].name);
         // Add the container itself to the page.
         document.querySelector('#trujaman_jobs').appendChild(trujamanJob.element);
+
+        // Or the event won't be fired again if the user selects the same file...
+        event.target.value = null;
     });
 });
 

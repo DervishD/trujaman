@@ -261,6 +261,12 @@ button > span {
     margin: 1rem 0;
 }
 
+.trujaman_missing_feature {
+    font-family: "Trujaman Mono";
+    font-size: 0.8rem;
+    text-align: center;
+}
+
 .trujaman_hidden {
     display: none;
 }

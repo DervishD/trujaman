@@ -55,24 +55,82 @@ function trujamanSleep (milliseconds) {
 }
 
 
-window.addEventListener('load', () => {
+// Detect needed features. This function MUST BE CALLED on the window.onload event handler,
+// because it needs access to the web page body in order to show the error messages.
+function trujamanDetectFeatures () {
     let trujamanMissingFeatures = [];
 
-    // Feature detection: HTML5 File API.
-    if (!window.FileReader) trujamanMissingFeatures.push('HTML5 File API');
-    // Feature detection: service workers (PWA support).
-    if ('serviceWorker' in navigator === false) trujamanMissingFeatures.push('Progressive Web Apps');
+    // ECMAScript 6 arrow functions.
+    try {
+        eval('var f = x => x');
+    } catch (e) {
+        trujamanMissingFeatures.push('JavaScript ES6 arrow functions');
+    }
+
+    // ECMAScript 6 classes.
+    try {
+        eval('class X {}')
+    } catch (e) {
+        trujamanMissingFeatures.push('JavaScript ES6 classes');
+    }
+
+    // ECMAScript 6 let.
+    try {
+        eval('let x = true')
+    } catch (e) {
+        trujamanMissingFeatures.push('JavaScript ES6 let');
+    }
+
+    // ECMAScript 6 template strings.
+    try {
+        eval('let x = `x`')
+    } catch (e) {
+        trujamanMissingFeatures.push('JavaScript ES6 template strings');
+    }
+
+    // ECMAScript 6 default parameters.
+    try {
+        eval('function f (x=1) {}')
+    } catch (e) {
+        trujamanMissingFeatures.push('JavaScript ES6 default parameters');
+    }
+
+    // ECMAScript 6 async functions.
+    try {
+        eval('async function f() {}')
+    } catch (e) {
+        trujamanMissingFeatures.push('JavaScript ES6 async functions');
+    }
+
+    // ECMAScript 6 promises.
+    if (typeof Promise === 'undefined')
+        trujamanMissingFeatures.push('JavaScript ES6 promises');
+
+    // Service workers (PWA support).
+    if ('serviceWorker' in navigator === false)
+        trujamanMissingFeatures.push('Progressive Web Apps');
+
+    // HTML5 File API.
+    if (!window.FileReader)
+    trujamanMissingFeatures.push('HTML5 File API');
 
     if (trujamanMissingFeatures.length) {
-        let message = 'trujamán no puede funcionar en este navegador.<br>';
+        trujamanErr('trujamán no puede funcionar en este navegador.');
 
-        message += '<br>El navegador no es compatible con:';
-        message += trujamanMissingFeatures.reduce((string, item) => {
-            return string + '<br>' + item;
-        },'');
-        trujamanErr(message);
+        trujamanSay('El navegador no es compatible con:', 'trujaman_errmsg');
+        trujamanMissingFeatures.forEach(function (item) {
+            trujamanSay('· ' + item + '.', 'trujaman_missing_feature');
+        });
+
         trujamanDie();
     }
+}
+
+
+window.addEventListener('load', () => {
+
+    // Detect needed features and show error messages if needed.
+    trujamanDetectFeatures();
 
     // Show logging console during development.
     if (DEBUG) document.querySelector('#trujaman_stdlog').classList.remove('trujaman_hidden');
@@ -143,6 +201,7 @@ window.addEventListener('load', () => {
     filePicker.firstElementChild.addEventListener('change', event => {
         // Single file per job, for now...
         let trujamanJob = new TrujamanJob(event.target.files[0]);
+
         // Add the container itself to the page.
         document.querySelector('#trujaman_jobs').appendChild(trujamanJob.element);
 
@@ -150,6 +209,7 @@ window.addEventListener('load', () => {
         event.target.value = null;
     });
 });
+
 
 class TrujamanJob {
     constructor(file) {

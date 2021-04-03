@@ -30,14 +30,14 @@ function trujamanLog (message) {
 
 
 // Helper to print normal messages to "stdtty".
-function trujamanSay (message) {
-    trujamanPrint('#trujaman_stdtty', 'trujaman_stdmsg', message);
+function trujamanSay (message, mark='trujaman_stdmsg') {
+    trujamanPrint('#trujaman_stdtty', mark, message);
 }
 
 
 // Helper to print error messages to "stdtty".
-function trujamanErr (message) {
-    trujamanPrint('#trujaman_stdtty', 'trujaman_errmsg', '¡ERROR!<br>' + message);
+function trujamanErr (message, mark='trujaman_errmsg') {
+    trujamanPrint('#trujaman_stdtty', mark, '¡ERROR!<br>' + message);
 }
 
 

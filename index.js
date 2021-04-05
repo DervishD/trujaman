@@ -117,6 +117,11 @@ function trujamanDetectFeatures () {
         trujamanMissingFeatures.push('Progressive Web Apps: cookies');
     }
 
+    // Cache storage.
+    if ('caches' in window === false) {
+        trujamanMissingFeatures.push('Progressive Web Apps: cache storage');
+    }
+
     // HTML5 File API.
     if (!('File' in window && 'Blob' in window && 'FileReader' in window && 'FileList' in window)) {
         trujamanMissingFeatures.push('HTML5: File API');

@@ -103,15 +103,24 @@ function trujamanDetectFeatures () {
     }
 
     // ECMAScript 6 promises.
+    if (typeof Promise === 'undefined') {
         trujamanMissingFeatures.push('JavaScript ES6: promises');
+    }
 
     // Service workers.
+    if ('serviceWorker' in navigator === false) {
         trujamanMissingFeatures.push('Progressive Web Apps: service workers');
+    }
 
+    // Cookies (needed for registering a service worker).
+    if (!navigator.cookieEnabled) {
         trujamanMissingFeatures.push('Progressive Web Apps: cookies');
+    }
 
     // HTML5 File API.
+    if (!window.FileReader) {
         trujamanMissingFeatures.push('HTML5: File API');
+    }
 
     if (trujamanMissingFeatures.length) {
         trujamanErr('trujamán no puede funcionar en este navegador.');

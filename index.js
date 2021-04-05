@@ -118,7 +118,7 @@ function trujamanDetectFeatures () {
     }
 
     // HTML5 File API.
-    if (!window.FileReader) {
+    if (!('File' in window && 'Blob' in window && 'FileReader' in window && 'FileList' in window)) {
         trujamanMissingFeatures.push('HTML5: File API');
     }
 

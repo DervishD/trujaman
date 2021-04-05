@@ -36,6 +36,7 @@
 
 @font-face {
     font-family: 'Trujaman Mono';
+    font-display: swap;
     font-style: normal;
     font-weight: 400;
     src: url('index_n400m.woff2') format('woff2');

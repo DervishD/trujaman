@@ -1,6 +1,6 @@
 'use strict';
 
-const serviceworkerVersion = '20210405';
+const serviceworkerVersion = '20210405.1';
 
 const landingPage = '.';  // Maybe: "new URL(self.registration.scope).pathname"???
 

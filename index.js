@@ -64,55 +64,54 @@ function trujamanDetectFeatures () {
     try {
         eval('var f = x => x');
     } catch (e) {
-        trujamanMissingFeatures.push('JavaScript ES6 arrow functions');
+        trujamanMissingFeatures.push('JavaScript ES6: arrow functions');
     }
 
     // ECMAScript 6 classes.
     try {
         eval('class X {}')
     } catch (e) {
-        trujamanMissingFeatures.push('JavaScript ES6 classes');
+        trujamanMissingFeatures.push('JavaScript ES6: classes');
     }
 
     // ECMAScript 6 let.
     try {
         eval('let x = true')
     } catch (e) {
-        trujamanMissingFeatures.push('JavaScript ES6 let');
+        trujamanMissingFeatures.push('JavaScript ES6: let statement');
     }
 
     // ECMAScript 6 template strings.
     try {
         eval('let x = `x`')
     } catch (e) {
-        trujamanMissingFeatures.push('JavaScript ES6 template strings');
+        trujamanMissingFeatures.push('JavaScript ES6: template strings');
     }
 
     // ECMAScript 6 default parameters.
     try {
         eval('function f (x=1) {}')
     } catch (e) {
-        trujamanMissingFeatures.push('JavaScript ES6 default parameters');
+        trujamanMissingFeatures.push('JavaScript ES6: default function parameters');
     }
 
     // ECMAScript 6 async functions.
     try {
         eval('async function f() {}')
     } catch (e) {
-        trujamanMissingFeatures.push('JavaScript ES6 async functions');
+        trujamanMissingFeatures.push('JavaScript ES6: async functions');
     }
 
     // ECMAScript 6 promises.
-    if (typeof Promise === 'undefined')
-        trujamanMissingFeatures.push('JavaScript ES6 promises');
+        trujamanMissingFeatures.push('JavaScript ES6: promises');
 
-    // Service workers (PWA support).
-    if ('serviceWorker' in navigator === false)
-        trujamanMissingFeatures.push('Progressive Web Apps');
+    // Service workers.
+        trujamanMissingFeatures.push('Progressive Web Apps: service workers');
+
+        trujamanMissingFeatures.push('Progressive Web Apps: cookies');
 
     // HTML5 File API.
-    if (!window.FileReader)
-    trujamanMissingFeatures.push('HTML5 File API');
+        trujamanMissingFeatures.push('HTML5: File API');
 
     if (trujamanMissingFeatures.length) {
         trujamanErr('trujamán no puede funcionar en este navegador.');

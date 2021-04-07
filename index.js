@@ -231,7 +231,7 @@ class TrujamanJob {
         // Create the file reader.
         this.reader = new FileReader();
 
-        this.reader.onloadend = this.loadendHandler.bind(this);
+        this.reader.onloadend = this.loadendHandler.bind(this);  // You have to love JavaScript...
 
         // Create the UI elements for the job by copying the existing template.
         // That way, this code can be more agnostic about the particular layout of the UI elements.
@@ -259,8 +259,6 @@ class TrujamanJob {
     // 'onerror' and 'onabort', since this event will fire no matter if the file reading process finished
     // successfully or not.
     loadendHandler(event) {
-        console.log(this);
-        console.log(this.reader);
         if (this.reader.error) {
             this.setStatus('Error al cargar el fichero: ' + this.reader.error.name);
             console.log('Error loading file:', this.reader.error.name);

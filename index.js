@@ -230,9 +230,8 @@ class TrujamanJob {
 
         // Create the file reader.
         this.reader = new FileReader();
-        this.reader.onerror = event => {
-            console.log('Error reading file with error', event.target.error.name);
-        }
+
+        this.reader.onloadend = this.loadendHandler.bind(this);
 
         // Create the UI elements for the job by copying the existing template.
         // That way, this code can be more agnostic about the particular layout of the UI elements.
@@ -243,6 +242,10 @@ class TrujamanJob {
         this.element.querySelector('.trujaman_job_filename').innerText = file.name;
 
         this.element.querySelector('.trujaman_job_dismiss_button').addEventListener('click', event => {
+            // Remove the onloadend handler, to avoid messing with the UI once the element is removed.
+            // This is because that handler modifies DOM elements within the job UI element.
+            this.reader.onloadend = null;
+
             // Remove job UI element.
             let theJob = event.target.closest('.trujaman_job');
             theJob.parentNode.removeChild(theJob);
@@ -251,6 +254,22 @@ class TrujamanJob {
             this.reader.abort();
         }, {once: true});
     }
+
+    // Handling errors here is simpler and more convenient than having two nearly identical handlers for
+    // 'onerror' and 'onabort', since this event will fire no matter if the file reading process finished
+    // successfully or not.
+    loadendHandler(event) {
+        console.log(this);
+        console.log(this.reader);
+        if (this.reader.error) {
+            this.setStatus('Error al cargar el fichero: ' + this.reader.error.name);
+            console.log('Error loading file:', this.reader.error.name);
+        } else {
+            this.setStatus('Fichero cargado correctamente');
+        }
+    }
+
+
     // Simple method to show a small status message on the job UI element.
     setStatus(message) {
         this.element.querySelector('.trujaman_job_status').innerText = message;

@@ -251,4 +251,8 @@ class TrujamanJob {
             this.reader.abort();
         }, {once: true});
     }
+    // Simple method to show a small status message on the job UI element.
+    setStatus(message) {
+        this.element.querySelector('.trujaman_job_status').innerText = message;
+    }
 }

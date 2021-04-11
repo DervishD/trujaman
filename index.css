@@ -180,7 +180,6 @@ input {
     margin: 0;
     color: var(--accent);
     background-color: unset;
-    float: right;
 }
 
 .trujaman_job_body {
@@ -192,7 +191,7 @@ button {
     font-weight: bold;
     cursor: pointer;
     font-size: 0.75rem;
-    margin: 1rem auto 0;
+    margin: 0 auto;
     padding: 1ch 2ch;
     border: none;
     color: var(--bg);

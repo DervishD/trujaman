@@ -206,9 +206,9 @@ window.addEventListener('load', () => {
     let filePicker = document.querySelector('#trujaman_filepicker');
     filePicker.classList.remove('trujaman_hidden');
     document.querySelector('#trujaman_jobs').classList.remove('trujaman_hidden');
-    filePicker.lastElementChild.addEventListener('click', event => {
+    filePicker.querySelector('#trujaman_filepicker_button').addEventListener('click', event => {
         // Propagate the click.
-        event.target.previousElementSibling.click();
+        filePicker.querySelector('#trujaman_filepicker_input').click();
     });
     // Create new file processor with the selected file.
     filePicker.firstElementChild.addEventListener('change', event => {

@@ -141,10 +141,7 @@ header {
 
 #trujaman_filepicker {
     margin: 1rem;
-}
-
-#trujaman_filepicker button {
-    display: block;
+    text-align: center;
 }
 
 input {

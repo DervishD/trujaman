@@ -230,6 +230,9 @@ class TrujamanJob {
         this.reader = new FileReader();
 
         this.reader.onloadend = this.loadendHandler.bind(this);  // You have to love JavaScript...
+        this.reader.onprogress = event => {
+            this.setStatus(`Cargando fichero: ${event.loaded} bytes leídos.`);
+        }
 
         // Create the UI elements for the job by copying the existing template.
         // That way, this code can be more agnostic about the particular layout of the UI elements.

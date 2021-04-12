@@ -149,8 +149,6 @@ window.addEventListener('load', () => {
     if (DEBUG) document.querySelector('#trujaman_stdlog').classList.remove('trujaman_hidden');
 
     trujamanLog('Versión de desarrollo.');
-    trujamanLog('Hay compatibilidad con File API.');
-    trujamanLog('Se permiten service workers.');
     trujamanLog(`La página${navigator.serviceWorker.controller?'':' no'} está controlada.`);
 
     // Show version number.

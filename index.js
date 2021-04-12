@@ -229,7 +229,24 @@ class TrujamanJob {
         // Create the file reader.
         this.reader = new FileReader();
 
-        this.reader.onloadend = this.loadendHandler.bind(this);  // You have to love JavaScript...
+        // Handling errors here is simpler and more convenient than having two
+        // nearly identical handlers for 'onerror' and 'onabort', since this
+        // event will fire no matter whether the file reading process finished
+        // successfully or not.
+        this.reader.onloadend = event => {
+            this.action_button.onclick = null;
+            if (this.reader.error) {
+                console.log('Error loading file:', this.reader.error.name);
+                this.setStatus('Error al cargar el fichero: ' + this.reader.error.name);
+                this.action_button.innerText = '¡Error!';
+            } else {
+                console.log('File loaded successfully!');
+                this.setStatus(`Fichero cargado correctamente, ${event.total} bytes`);
+                this.action_button.innerText = 'Convertir';
+            }
+        }
+
+        // Right now, mainly for testing purposes.
         this.reader.onprogress = event => {
             this.setStatus(`Cargando fichero: ${event.loaded} bytes leídos.`);
         }
@@ -268,23 +285,6 @@ class TrujamanJob {
             // Abort file reading, just in case.
             this.reader.abort();
         }, {once: true});
-    }
-
-
-    // Handling errors here is simpler and more convenient than having two nearly identical handlers for
-    // 'onerror' and 'onabort', since this event will fire no matter if the file reading process finished
-    // successfully or not.
-    loadendHandler(event) {
-        this.action_button.onclick = null;
-        if (this.reader.error) {
-            console.log('Error loading file:', this.reader.error.name);
-            this.setStatus('Error al cargar el fichero: ' + this.reader.error.name);
-            this.action_button.innerText = '¡Error!';
-        } else {
-            console.log('File loaded successfully!');
-            this.setStatus(`Fichero cargado correctamente, ${event.total} bytes`);
-            this.action_button.innerText = 'Convertir';
-        }
     }
 
 

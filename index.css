@@ -155,6 +155,7 @@ input {
 
 .trujaman_job {
     background-color: var(--bg_hi);
+    margin-top: 1rem;
 }
 
 .trujaman_job > * {
@@ -183,6 +184,10 @@ input {
 }
 
 .trujaman_job_body {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1ch;
     border: 1px solid;
 }
 

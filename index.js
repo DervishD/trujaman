@@ -236,8 +236,22 @@ class TrujamanJob {
         this.element = document.querySelector('div#trujaman_job_template').cloneNode(true);
         this.element.classList.remove('trujaman_hidden');
         this.element.removeAttribute('id');
-
         this.element.querySelector('.trujaman_job_filename').innerText = file.name;
+
+        this.action_button = this.element.querySelector('.trujaman_job_action');
+
+        // For testing only. The file will be automatically loaded after being selected.
+        this.action_button.innerText = 'Cargar fichero';
+        this.action_button.onclick = event => {
+            console.log('Loading file...');
+
+            this.action_button.innerText = 'Cancelar carga';
+            this.action_button.onclick = event => {
+                console.log('Forcing abort!');
+                this.reader.abort();
+            };
+            this.reader.readAsText(this.file);
+        };
 
         this.element.querySelector('.trujaman_job_dismiss_button').addEventListener('click', event => {
             // Remove the onloadend handler, to avoid messing with the UI once the element is removed.
@@ -253,15 +267,20 @@ class TrujamanJob {
         }, {once: true});
     }
 
+
     // Handling errors here is simpler and more convenient than having two nearly identical handlers for
     // 'onerror' and 'onabort', since this event will fire no matter if the file reading process finished
     // successfully or not.
     loadendHandler(event) {
+        this.action_button.onclick = null;
         if (this.reader.error) {
-            this.setStatus('Error al cargar el fichero: ' + this.reader.error.name);
             console.log('Error loading file:', this.reader.error.name);
+            this.setStatus('Error al cargar el fichero: ' + this.reader.error.name);
+            this.action_button.innerText = '¡Error!';
         } else {
-            this.setStatus('Fichero cargado correctamente');
+            console.log('File loaded successfully!');
+            this.setStatus(`Fichero cargado correctamente, ${event.total} bytes`);
+            this.action_button.innerText = 'Convertir';
         }
     }
 

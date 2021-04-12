@@ -144,6 +144,10 @@ header {
     text-align: center;
 }
 
+#trujaman_filepicker > button {
+    margin: 0 auto;
+}
+
 input {
     width: 0px;
     height: 0px;
@@ -178,7 +182,6 @@ input {
 .trujaman_job_dismiss_button {
     font-size: 1rem;
     padding: 0;
-    margin: 0;
     color: var(--accent);
     background-color: unset;
 }
@@ -196,7 +199,7 @@ button {
     font-weight: bold;
     cursor: pointer;
     font-size: 0.75rem;
-    margin: 0 auto;
+    margin: 0;
     padding: 1ch 2ch;
     border: none;
     color: var(--bg);

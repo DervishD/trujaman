@@ -16,7 +16,10 @@ function trujamanPrint (where, mark, message) {
     let mustScroll = theConsole.scrollHeight - theConsole.clientHeight - theConsole.scrollTop <= 0;
 
     // New content is inserted at the end...
-    theConsole.insertAdjacentHTML('beforeend', `<p${`${mark?` class="${mark}"`:''}`}>${message}</p>`);
+    let newMessage = document.createElement('p');
+    newMessage.innerText = message;
+    if (mark) newMessage.classList.add(mark);
+    theConsole.appendChild(newMessage);
 
     // This has to be calculated AFTER inserting the new content...
     if (mustScroll) theConsole.scrollTop = theConsole.scrollHeight - theConsole.clientHeight;

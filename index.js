@@ -237,18 +237,18 @@ class TrujamanJob {
             this.action_button.onclick = null;
             if (this.reader.error) {
                 console.log('Error loading file:', this.reader.error.name);
-                this.setStatus('Error al cargar el fichero: ' + this.reader.error.name);
+                this.status.innerText = `Error al cargar el fichero: ${this.reader.error.name}`;
                 this.action_button.innerText = '¡Error!';
             } else {
                 console.log('File loaded successfully!');
-                this.setStatus(`Fichero cargado correctamente, ${event.total} bytes`);
+                this.status.innerText = `Fichero cargado correctamente, ${event.total} bytes`;
                 this.action_button.innerText = 'Convertir';
             }
         }
 
         // Right now, mainly for testing purposes.
         this.reader.onprogress = event => {
-            this.setStatus(`Cargando fichero: ${event.loaded} bytes leídos.`);
+            this.status.innerText = `Cargando fichero: ${event.loaded} bytes leídos.`;
         }
 
         // Create the UI elements for the job by copying the existing template.
@@ -259,6 +259,7 @@ class TrujamanJob {
         this.element.querySelector('.trujaman_job_filename').innerText = file.name;
 
         this.action_button = this.element.querySelector('.trujaman_job_action');
+        this.status = this.element.querySelector('.trujaman_job_status');
 
         // For testing only. The file will be automatically loaded after being selected.
         this.action_button.innerText = 'Cargar fichero';
@@ -285,11 +286,5 @@ class TrujamanJob {
             // Abort file reading, just in case.
             this.reader.abort();
         }, {once: true});
-    }
-
-
-    // Simple method to show a small status message on the job UI element.
-    setStatus(message) {
-        this.element.querySelector('.trujaman_job_status').innerText = message;
     }
 }

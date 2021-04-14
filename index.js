@@ -184,8 +184,13 @@ window.addEventListener('load', () => {
         });
     })
     .catch(error => {
-        trujamanLog('El registro del service worker falló: ' + error);  // Only for debugging, FIXME!
         console.error('Service worker registration failed with', error);
+        // Enable the console, which will be hidden in production.
+        document.querySelector('#trujaman_console').classList.remove('trujaman_hidden');
+        trujamanError('Una parte esencial de la aplicación no se pudo inicializar correctamente.\n' +
+                      'El funcionamiento podría ser incorrecto.\n' +
+                      'El error producido se detalla a continuación:');
+        trujamanPrint(error);
     });
 
     // Set up file picker.

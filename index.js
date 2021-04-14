@@ -5,51 +5,32 @@
 let DEBUG = true;
 
 
-// Helper to print a message for the end user on the main page.
-// The message is added in the HTML element whose selector is 'where'.
-// The message is added within a '<p>' element of class 'mark'.
-function trujamanPrint (where, mark, message) {
-
-    let theConsole = document.querySelector(where);
+// Helper to print an arbitrary message on the main page's console.
+// Messages are added inside the element with id "trujaman_console".
+// The message is added within a '<p>' element with the specified type (a class, really), if it is provided.
+function trujamanPrint (message, type) {
+    let theConsole = document.querySelector('#trujaman_console');
 
     // This has to be calculated BEFORE inserting the new content...
     let mustScroll = theConsole.scrollHeight - theConsole.clientHeight - theConsole.scrollTop <= 0;
 
     // New content is inserted at the end...
-    let newMessage = document.createElement('p');
-    newMessage.innerText = message;
-    if (mark) newMessage.classList.add(mark);
-    theConsole.appendChild(newMessage);
-
+    // ES6 template strings can't be used here because it may be unavailable
+    // and THIS function will be used to notify that to the end user!
+    message = '<p' + (type ? ' class="' + type + '"':'') + '>' + message;
+    theConsole.insertAdjacentHTML('beforeend', message);
     // This has to be calculated AFTER inserting the new content...
     if (mustScroll) theConsole.scrollTop = theConsole.scrollHeight - theConsole.clientHeight;
 }
 
 
-// Helper to print log messages to "stdlog".
-function trujamanLog (message) {
-    if (DEBUG) trujamanPrint('#trujaman_stdlog', 'trujaman_logmsg', '• ' + message);
-}
+// Helper to print a logging message on the main page's console.
+// If not in debugging mode, the helper is a NOP.
+let trujamanLog = DEBUG ? message => trujamanPrint('> ' + message, 'trujaman_logmsg'): ()=>{};
 
 
-// Helper to print normal messages to "stdtty".
-function trujamanSay (message, mark='trujaman_stdmsg') {
-    trujamanPrint('#trujaman_stdtty', mark, message);
-}
-
-
-// Helper to print error messages to "stdtty".
-function trujamanErr (message, mark='trujaman_errmsg') {
-    trujamanPrint('#trujaman_stdtty', mark, '¡ERROR!<br>' + message);
-}
-
-
-// Helper to terminate script execution.
-// This is one of the many ways of stopping execution. This is terse and effective.
-function trujamanDie () {
-    window.onerror=()=>true;
-    throw true;
-}
+// Helper to print an error message on the main page's console.
+let trujamanError = message => trujamanPrint('• ERROR •\n' + message, 'trujaman_errmsg');
 
 
 // Helper for add arbitrary delays, for debugging.
@@ -131,14 +112,18 @@ function trujamanDetectFeatures () {
     }
 
     if (trujamanMissingFeatures.length) {
-        trujamanErr('trujamán no puede funcionar en este navegador.');
+        // Show the console, it will be hidden in production code.
+        document.querySelector('#trujaman_console').classList.remove('trujaman_hidden');
 
-        trujamanSay('El navegador no es compatible con:', 'trujaman_errmsg');
-        trujamanMissingFeatures.forEach(function (item) {
-            trujamanSay('· ' + item + '.', 'trujaman_missing_feature');
-        });
+        // Show the list of missing features.
+        trujamanError('La aplicación no puede funcionar porque este navegador no es compatible con:');
+        trujamanMissingFeatures.forEach(item => trujamanPrint(item, 'trujaman_missing_feature'));
 
-        trujamanDie();
+        // Terminate script execution.
+        // There are many ways of stopping execution.
+        // This is terse and effective.
+        window.onerror=()=>true;
+        throw true;
     }
 }
 
@@ -149,7 +134,7 @@ window.addEventListener('load', () => {
     trujamanDetectFeatures();
 
     // Show logging console during development.
-    if (DEBUG) document.querySelector('#trujaman_stdlog').classList.remove('trujaman_hidden');
+    if (DEBUG) document.querySelector('#trujaman_console').classList.remove('trujaman_hidden');
 
     trujamanLog('Versión de desarrollo.');
     trujamanLog(`La página${navigator.serviceWorker.controller?'':' no'} está controlada.`);

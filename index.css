@@ -231,28 +231,21 @@ button > span {
     padding: 0 1ch;
 }
 
-.trujaman_console {
+#trujaman_console, noscript > div {
+    font-family: "Trujaman Mono";
+    font-size: 0.8rem;
     box-sizing: border-box;
     overflow: auto;
-    margin: 1rem 0 0;
-    padding: 1rem;
+    margin: 2rem 0 0;
     width: 100%;
-}
-
-.trujaman_console p {
-  white-space: pre-wrap;
-  overflow-wrap: break-word;
-}
-
-#trujaman_stdtty {
-    background-color: var(--bg_hi);
-}
-
-#trujaman_stdlog {
-    font-size: 0.8rem;
-    font-family: "Trujaman Mono";
     color: var(--bg);
     background-color: var(--fg);
+}
+
+#trujaman_console > p, noscript > div > p {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  margin: 1rem;
 }
 
 .trujaman_logmsg {
@@ -260,17 +253,20 @@ button > span {
     padding-left: 2ch;
 }
 
-.trujaman_errmsg, noscript p {
-    font-size: 1rem;
+.trujaman_errmsg, noscript > div > p {
+    font-size: 1.1rem;
     font-weight: bold;
     text-align: center;
-    margin: 1rem 0;
 }
 
-.trujaman_missing_feature {
-    font-family: "Trujaman Mono";
+#trujaman_console > p.trujaman_missing_feature {
     font-size: 0.8rem;
     text-align: center;
+    margin: 0.5em 1rem;
+}
+
+#trujaman_console > p.trujaman_missing_feature:last-child {
+    margin-bottom: revert;
 }
 
 .trujaman_hidden {

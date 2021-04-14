@@ -1,6 +1,6 @@
 'use strict';
 
-const serviceworkerVersion = '20210414.5';
+const serviceworkerVersion = '20210414.6';
 
 const landingPage = '.';  // Maybe: "new URL(self.registration.scope).pathname"???
 
@@ -21,10 +21,6 @@ const coreAssets = [
     'appicon.png',
     'favicon.ico',
 ];
-
-const trujaman = {
-    sleep: milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds)),  // For debugging...
-};
 
 
 // Precache assets and take control (for now)

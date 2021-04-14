@@ -33,12 +33,6 @@ let trujamanLog = DEBUG ? message => trujamanPrint('> ' + message, 'trujaman_log
 let trujamanError = message => trujamanPrint('• ERROR •\n' + message, 'trujaman_errmsg');
 
 
-// Helper for add arbitrary delays, for debugging.
-function trujamanSleep (milliseconds) {
-    return new Promise(resolve => setTimeout(resolve, milliseconds));  // For debugging...
-}
-
-
 // Detect needed features. This function MUST BE CALLED on the window.onload event handler,
 // because it needs access to the web page body in order to show the error messages.
 function trujamanDetectFeatures () {
@@ -153,7 +147,7 @@ window.addEventListener('load', () => {
         trujamanLog('La página tiene un nuevo controlador.');
         if (refreshing) return;
         refreshing = true;
-        trujamanSleep(1000).then(() => window.location.reload());  // Debugging only, FIXME!
+        window.location.reload();
     });
 
     // Handle PWA installation offers.

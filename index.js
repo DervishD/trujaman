@@ -226,8 +226,13 @@ class TrujamanJob {
             this.action_button.onclick = null;
             if (this.reader.error) {
                 console.log('Error loading file:', this.reader.error.name);
-                this.status.innerText = `Error al cargar el fichero: ${this.reader.error.name}`;
-                this.action_button.innerText = '¡Error!';
+                if (this.reader.error.name == 'AbortError') {
+                    this.status.innerText = 'Lectura cancelada.';  // FIXME: add a "Retry" button?
+                    console.log('Operation aborted.');
+                } else {
+                    this.status.innerText = `Error al cargar el fichero: ${this.reader.error.name}`;
+                }
+                this.action_button.classList.add('trujaman_hidden');
             } else {
                 console.log('File loaded successfully!');
                 this.status.innerText = `Fichero cargado correctamente, ${event.total} bytes`;
@@ -250,19 +255,6 @@ class TrujamanJob {
         this.action_button = this.element.querySelector('.trujaman_job_action');
         this.status = this.element.querySelector('.trujaman_job_status');
 
-        // For testing only. The file will be automatically loaded after being selected.
-        this.action_button.innerText = 'Cargar fichero';
-        this.action_button.onclick = event => {
-            console.log('Loading file...');
-
-            this.action_button.innerText = 'Cancelar carga';
-            this.action_button.onclick = event => {
-                console.log('Forcing abort!');
-                this.reader.abort();
-            };
-            this.reader.readAsText(this.file);
-        };
-
         this.element.querySelector('.trujaman_job_dismiss_button').addEventListener('click', event => {
             // Remove the onloadend handler, to avoid messing with the UI once the element is removed.
             // This is because that handler modifies DOM elements within the job UI element.
@@ -275,5 +267,13 @@ class TrujamanJob {
             // Abort file reading, just in case.
             this.reader.abort();
         }, {once: true});
+
+        console.log('Loading file...');
+        this.reader.readAsText(this.file);
+        this.action_button.innerText = 'Cancelar';
+        this.action_button.onclick = event => {
+            console.log('Forcing abort!');
+            this.reader.abort();
+        };
     }
 }

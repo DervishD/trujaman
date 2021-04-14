@@ -160,7 +160,7 @@ window.addEventListener('load', () => {
     window.addEventListener('beforeinstallprompt', event => {
         event.preventDefault();  // Prevent the default install handler to appear for now.
         // Indicate the PWA is installable.
-        trujamanLog('Parece que trujamán puede ser instalado.');
+        trujamanLog('Parece que la aplicación puede ser instalada.');
     });
 
     // Register service worker.

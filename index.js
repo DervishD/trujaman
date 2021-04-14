@@ -2,7 +2,7 @@
 
 
 // Change to 'false' in production.
-let DEBUG = true;
+const DEBUG = true;
 
 
 // Helper to print an arbitrary message on the main page's console.

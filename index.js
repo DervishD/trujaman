@@ -17,7 +17,7 @@ var trujamanConsole = function () {
 
     self.init = function () {
         self.console = document.querySelector('#trujaman_console');
-        self.console.classList.remove('trujaman_hidden');
+        self.console.hidden = false;
     };
 
     // Print an arbitrary message on the console, with the provided type (class, really).
@@ -55,7 +55,6 @@ var trujamanConsole = function () {
 function trujamanDetectFeatures () {
     // Can't use 'let' because that's still an undetected feature.
     var trujamanMissingFeatures = [];
-
 
     // ECMAScript 6 arrow functions.
     try {
@@ -212,8 +211,8 @@ window.addEventListener('load', function () {
 
     // Set up file picker.
     let filePicker = document.querySelector('#trujaman_filepicker');
-    filePicker.classList.remove('trujaman_hidden');
-    document.querySelector('#trujaman_jobs').classList.remove('trujaman_hidden');
+    filePicker.hidden = false;
+    document.querySelector('#trujaman_jobs').hidden = false;
     filePicker.querySelector('#trujaman_filepicker_button').addEventListener('click', event => {
         // Propagate the click.
         filePicker.querySelector('#trujaman_filepicker_input').click();
@@ -254,7 +253,7 @@ class TrujamanJob {
                 } else {
                     this.status.innerText = `Error al cargar el fichero: ${this.reader.error.name}`;
                 }
-                this.action_button.classList.add('trujaman_hidden');
+                this.action_button.hidden = true;
             } else {
                 console.log('File ' + this.file.name + ' loaded successfully!');
                 this.status.innerText = `Fichero cargado correctamente, ${event.total} bytes`;
@@ -270,7 +269,7 @@ class TrujamanJob {
         // Create the UI elements for the job by copying the existing template.
         // That way, this code can be more agnostic about the particular layout of the UI elements.
         this.element = document.querySelector('div#trujaman_job_template').cloneNode(true);
-        this.element.classList.remove('trujaman_hidden');
+        this.element.hidden = false;
         this.element.removeAttribute('id');
         this.element.querySelector('.trujaman_job_filename').innerText = file.name;
 

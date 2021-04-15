@@ -199,11 +199,12 @@ window.addEventListener('load', () => {
     });
     // Create new file processor with the selected file.
     filePicker.firstElementChild.addEventListener('change', event => {
-        // Single file per job, for now...
-        let trujamanJob = new TrujamanJob(event.target.files[0]);
-
-        // Add the container itself to the page.
-        document.querySelector('#trujaman_jobs').appendChild(trujamanJob.element);
+        // Create the needed jobs.
+        for (let i = 0; i < event.target.files.length; i++) {
+            let aJob = new TrujamanJob(event.target.files[i]);
+            // Add the container itself to the page.
+            document.querySelector('#trujaman_jobs').appendChild(aJob.element);
+        }
 
         // Or the event won't be fired again if the user selects the same file...
         event.target.value = null;
@@ -234,7 +235,7 @@ class TrujamanJob {
                 }
                 this.action_button.classList.add('trujaman_hidden');
             } else {
-                console.log('File loaded successfully!');
+                console.log('File ' + this.file.name + ' loaded successfully!');
                 this.status.innerText = `Fichero cargado correctamente, ${event.total} bytes`;
                 this.action_button.innerText = 'Convertir';
             }
@@ -268,7 +269,7 @@ class TrujamanJob {
             this.reader.abort();
         }, {once: true});
 
-        console.log('Loading file...');
+        console.log('Loading file', this.file.name);
         this.reader.readAsText(this.file);
         this.action_button.innerText = 'Cancelar';
         this.action_button.onclick = event => {

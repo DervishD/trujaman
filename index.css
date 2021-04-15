@@ -273,6 +273,26 @@ button > span {
     margin-bottom: revert;
 }
 
-.trujaman_hidden {
-    display: none;
+#trujaman_dropzone {
+    box-sizing: border-box;
+    margin: 0;  /* Avoids duplicate window.dragenter events. */
+    padding: 1rem;
+    font-size: 3rem;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+	position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    background-color: var(--bg);
+	border: 0.1rem dashed var(--fg);
+}
+
+#trujaman_dropzone > p {
+    text-align: center;
+    pointer-events: none;
 }

@@ -212,20 +212,48 @@ window.addEventListener('load', function () {
     // Set up file picker.
     let filePicker = document.querySelector('#trujaman_filepicker');
     filePicker.hidden = false;
-    document.querySelector('#trujaman_jobs').hidden = false;
     filePicker.querySelector('#trujaman_filepicker_button').addEventListener('click', event => {
         // Propagate the click.
         filePicker.querySelector('#trujaman_filepicker_input').click();
     });
+
+    // Set up jobs container
+    let jobsContainer = document.querySelector('#trujaman_jobs');
+    jobsContainer.hidden = false;
+
+    function trujamanCreateJobs (iterable) {
+        for (let i = 0; i < iterable.length; i++) {
+            // Add the container itself to the page.
+            jobsContainer.appendChild(new TrujamanJob(iterable[i]).element);
+        }
+    }
+
+    // If the browser supports file drag and drop, enable it for creating jobs.
+    // This is not tested in feature detection because this is entirely optional.
+    if (('draggable' in filePicker) || ('ondragstart' in filePicker && 'ondrop' in filePicker)) {
+        let theDropzone = document.querySelector('#trujaman_dropzone');
+
+        // This is needed because the drag and drop overlay is HIDDEN, so it wouldn't get the event.
+        window.ondragenter = event => theDropzone.hidden = false;
+
+        // Prevent the browser from opening the file.
+        theDropzone.ondragenter = event => event.preventDefault();  // FIXME: is this needed?
+        theDropzone.ondragover = event => event.preventDefault();
+
+        // Hide the drag and drop overlay if the user didn't drop the file.
+        theDropzone.ondragleave = event => theDropzone.hidden = true;
+
+        theDropzone.ondrop = async event => {
+            event.preventDefault();  // Prevent the browser from opening the file.
+            theDropzone.hidden = true;
+            trujamanCreateJobs(event.dataTransfer.files);
+        };
+    }
+
     // Create new file processor with the selected file.
     filePicker.firstElementChild.addEventListener('change', event => {
         // Create the needed jobs.
-        for (let i = 0; i < event.target.files.length; i++) {
-            let aJob = new TrujamanJob(event.target.files[i]);
-            // Add the container itself to the page.
-            document.querySelector('#trujaman_jobs').appendChild(aJob.element);
-        }
-
+        trujamanCreateJobs(event.target.files);
         // Or the event won't be fired again if the user selects the same file...
         event.target.value = null;
     });

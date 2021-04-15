@@ -2,44 +2,52 @@
 
 
 // Change to 'false' in production.
-const DEBUG = true;
+var DEBUG = true;
 
 
 // Object for encapsulating the logging facility.
-var trujaman_console = {
-    console: null,  // The console DOM element.
+// Advanced features can't be used here because this object is used by
+// the feature detection system itself, and it is possible that some
+// advanced feature used in this object is missing, making impossible
+// to properly report the missing feature!
+var trujamanConsole = function () {
+    var self = {};
 
-    init () {
-        this.console = document.querySelector('#trujaman_console');
-        this.console.classList.remove('trujaman_hidden');
-    },
+    self.console = null;  // The console DOM element.
+
+    self.init = function () {
+        self.console = document.querySelector('#trujaman_console');
+        self.console.classList.remove('trujaman_hidden');
+    };
 
     // Print an arbitrary message on the console, with the provided type (class, really).
-    print (message, type) {
-        if (this.console == null) this.init();
+    self.print = function (message, type) {
+        if (self.console === null) self.init();
 
         // This has to be calculated BEFORE inserting the new content...
-        let mustScroll = this.console.scrollHeight - this.console.clientHeight - this.console.scrollTop <= 0;
+        var mustScroll = self.console.scrollHeight - self.console.clientHeight - self.console.scrollTop <= 0;
 
         // New content is inserted at the end...
         // ES6 template strings can't be used here because it may be unavailable
         // and THIS function will be used to notify that to the end user!
         message = '<p' + (type ? ' class="' + type + '"':'') + '>' + message;
-        this.console.insertAdjacentHTML('beforeend', message);
+        self.console.insertAdjacentHTML('beforeend', message);
         // This has to be calculated AFTER inserting the new content...
-        if (mustScroll) this.console.scrollTop = this.console.scrollHeight - this.console.clientHeight;
-    },
+        if (mustScroll) self.console.scrollTop = self.console.scrollHeight - self.console.clientHeight;
+    };
 
     // Print a logging message on the console.
-    log: DEBUG ? function (message) {
-        this.print('> ' + message, 'trujaman_logmsg');
-    }: ()=>{},  // If not in debugging mode, this function is a NOP.
+    self.log = DEBUG ? function (message) {
+        self.print('• ' + message, 'trujaman_logmsg');
+    }: function (){};  // If not in debugging mode, this function is a NOP.
 
     // Print an error message on the console.
-    error (message) {
-        this.print('• ERROR •\n' + message, 'trujaman_errmsg');
-    },
-}
+    self.error = function (message) {
+        self.print('• ERROR •\n' + message, 'trujaman_errmsg');
+    };
+
+    return self;
+}();
 
 
 // Detect needed features. This function MUST BE CALLED on the window.onload event handler,
@@ -58,14 +66,14 @@ function trujamanDetectFeatures () {
 
     // ECMAScript 6 classes.
     try {
-        eval('class X {}')
+        eval('class X {}');
     } catch (e) {
         trujamanMissingFeatures.push('JavaScript ES6: classes');
     }
 
     // ECMAScript 6 let.
     try {
-        eval('let x = true')
+        eval('let x = true');
     } catch (e) {
         trujamanMissingFeatures.push('JavaScript ES6: let statement');
     }
@@ -79,21 +87,21 @@ function trujamanDetectFeatures () {
 
     // ECMAScript 6 template strings.
     try {
-        eval('let x = `x`')
+        eval('let x = `x`');
     } catch (e) {
         trujamanMissingFeatures.push('JavaScript ES6: template strings');
     }
 
     // ECMAScript 6 default parameters.
     try {
-        eval('function f (x=1) {}')
+        eval('function f (x=1) {}');
     } catch (e) {
         trujamanMissingFeatures.push('JavaScript ES6: default function parameters');
     }
 
     // ECMAScript 6 async functions.
     try {
-        eval('async function f() {}')
+        eval('async function f() {}');
     } catch (e) {
         trujamanMissingFeatures.push('JavaScript ES6: async functions');
     }
@@ -125,25 +133,29 @@ function trujamanDetectFeatures () {
 
     if (trujamanMissingFeatures.length) {
         // Show the list of missing features.
-        trujaman_console.error('La aplicación no puede funcionar porque este navegador no es compatible con:');
-        trujamanMissingFeatures.forEach(item => trujaman_console.print(item, 'trujaman_missing_feature'));
+        trujamanConsole.error('La aplicación no puede funcionar porque este navegador no es compatible con:');
+        trujamanMissingFeatures.forEach(function (item) {
+            trujamanConsole.print(item, 'trujaman_missing_feature');
+        });
 
         // Terminate script execution.
         // There are many ways of stopping execution.
         // This is terse and effective.
-        window.onerror=()=>true;
+        window.onerror = function () {};
         throw true;
     }
 }
 
 
-window.addEventListener('load', () => {
+window.addEventListener('load', function () {
 
     // Detect needed features and show error messages if needed.
     trujamanDetectFeatures();
 
-    trujaman_console.log('Versión de desarrollo.');
-    trujaman_console.log(`La página${navigator.serviceWorker.controller?'':' no'} está controlada.`);
+    // From this point on, advanced features can be used.
+
+    trujamanConsole.log('Versión de desarrollo.');
+    trujamanConsole.log(`La página${navigator.serviceWorker.controller?'':' no'} está controlada.`);
 
     // Show version number.
     navigator.serviceWorker.ready
@@ -156,7 +168,7 @@ window.addEventListener('load', () => {
     // Handle controller change.
     let refreshing = false;
     navigator.serviceWorker.addEventListener('controllerchange', event => {
-        trujaman_console.log('La página tiene un nuevo controlador.');
+        trujamanConsole.log('La página tiene un nuevo controlador.');
         if (refreshing) return;
         refreshing = true;
         window.location.reload();
@@ -166,36 +178,36 @@ window.addEventListener('load', () => {
     window.addEventListener('beforeinstallprompt', event => {
         event.preventDefault();  // Prevent the default install handler to appear for now.
         // Indicate the PWA is installable.
-        trujaman_console.log('Parece que la aplicación puede ser instalada.');
+        trujamanConsole.log('Parece que la aplicación puede ser instalada.');
     });
 
     // Register service worker.
     navigator.serviceWorker.register('sw.js')
     .then(registration => {
-        trujaman_console.log('El service worker se registró con éxito.')
+        trujamanConsole.log('El service worker se registró con éxito.');
 
-        trujaman_console.log(`${registration.active?'Hay':'No hay'} un service worker activo.`);
+        trujamanConsole.log(`${registration.active?'Hay':'No hay'} un service worker activo.`);
 
-        if (registration.waiting) trujaman_console.log('Hay un service worker esperando.');
+        if (registration.waiting) trujamanConsole.log('Hay un service worker esperando.');
 
         // Handle state changes for new service workers, including the first one.
         registration.addEventListener('updatefound', () => {
-            trujaman_console.log('Se encontró un nuevo service worker.');
+            trujamanConsole.log('Se encontró un nuevo service worker.');
             registration.installing.onstatechange = event => {
                 if (event.target.state == 'installed')
-                    trujaman_console.log('Se ha instalado un nuevo service worker.');
+                    trujamanConsole.log('Se ha instalado un nuevo service worker.');
                 if (event.target.state == 'activated')
-                    trujaman_console.log('Hay un nuevo service worker activo.');
-            }
+                    trujamanConsole.log('Hay un nuevo service worker activo.');
+            };
         });
     })
     .catch(error => {
         console.error('Service worker registration failed with', error);
         // Enable the console, which will be hidden in production.
-        trujaman_console.error('Una parte esencial de la aplicación no se pudo inicializar correctamente.\n' +
+        trujamanConsole.error('Una parte esencial de la aplicación no se pudo inicializar correctamente.\n' +
                       'El funcionamiento podría ser incorrecto.\n' +
                       'El error producido se detalla a continuación:');
-        trujaman_console.print(error);
+        trujamanConsole.print(error);
     });
 
     // Set up file picker.
@@ -248,12 +260,12 @@ class TrujamanJob {
                 this.status.innerText = `Fichero cargado correctamente, ${event.total} bytes`;
                 this.action_button.innerText = 'Convertir';
             }
-        }
+        };
 
         // Right now, mainly for testing purposes.
         this.reader.onprogress = event => {
             this.status.innerText = `Cargando fichero: ${event.loaded} bytes leídos.`;
-        }
+        };
 
         // Create the UI elements for the job by copying the existing template.
         // That way, this code can be more agnostic about the particular layout of the UI elements.

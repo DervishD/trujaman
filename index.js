@@ -45,7 +45,9 @@ var trujaman_console = {
 // Detect needed features. This function MUST BE CALLED on the window.onload event handler,
 // because it needs access to the web page body in order to show the error messages.
 function trujamanDetectFeatures () {
-    let trujamanMissingFeatures = [];
+    // Can't use 'let' because that's still an undetected feature.
+    var trujamanMissingFeatures = [];
+
 
     // ECMAScript 6 arrow functions.
     try {
@@ -66,6 +68,13 @@ function trujamanDetectFeatures () {
         eval('let x = true')
     } catch (e) {
         trujamanMissingFeatures.push('JavaScript ES6: let statement');
+    }
+
+    // ECMAScript 6 const.
+    try {
+        eval('const x = true');
+    } catch (e) {
+        trujamanMissingFeatures.push('JavaScript ES6: const statement');
     }
 
     // ECMAScript 6 template strings.

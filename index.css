@@ -109,7 +109,6 @@ body {
     height: 100%;
     margin: 0;
     padding: 1rem;
-    min-width: min-content;
     min-height: -webkit-fill-available;
     box-sizing: border-box;
     color: var(--fg);
@@ -131,6 +130,8 @@ header {
     margin: 0;
     align-items: baseline;
     justify-content: center;
+    word-break: break-all;
+    text-align: center;
 }
 
 #trujaman_logo {
@@ -140,11 +141,10 @@ header {
 #trujaman_version {
     font-family: "Trujaman Mono";
     font-size: 0.5em;
-    min-width: max-content;
 }
 
 #trujaman_filepicker {
-    margin: 1rem;
+    margin: 1rem auto;
     text-align: center;
 }
 
@@ -181,6 +181,7 @@ input {
 
 .trujaman_job_header > p {
     font-weight: bold;
+    word-break: break-all;
 }
 
 .trujaman_job_dismiss_button {
@@ -196,6 +197,7 @@ input {
     align-items: center;
     gap: 1ch;
     border: 1px solid;
+    word-break: break-all;
 }
 
 button {
@@ -208,7 +210,8 @@ button {
     border: none;
     color: var(--bg);
     background-color: var(--accent);
-    white-space: nowrap;
+    white-space: normal;
+    word-break: normal;
 }
 
 button:disabled {

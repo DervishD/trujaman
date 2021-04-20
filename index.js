@@ -228,7 +228,7 @@ window.addEventListener('load', function () {
     function trujamanCreateJobs (iterable) {
         for (let i = 0; i < iterable.length; i++) {
             // Add the container itself to the page.
-            jobsContainer.appendChild(new TrujamanJob(iterable[i]).element);
+            jobsContainer.appendChild((new TrujamanJob(iterable[i])).element);
         }
     }
 

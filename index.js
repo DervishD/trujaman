@@ -300,7 +300,7 @@ class TrujamanJob {
 
         // Create the UI elements for the job by copying the existing template.
         // That way, this code can be more agnostic about the particular layout of the UI elements.
-        this.element = document.querySelector('div#trujaman_job_template').cloneNode(true);
+        this.element = document.querySelector('#trujaman_job_template').cloneNode(true);
         this.element.hidden = false;
         this.element.removeAttribute('id');
         this.element.querySelector('.trujaman_job_filename').innerText = file.name;

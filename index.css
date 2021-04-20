@@ -203,6 +203,7 @@ button {
     font-weight: bold;
     cursor: pointer;
     font-size: 0.75rem;
+    font-size: clamp(0.1em, 10vw, 0.75em);
     margin: 0;
     padding: 1ch 2ch;
     border: none;

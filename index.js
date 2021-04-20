@@ -161,7 +161,11 @@ window.addEventListener('load', function () {
     .then(registration => {
         fetch('version')
         .then(response => response.text())
-        .then(version => document.getElementById('trujaman_version').textContent = 'v' + version);
+        .then(version => {
+            let versionElement = document.getElementById('trujaman_version');
+            versionElement.hidden = false;
+            versionElement.textContent = 'v' + version;
+        });
     });
 
     // Handle controller change.

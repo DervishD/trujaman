@@ -201,15 +201,42 @@ input {
     border: 1px solid;
 }
 
-.trujaman_job_body > p  {
+.trujaman_job_body p  {
     flex: 1 0 50%;
     overflow-wrap: break-word;
     min-width: 0px;
 }
 
-.trujaman_job_body > button {
+.trujaman_job_body button {
     flex: 0 0 auto;
     font-size: 0.75em;
+    position: relative;
+}
+
+.trujaman_dropdown {
+    position: relative;
+}
+
+#trujaman_job_formats {
+    font-size: 0.75em;
+    position: absolute;
+    z-index: 1;
+    color: var(--bg);
+    background-color: var(--accent);
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+}
+
+#trujaman_job_formats * {
+    cursor: pointer;
+    background-color: var(--accent);
+    margin: 0.5em;
+    padding: 1ch;
+    white-space: nowrap;
+}
+
+#trujaman_job_formats *:hover {
+    color: var(--accent);
+    background-color: var(--bg);
 }
 
 button {

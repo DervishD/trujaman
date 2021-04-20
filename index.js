@@ -232,6 +232,12 @@ window.addEventListener('load', function () {
         }
     }
 
+    // FIXME, just for mock-testing the UI.
+    document.querySelector('#trujaman_MOCK_job_action').onclick = event => {
+        let theDropdown = document.querySelector('#trujaman_job_formats');
+        theDropdown.hidden = !theDropdown.hidden;
+    };
+
     // If the browser supports file drag and drop, enable it for creating jobs.
     // This is not tested in feature detection because this is entirely optional.
     if (('draggable' in filePicker) || ('ondragstart' in filePicker && 'ondrop' in filePicker)) {

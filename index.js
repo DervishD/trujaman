@@ -140,7 +140,7 @@ function trujamanDetectFeatures () {
         // Terminate script execution.
         // There are many ways of stopping execution.
         // This is terse and effective.
-        window.onerror = function () {};
+        window.onerror = function () {return true;};
         throw true;
     }
 }

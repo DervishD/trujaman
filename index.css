@@ -239,11 +239,12 @@ button > span {
 
 #trujaman_console, noscript > div {
     font-family: "Trujaman Mono";
-    font-size: 0.8rem;
+    font-size: clamp(0.5rem, 10vw, 0.75rem);
     box-sizing: border-box;
     overflow: auto;
-    margin: 2rem 0 0;
-    width: 100%;
+    margin: 2rem auto 0;
+    width: fit-content;
+    max-width: 100%;
     color: var(--bg);
     background-color: var(--fg);
 }
@@ -251,7 +252,7 @@ button > span {
 #trujaman_console > p, noscript > div > p {
   white-space: pre-wrap;
   overflow-wrap: break-word;
-  margin: 1rem;
+  margin: 1ch;
 }
 
 .trujaman_logmsg {
@@ -260,15 +261,14 @@ button > span {
 }
 
 .trujaman_errmsg, noscript > div > p {
-    font-size: 1.1rem;
+    font-size: 1.1em;
     font-weight: bold;
     text-align: center;
 }
 
 #trujaman_console > p.trujaman_missing_feature {
-    font-size: 0.8rem;
     text-align: center;
-    margin: 0.5em 1rem;
+    margin: 0.5em 1em;
 }
 
 #trujaman_console > p.trujaman_missing_feature:last-child {

@@ -182,7 +182,7 @@ input {
 .trujaman_job_header > p {
     font-weight: bold;
     overflow-wrap: break-word;
-    overflow: hidden;
+    min-width: 0px;
 }
 
 .trujaman_job_dismiss_button {
@@ -204,7 +204,7 @@ input {
 .trujaman_job_body > p  {
     flex: 1 0 50%;
     overflow-wrap: break-word;
-    overflow: hidden;
+    min-width: 0px;
 }
 
 .trujaman_job_body > button {

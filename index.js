@@ -30,8 +30,7 @@ var trujamanConsole = function () {
         // New content is inserted at the end...
         // ES6 template strings can't be used here because it may be unavailable
         // and THIS function will be used to notify that to the end user!
-        message = '<p' + (type ? ' class="' + type + '"':'') + '>' + message;
-        self.console.insertAdjacentHTML('beforeend', message);
+        self.console.insertAdjacentHTML('beforeend', '<p' + (type ? ' class="' + type + '"':'') + '>' + message);
         // This has to be calculated AFTER inserting the new content...
         if (mustScroll) self.console.scrollTop = self.console.scrollHeight - self.console.clientHeight;
     };
@@ -39,7 +38,7 @@ var trujamanConsole = function () {
     // Print a logging message on the console.
     self.log = DEBUG ? function (message) {
         self.print('• ' + message, 'trujaman_logmsg');
-    }: function (){};  // If not in debugging mode, this function is a NOP.
+    }: function () {};  // If not in debugging mode, this function is a NOP.
 
     // Print an error message on the console.
     self.error = function (message) {
@@ -140,7 +139,7 @@ function trujamanDetectFeatures () {
         // Terminate script execution.
         // There are many ways of stopping execution.
         // This is terse and effective.
-        window.onerror = function () {return true;};
+        window.onerror = function () { return true; };
         throw true;
     }
 }
@@ -158,11 +157,11 @@ window.addEventListener('load', function () {
 
     // Show version number.
     navigator.serviceWorker.ready
-    .then(registration => {
+    .then(() => {
         fetch('version')
         .then(response => response.text())
         .then(version => {
-            let versionElement = document.getElementById('trujaman_version');
+            const versionElement = document.getElementById('trujaman_version');
             versionElement.hidden = false;
             versionElement.textContent = 'v' + version;
         });
@@ -170,7 +169,7 @@ window.addEventListener('load', function () {
 
     // Handle controller change.
     let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', event => {
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
         trujamanConsole.log('La página tiene un nuevo controlador.');
         if (refreshing) return;
         refreshing = true;
@@ -197,9 +196,9 @@ window.addEventListener('load', function () {
         registration.addEventListener('updatefound', () => {
             trujamanConsole.log('Se encontró un nuevo service worker.');
             registration.installing.onstatechange = event => {
-                if (event.target.state == 'installed')
+                if (event.target.state === 'installed')
                     trujamanConsole.log('Se ha instalado un nuevo service worker.');
-                if (event.target.state == 'activated')
+                if (event.target.state === 'activated')
                     trujamanConsole.log('Hay un nuevo service worker activo.');
             };
         });
@@ -214,46 +213,46 @@ window.addEventListener('load', function () {
     });
 
     // Set up file picker.
-    let filePicker = document.querySelector('#trujaman_filepicker');
+    const filePicker = document.querySelector('#trujaman_filepicker');
     filePicker.hidden = false;
-    filePicker.querySelector('#trujaman_filepicker_button').addEventListener('click', event => {
+    filePicker.querySelector('#trujaman_filepicker_button').addEventListener('click', () => {
         // Propagate the click.
         filePicker.querySelector('#trujaman_filepicker_input').click();
     });
 
     // Set up jobs container
-    let jobsContainer = document.querySelector('#trujaman_jobs');
+    const jobsContainer = document.querySelector('#trujaman_jobs');
     jobsContainer.hidden = false;
 
-    function trujamanCreateJobs (iterable) {
+    const trujamanCreateJobs = function (iterable) {
         for (let i = 0; i < iterable.length; i++) {
             // Add the container itself to the page.
-            jobsContainer.appendChild((new TrujamanJob(iterable[i])).element);
+            jobsContainer.appendChild(new TrujamanJob(iterable[i]).element);
         }
     }
 
     // FIXME, just for mock-testing the UI.
     document.querySelector('#trujaman_MOCK_job_action').onclick = event => {
-        let theDropdown = document.querySelector('#trujaman_job_formats');
+        const theDropdown = document.querySelector('#trujaman_job_formats');
         theDropdown.hidden = !theDropdown.hidden;
     };
 
     // If the browser supports file drag and drop, enable it for creating jobs.
     // This is not tested in feature detection because this is entirely optional.
     if (('draggable' in filePicker) || ('ondragstart' in filePicker && 'ondrop' in filePicker)) {
-        let theDropzone = document.querySelector('#trujaman_dropzone');
+        const theDropzone = document.querySelector('#trujaman_dropzone');
 
         // This is needed because the drag and drop overlay is HIDDEN, so it wouldn't get the event.
-        window.ondragenter = event => theDropzone.hidden = false;
+        window.ondragenter = () => theDropzone.hidden = false;
 
         // Prevent the browser from opening the file.
         theDropzone.ondragenter = event => event.preventDefault();  // FIXME: is this needed?
         theDropzone.ondragover = event => event.preventDefault();
 
         // Hide the drag and drop overlay if the user didn't drop the file.
-        theDropzone.ondragleave = event => theDropzone.hidden = true;
+        theDropzone.ondragleave = () => theDropzone.hidden = true;
 
-        theDropzone.ondrop = async event => {
+        theDropzone.ondrop = event => {
             event.preventDefault();  // Prevent the browser from opening the file.
             theDropzone.hidden = true;
             trujamanCreateJobs(event.dataTransfer.files);
@@ -271,7 +270,7 @@ window.addEventListener('load', function () {
 
 
 class TrujamanJob {
-    constructor(file) {
+    constructor (file) {
         this.file = file;
 
         // Create the file reader.
@@ -282,20 +281,20 @@ class TrujamanJob {
         // event will fire no matter whether the file reading process finished
         // successfully or not.
         this.reader.onloadend = event => {
-            this.action_button.onclick = null;
+            this.actionButton.onclick = null;
             if (this.reader.error) {
                 console.log('Error loading file:', this.reader.error.name);
-                if (this.reader.error.name == 'AbortError') {
+                if (this.reader.error.name === 'AbortError') {
                     this.status.innerText = 'Lectura cancelada.';  // FIXME: add a "Retry" button?
                     console.log('Operation aborted.');
                 } else {
                     this.status.innerText = `Error al cargar el fichero: ${this.reader.error.name}`;
                 }
-                this.action_button.hidden = true;
+                this.actionButton.hidden = true;
             } else {
                 console.log('File ' + this.file.name + ' loaded successfully!');
                 this.status.innerText = `Fichero cargado correctamente, ${event.total} bytes`;
-                this.action_button.innerText = 'Convertir';
+                this.actionButton.innerText = 'Convertir';
             }
         };
 
@@ -311,7 +310,7 @@ class TrujamanJob {
         this.element.removeAttribute('id');
         this.element.querySelector('.trujaman_job_filename').innerText = file.name;
 
-        this.action_button = this.element.querySelector('.trujaman_job_action');
+        this.actionButton = this.element.querySelector('.trujaman_job_action');
         this.status = this.element.querySelector('.trujaman_job_status');
 
         this.element.querySelector('.trujaman_job_dismiss_button').addEventListener('click', event => {
@@ -320,7 +319,7 @@ class TrujamanJob {
             this.reader.onloadend = null;
 
             // Remove job UI element.
-            let theJob = event.target.closest('.trujaman_job');
+            const theJob = event.target.closest('.trujaman_job');
             theJob.parentNode.removeChild(theJob);
 
             // Abort file reading, just in case.
@@ -329,8 +328,8 @@ class TrujamanJob {
 
         console.log('Loading file', this.file.name);
         this.reader.readAsText(this.file);
-        this.action_button.innerText = 'Cancelar';
-        this.action_button.onclick = event => {
+        this.actionButton.innerText = 'Cancelar';
+        this.actionButton.onclick = () => {
             console.log('Forcing abort!');
             this.reader.abort();
         };

@@ -148,6 +148,7 @@ header {
 
 #trujaman_filepicker > button {
     margin: 0 auto;
+    font-size: 0.8em;
 }
 
 input {
@@ -195,22 +196,20 @@ input {
     align-items: center;
     gap: 1ch;
     border: 1px solid;
-    word-break: break-all;
+.trujaman_job_body > button {
+    flex: 0 0 auto;
+    font-size: 0.75em;
 }
 
 button {
     font-family: Trujaman;
     font-weight: bold;
     cursor: pointer;
-    font-size: 0.75rem;
-    font-size: clamp(0.1em, 10vw, 0.75em);
     margin: 0;
-    padding: 1ch 2ch;
+    padding: 0.66em;
     border: none;
     color: var(--bg);
     background-color: var(--accent);
-    white-space: normal;
-    word-break: normal;
 }
 
 button:disabled {
@@ -230,11 +229,6 @@ button:enabled:active {
 button:focus {
     outline: 1px solid var(--accent);
     outline-offset: 1px;
-}
-
-button > span {
-    font-style: italic;
-    padding: 0 1ch;
 }
 
 #trujaman_console, noscript > div {

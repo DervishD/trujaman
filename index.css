@@ -112,7 +112,7 @@ body {
     width: 100%;
     height: 100%;
     margin: 0;
-    padding: 1rem;
+    padding: 1em;
     min-height: -webkit-fill-available;
     color: var(--fg);
     background-color: var(--bg);
@@ -128,8 +128,8 @@ p {
 header {
     display: flex;
     flex-wrap: wrap;
-    font-size: clamp(1rem, 15vw, 3rem);
-    gap: 0.5rem;
+    font-size: clamp(1em, 15vw, 3em);
+    gap: 0.25em;
     margin: 0;
     align-items: baseline;
     justify-content: center;
@@ -219,17 +219,17 @@ button:focus {
 .trujaman_job {
     background-color: var(--bg_hi);
     margin-top: 1rem;
+    font-size: 0.75rem;
 }
 
 .trujaman_job > * {
-    font-size: 0.75rem;
-    padding: 0.5rem;
+    padding: 0.75em;
 }
 
 .trujaman_job_header {
     display: flex;
     justify-content: space-between;
-    gap: 0.5rem;
+    gap: 0.5em;
     align-items: center;
     border: 1px solid;
     border-bottom: none;
@@ -242,7 +242,7 @@ button:focus {
 }
 
 .trujaman_job_dismiss_button {
-    font-size: 1rem;
+    font-size: 1.5em;
     padding: 0;
     color: var(--accent);
     background-color: unset;
@@ -253,7 +253,7 @@ button:focus {
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    gap: 1ch;
+    gap: 0.75em;
     border: 1px solid;
 }
 
@@ -284,7 +284,7 @@ button:focus {
     cursor: pointer;
     background-color: var(--accent);
     margin: 0.5em;
-    padding: 1ch;
+    padding: 0.5em;
     white-space: nowrap;
 }
 
@@ -307,10 +307,11 @@ button:focus {
 #trujaman_console > p, noscript > div > p {
   white-space: pre-wrap;
   overflow-wrap: break-word;
-  margin: 1ch;
+  margin: 1em;
 }
 
 #trujaman_console > p.trujaman_logmsg {
+    /* Unit MUST be ch to have a proper hanging indent with the monospaced font. */
     text-indent: -2ch;
     padding-left: 2ch;
 }

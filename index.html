@@ -38,19 +38,10 @@
             </div>
             <div class="trujaman_job_body">
                 <p class="trujaman_job_status"></p>
-                <button class="trujaman_job_action"></button>
-            </div>
-        </div>
-        <div class="trujaman_job">
-            <div class="trujaman_job_header">
-                <p class="trujaman_job_filename">Nombre de fichero de ejemplo, bastante largoparacomprobarelcomportamientoenpantallas estrechas.xml</p>
-                <button class="trujaman_job_dismiss_button">×</button>
-            </div>
-            <div class="trujaman_job_body">
-                <p class="trujaman_job_status">Carga completada con éxito 123374692376491 bytes.</p>
-                <div class="trujaman_dropdown">
-                    <button id="trujaman_MOCK_job_action" class="trujaman_job_action">Descargar en formato... ▼</button>
-                    <div hidden id="trujaman_job_formats">
+                <button hidden class="trujaman_job_cancel_button">Cancelar</button>
+                <div hidden class="trujaman_job_download_dropdown">
+                    <button>Descargar en formato… | ▾</button>
+                    <div hidden class="trujaman_job_formats_list">
                         <p>Formato con nombre bastante largo 0</p>
                         <p>Formato con nombre bastante largo 1</p>
                         <p>Formato con nombre bastante largo 2</p>
@@ -63,9 +54,9 @@
                         <p>Formato con nombre bastante largo 9</p>
                     </div>
                 </div>
+
             </div>
         </div>
-
     </div>
 
     <div hidden id="trujaman_console"></div>

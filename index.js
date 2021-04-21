@@ -231,12 +231,6 @@ window.addEventListener('load', function () {
         }
     }
 
-    // FIXME, just for mock-testing the UI.
-    document.querySelector('#trujaman_MOCK_job_action').onclick = event => {
-        const theDropdown = document.querySelector('#trujaman_job_formats');
-        theDropdown.hidden = !theDropdown.hidden;
-    };
-
     // If the browser supports file drag and drop, enable it for creating jobs.
     // This is not tested in feature detection because this is entirely optional.
     if (('draggable' in filePicker) || ('ondragstart' in filePicker && 'ondrop' in filePicker)) {
@@ -281,7 +275,7 @@ class TrujamanJob {
         // event will fire no matter whether the file reading process finished
         // successfully or not.
         this.reader.onloadend = event => {
-            this.actionButton.onclick = null;
+            this.cancelButton.hidden = true;
             if (this.reader.error) {
                 console.log('Error loading file:', this.reader.error.name);
                 if (this.reader.error.name === 'AbortError') {
@@ -290,18 +284,15 @@ class TrujamanJob {
                 } else {
                     this.status.innerText = `Error al cargar el fichero: ${this.reader.error.name}`;
                 }
-                this.actionButton.hidden = true;
             } else {
                 console.log('File ' + this.file.name + ' loaded successfully!');
                 this.status.innerText = `Fichero cargado correctamente, ${event.total} bytes`;
-                this.actionButton.innerText = 'Convertir';
+                this.downloadDropdown.hidden = false;
             }
         };
 
         // Right now, mainly for testing purposes.
-        this.reader.onprogress = event => {
-            this.status.innerText = `Cargando fichero: ${event.loaded} bytes leídos.`;
-        };
+        this.reader.onprogress = event => this.status.innerText = `${event.loaded} bytes.`;
 
         // Create the UI elements for the job by copying the existing template.
         // That way, this code can be more agnostic about the particular layout of the UI elements.
@@ -310,8 +301,17 @@ class TrujamanJob {
         this.element.removeAttribute('id');
         this.element.querySelector('.trujaman_job_filename').innerText = file.name;
 
-        this.actionButton = this.element.querySelector('.trujaman_job_action');
         this.status = this.element.querySelector('.trujaman_job_status');
+
+        this.cancelButton = this.element.querySelector('.trujaman_job_cancel_button');
+        this.cancelButton.onclick = () => {
+            console.log('Forcing abort!');
+            this.reader.abort();
+        };
+
+        this.downloadDropdown = this.element.querySelector('.trujaman_job_download_dropdown');
+        this.formatsList = this.element.querySelector('.trujaman_job_formats_list');
+        this.downloadDropdown.onclick = event => this.formatsList.hidden = !this.formatsList.hidden;
 
         this.element.querySelector('.trujaman_job_dismiss_button').addEventListener('click', event => {
             // Remove the onloadend handler, to avoid messing with the UI once the element is removed.
@@ -327,11 +327,7 @@ class TrujamanJob {
         }, {once: true});
 
         console.log('Loading file', this.file.name);
+        this.cancelButton.hidden = false;
         this.reader.readAsText(this.file);
-        this.actionButton.innerText = 'Cancelar';
-        this.actionButton.onclick = () => {
-            console.log('Forcing abort!');
-            this.reader.abort();
-        };
     }
 }

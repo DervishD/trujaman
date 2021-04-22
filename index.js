@@ -276,9 +276,9 @@ class TrujamanJob {
         this.reader.onloadend = event => {
             this.cancelButton.hidden = true;
             if (this.reader.error) {
+                this.retryButton.hidden = false;
                 if (this.reader.error.name === 'AbortError') {
-                    this.status.innerText = 'Lectura cancelada.';  // FIXME: add a "Retry" button?
-                    this.retryButton.hidden = false;
+                    this.status.innerText = 'Lectura cancelada.';
                 } else {
                     this.status.innerText = `Error al cargar el fichero: ${this.reader.error.name}`;
                 }

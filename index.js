@@ -337,6 +337,10 @@ class TrujamanJob {
 
     // Read the file associated with this job.
     readFile () {
+        if (this.file.size > 99 * 1024 * 1024) {  // Absolutely arbitrary maximum file size...
+            this.status.innerText = 'El fichero es demasiado grande.';
+            return;
+        }
         this.retryButton.hidden = true;
         this.cancelButton.hidden = false;
         this.reader.readAsText(this.file);

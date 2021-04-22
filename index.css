@@ -302,7 +302,7 @@ button:focus {
     font-size: clamp(0.5em, 10vw, 0.75em);
     overflow: auto;
     margin: 2rem auto 0;
-    width: fit-content;
+    width: max-content;
     max-width: 100%;
     color: var(--bg);
     background-color: var(--fg);

@@ -121,7 +121,6 @@ body {
     height: 100%;
     margin: 0;
     padding: 1em;
-    min-height: -webkit-fill-available;
     color: var(--fg);
     background-color: var(--bg);
 }

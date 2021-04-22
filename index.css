@@ -286,6 +286,7 @@ button:focus {
 .trujaman_job_formats_list {
     font-size: 0.75em;
     position: absolute;
+    right: 0;
     color: var(--bg);
     background-color: var(--accent);
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);

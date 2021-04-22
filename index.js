@@ -274,16 +274,35 @@ class TrujamanJob {
         // event will fire no matter whether the file reading process finished
         // successfully or not.
         this.reader.onloadend = event => {
+            let error = this.reader.error || this.reader.trujamanError;
+
             this.cancelButton.hidden = true;
-            if (this.reader.error) {
+            if (error) {
                 this.retryButton.hidden = false;
-                if (this.reader.error.name === 'AbortError') {
-                    this.status.innerText = 'Lectura cancelada.';
-                } else {
-                    this.status.innerText = `Error al cargar el fichero (${this.reader.error.name}).`;
+                let errorMessage = 'ERROR: ';
+                switch (error.name) {
+                    case 'AbortError':
+                        errorMessage += 'lectura cancelada';
+                        break;
+                    case 'FileTooLargeError':
+                        errorMessage += 'el fichero es muy grande';
+                        break;
+                    case 'NotFoundError':
+                        errorMessage += 'el fichero ya no existe';
+                        break;
+                    case 'NotReadableError':
+                        errorMessage += 'el fichero no tiene permisos de lectura';
+                        break;
+                    case 'SecurityError':
+                        errorMessage += 'el fichero no se puede leer de forma segura';
+                        break;
+                    default:
+                        errorMessage += 'el fichero no pudo ser leído';
+                        break;
                 }
+                this.status.innerHTML = `${errorMessage} <span class="trujaman_tty">(${error.name})</span>.`;
             } else {
-                this.status.innerText = `Fichero cargado correctamente.`;
+                this.status.innerText = `El fichero se leyó correctamente.`;
                 this.downloadDropdown.hidden = false;
             }
         };
@@ -338,11 +357,15 @@ class TrujamanJob {
     // Read the file associated with this job.
     readFile () {
         if (this.file.size > 99 * 1024 * 1024) {  // Absolutely arbitrary maximum file size...
-            this.status.innerText = 'El fichero es demasiado grande.';
-            return;
+            // Use a fake event to handle this 'error' so all error handling happens in one place.
+            let event = new ProgressEvent('loadend', {loaded: 0, total: 0});
+            this.reader.trujamanError = new DOMException('', 'FileTooLargeError');  // Fake event, fake error...
+            this.reader.dispatchEvent(event);
+        } else {
+            // If file size is below the chosen limit, read the file in one go.
+            this.retryButton.hidden = true;
+            this.cancelButton.hidden = false;
+            this.reader.readAsText();
         }
-        this.retryButton.hidden = true;
-        this.cancelButton.hidden = false;
-        this.reader.readAsText(this.file);
     }
 }

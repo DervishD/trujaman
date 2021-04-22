@@ -165,6 +165,10 @@ button:focus {
     outline-offset: 1px;
 }
 
+.trujaman_tty {
+    font-family: "Trujaman Mono";
+}
+
 #trujaman_logo {
     font-weight: bold;
 }

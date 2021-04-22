@@ -280,10 +280,10 @@ class TrujamanJob {
                 if (this.reader.error.name === 'AbortError') {
                     this.status.innerText = 'Lectura cancelada.';
                 } else {
-                    this.status.innerText = `Error al cargar el fichero: ${this.reader.error.name}`;
+                    this.status.innerText = `Error al cargar el fichero (${this.reader.error.name}).`;
                 }
             } else {
-                this.status.innerText = `Fichero cargado correctamente, ${event.total} bytes`;
+                this.status.innerText = `Fichero cargado correctamente.`;
                 this.downloadDropdown.hidden = false;
             }
         };

@@ -204,7 +204,6 @@ window.addEventListener('load', function () {
         });
     })
     .catch(error => {
-        console.error('Service worker registration failed with', error);
         // Enable the console, which will be hidden in production.
         trujamanConsole.error('Una parte esencial de la aplicación no se pudo inicializar correctamente.\n' +
                       'El funcionamiento podría ser incorrecto.\n' +
@@ -338,7 +337,6 @@ class TrujamanJob {
 
     // Read the file associated with this job.
     readFile () {
-        console.log('Loading file', this.file.name);
         this.retryButton.hidden = true;
         this.cancelButton.hidden = false;
         this.reader.readAsText(this.file);

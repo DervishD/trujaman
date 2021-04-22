@@ -365,7 +365,7 @@ class TrujamanJob {
             // If file size is below the chosen limit, read the file in one go.
             this.retryButton.hidden = true;
             this.cancelButton.hidden = false;
-            this.reader.readAsText();
+            this.reader.readAsText(this.file);
         }
     }
 }

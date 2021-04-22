@@ -277,22 +277,23 @@ class TrujamanJob {
         this.reader.onloadend = event => {
             this.cancelButton.hidden = true;
             if (this.reader.error) {
-                console.log('Error loading file:', this.reader.error.name);
                 if (this.reader.error.name === 'AbortError') {
                     this.status.innerText = 'Lectura cancelada.';  // FIXME: add a "Retry" button?
-                    console.log('Operation aborted.');
+                    this.retryButton.hidden = false;
                 } else {
                     this.status.innerText = `Error al cargar el fichero: ${this.reader.error.name}`;
                 }
             } else {
-                console.log('File ' + this.file.name + ' loaded successfully!');
                 this.status.innerText = `Fichero cargado correctamente, ${event.total} bytes`;
                 this.downloadDropdown.hidden = false;
             }
         };
 
-        // Right now, mainly for testing purposes.
-        this.reader.onprogress = event => this.status.innerText = `${event.loaded} bytes.`;
+        // Right now, mainly for testing purposes, to slow down the reading process so the UI can be examined.
+        this.reader.onprogress = event => {
+            let start = Date.now(); while (Date.now() - start < 500);  // 500ms delay on each read.
+            this.status.innerText = `${event.loaded} bytes leídos.`;
+        }
 
         // Create the UI elements for the job by copying the existing template.
         // That way, this code can be more agnostic about the particular layout of the UI elements.
@@ -301,18 +302,23 @@ class TrujamanJob {
         this.element.removeAttribute('id');
         this.element.querySelector('.trujaman_job_filename').innerText = file.name;
 
+        // A status area, to keep the end user informed.
         this.status = this.element.querySelector('.trujaman_job_status');
 
+        // A cancel button, to cancel current loading operation.
         this.cancelButton = this.element.querySelector('.trujaman_job_cancel_button');
-        this.cancelButton.onclick = () => {
-            console.log('Forcing abort!');
-            this.reader.abort();
-        };
+        this.cancelButton.onclick = () => this.reader.abort();
 
-        this.downloadDropdown = this.element.querySelector('.trujaman_job_download_dropdown');
+        // A retry button, to retry current loading operation, if previously aborted.
+        this.retryButton = this.element.querySelector('.trujaman_job_retry_button');
+        this.retryButton.onclick = () => this.readFile();
+
+        // A dropdown control, to choose the download format from a list.
         this.formatsList = this.element.querySelector('.trujaman_job_formats_list');
+        this.downloadDropdown = this.element.querySelector('.trujaman_job_download_dropdown');
         this.downloadDropdown.onclick = event => this.formatsList.hidden = !this.formatsList.hidden;
 
+        // A dismiss button, to delete the current job.
         this.element.querySelector('.trujaman_job_dismiss_button').addEventListener('click', event => {
             // Remove the onloadend handler, to avoid messing with the UI once the element is removed.
             // This is because that handler modifies DOM elements within the job UI element.
@@ -326,7 +332,14 @@ class TrujamanJob {
             this.reader.abort();
         }, {once: true});
 
+        // Finally, read the file.
+        this.readFile();
+    }
+
+    // Read the file associated with this job.
+    readFile () {
         console.log('Loading file', this.file.name);
+        this.retryButton.hidden = true;
         this.cancelButton.hidden = false;
         this.reader.readAsText(this.file);
     }

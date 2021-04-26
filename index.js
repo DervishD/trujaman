@@ -234,20 +234,28 @@ window.addEventListener('load', function () {
     // This is not tested in feature detection because this is entirely optional.
     if (('draggable' in filePicker) || ('ondragstart' in filePicker && 'ondrop' in filePicker)) {
         const theDropzone = document.querySelector('#trujaman_dropzone');
+        theDropzone.hidden = false;
 
         // This is needed because the drag and drop overlay is HIDDEN, so it wouldn't get the event.
-        window.ondragenter = () => theDropzone.hidden = false;
+        window.ondragenter = () => {
+            theDropzone.style.visibility = "visible";
+            theDropzone.style.opacity = 1;
+        }
 
         // Prevent the browser from opening the file.
         theDropzone.ondragenter = event => event.preventDefault();  // FIXME: is this needed?
         theDropzone.ondragover = event => event.preventDefault();
 
         // Hide the drag and drop overlay if the user didn't drop the file.
-        theDropzone.ondragleave = () => theDropzone.hidden = true;
+        theDropzone.ondragleave = () => {
+            theDropzone.style.opacity = 0;
+            theDropzone.style.visibility = "hidden";
+        }
 
         theDropzone.ondrop = event => {
             event.preventDefault();  // Prevent the browser from opening the file.
-            theDropzone.hidden = true;
+            theDropzone.style.opacity = 0;
+            theDropzone.style.visibility = "hidden";
             trujamanCreateJobs(event.dataTransfer.files);
         };
     }

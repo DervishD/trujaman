@@ -217,9 +217,11 @@ button:focus {
     height: 100%;
     top: 0;
     left: 0;
-    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
     background-color: var(--bg);
 	border: 0.1rem dashed var(--fg);
+    transition: visibility 1s, opacity 1s cubic-bezier(0.25, 1, 0.25, 1);
 }
 
 #trujaman_dropzone > p {

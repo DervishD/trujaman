@@ -234,28 +234,22 @@ window.addEventListener('load', function () {
     // This is not tested in feature detection because this is entirely optional.
     if (('draggable' in filePicker) || ('ondragstart' in filePicker && 'ondrop' in filePicker)) {
         const theDropzone = document.querySelector('#trujaman_dropzone');
+        theDropzone.dataset.state = 'hidden';
         theDropzone.hidden = false;
 
         // This is needed because the drag and drop overlay is HIDDEN, so it wouldn't get the event.
-        window.ondragenter = () => {
-            theDropzone.style.visibility = "visible";
-            theDropzone.style.opacity = 1;
-        }
+        window.ondragenter = () => theDropzone.dataset.state = 'visible';
 
         // Prevent the browser from opening the file.
         theDropzone.ondragenter = event => event.preventDefault();  // FIXME: is this needed?
         theDropzone.ondragover = event => event.preventDefault();
 
         // Hide the drag and drop overlay if the user didn't drop the file.
-        theDropzone.ondragleave = () => {
-            theDropzone.style.opacity = 0;
-            theDropzone.style.visibility = "hidden";
-        }
+        theDropzone.ondragleave = () => theDropzone.dataset.state = 'hidden';
 
         theDropzone.ondrop = event => {
             event.preventDefault();  // Prevent the browser from opening the file.
-            theDropzone.style.opacity = 0;
-            theDropzone.style.visibility = "hidden";
+            theDropzone.dataset.state = 'dismissed';
             trujamanCreateJobs(event.dataTransfer.files);
         };
     }
@@ -317,7 +311,7 @@ class TrujamanJob {
 
         // Right now, mainly for testing purposes, to slow down the reading process so the UI can be examined.
         this.reader.onprogress = event => {
-            let start = Date.now(); while (Date.now() - start < 500);  // 500ms delay on each read.
+            //let start = Date.now(); while (Date.now() - start < 500);  // 500ms delay on each read.
             this.status.innerText = `${event.loaded} bytes leídos.`;
         }
 

@@ -217,11 +217,25 @@ button:focus {
     height: 100%;
     top: 0;
     left: 0;
-    opacity: 0;
-    visibility: hidden;
     background-color: var(--bg);
 	border: 0.1rem dashed var(--fg);
     transition: visibility 1s, opacity 1s cubic-bezier(0.25, 1, 0.25, 1);
+}
+
+#trujaman_dropzone[data-state="hidden"] {
+    opacity: 0;
+    visibility: hidden;
+}
+
+#trujaman_dropzone[data-state="visible"] {
+    opacity: 1;
+    visibility: visible;
+}
+
+#trujaman_dropzone[data-state="dismissed"] {
+    opacity: 0;
+    visibility: hidden;
+    transition: none;
 }
 
 #trujaman_dropzone > p {

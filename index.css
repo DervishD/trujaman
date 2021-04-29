@@ -158,7 +158,6 @@ button, button:hover:focus {
     border-radius: 0.2em;
 }
 
-
 button:hover, button:focus {
     filter: brightness(111%);
 }
@@ -303,6 +302,7 @@ button:active {
 .trujaman_job_formats_list {
     font-size: 0.75em;
     position: absolute;
+    z-index: 1;
     right: 0;
     color: var(--bg);
     background-color: var(--accent);

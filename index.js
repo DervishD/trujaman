@@ -300,7 +300,7 @@ class TrujamanJob {
                         errorMessage += 'el fichero es muy grande';
                         break;
                     case 'NotFoundError':
-                        errorMessage += 'el fichero ya no existe';
+                        errorMessage += 'el fichero no existe';
                         break;
                     case 'NotReadableError':
                         errorMessage += 'el fichero no tiene permisos de lectura';

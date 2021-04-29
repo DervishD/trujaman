@@ -171,6 +171,7 @@ button:enabled:active {
 button:focus {
     outline: 1px solid var(--accent);
     outline-offset: 1px;
+    border-radius: 0;
 }
 
 .trujaman_tty {

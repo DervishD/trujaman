@@ -226,7 +226,8 @@ window.addEventListener('load', function () {
     const trujamanCreateJobs = function (iterable) {
         for (let i = 0; i < iterable.length; i++) {
             // Add the container itself to the page.
-            jobsContainer.appendChild(new TrujamanJob(iterable[i]).element);
+            const theJob = new TrujamanJob(iterable[i]).element;
+            if (theJob) jobsContainer.appendChild(theJob);
         }
     }
 
@@ -266,6 +267,15 @@ window.addEventListener('load', function () {
 
 class TrujamanJob {
     constructor (file) {
+        // Do not add duplicate jobs.
+        for (const jobElement of document.querySelectorAll('.trujaman_job').values()) {
+            if (jobElement.getAttribute('filename') === file.name) {
+                this.element = null;
+                return;
+            }
+        }
+
+        // Needed later for readFile().
         this.file = file;
 
         // Create the file reader.
@@ -320,6 +330,7 @@ class TrujamanJob {
         this.element = document.querySelector('#trujaman_job_template').cloneNode(true);
         this.element.hidden = false;
         this.element.removeAttribute('id');
+        this.element.setAttribute('filename', file.name);
         this.element.querySelector('.trujaman_job_filename').innerText = file.name;
 
         // A status area, to keep the end user informed.

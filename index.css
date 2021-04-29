@@ -149,29 +149,28 @@ button {
     margin: 0;
     padding: 0.5em;
     border: none;
-    outline: none;
-    border-radius: 0.2em;
     color: var(--bg);
     background-color: var(--accent);
 }
 
-button:disabled {
-    filter: grayscale(100%) contrast(50%) brightness(75%);
-}
-
-button:enabled:hover, button:focus {
-    filter: brightness(111%);
+button, button:hover:focus {
     outline: none;
+    border-radius: 0.2em;
 }
 
-button:enabled:active {
-    filter: brightness(99%);
+
+button:hover, button:focus {
+    filter: brightness(111%);
 }
 
 button:focus {
     outline: 1px solid var(--accent);
     outline-offset: 1px;
     border-radius: 0;
+}
+
+button:active {
+    filter: brightness(99%);
 }
 
 .trujaman_tty {

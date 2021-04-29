@@ -149,6 +149,8 @@ button {
     margin: 0;
     padding: 0.5em;
     border: none;
+    outline: none;
+    border-radius: 0.2em;
     color: var(--bg);
     background-color: var(--accent);
 }
@@ -157,14 +159,13 @@ button:disabled {
     filter: grayscale(100%) contrast(50%) brightness(75%);
 }
 
-button:enabled:hover {
+button:enabled:hover, button:focus {
     filter: brightness(111%);
+    outline: none;
 }
 
 button:enabled:active {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-    filter: brightness(100%);
+    filter: brightness(99%);
 }
 
 button:focus {

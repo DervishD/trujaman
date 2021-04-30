@@ -160,11 +160,7 @@ window.addEventListener('load', function () {
     .then(() => {
         fetch('version')
         .then(response => response.text())
-        .then(version => {
-            const versionElement = document.getElementById('trujaman_version');
-            versionElement.hidden = false;
-            versionElement.textContent = 'v' + version;
-        });
+        .then(version => document.querySelector('#trujaman_version').textContent += 'v' + version);
     });
 
     // Handle controller change.

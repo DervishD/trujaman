@@ -1,52 +1,27 @@
 'use strict';
 
 
-// Change to 'false' in production.
-var DEBUG = true;
-
-
-// Object for encapsulating the logging facility.
-// Advanced features can't be used here because this object is used by
+// Helper for showing an HTML error message within
+// the DOM element whose id is 'trujaman_error_body'.
+//
+// After showing the HTML error message, the script is stopped.
+//
+// Advanced features can't be used here because this helper is used by
 // the feature detection system itself, and it is possible that some
-// advanced feature used in this object is missing, making impossible
+// advanced feature used in this helper is missing, making impossible
 // to properly report the missing feature!
-var trujamanConsole = function () {
-    var self = {};
+function trujamanError (errorMessageHTML) {
+    // Show the DOM element for error notifications.
+    document.querySelector('#trujaman_error').hidden = false;
 
-    self.console = null;  // The console DOM element.
+    // Yes, this is safe, because the HTML content is neither arbitrary nor coming from the user.
+    document.querySelector('#trujaman_error_body').innerHTML = errorMessageHTML;
 
-    self.init = function () {
-        self.console = document.querySelector('#trujaman_console');
-        self.console.hidden = false;
-    };
-
-    // Print an arbitrary message on the console, with the provided type (class, really).
-    self.print = function (message, type) {
-        if (self.console === null) self.init();
-
-        // This has to be calculated BEFORE inserting the new content...
-        var mustScroll = self.console.scrollHeight - self.console.clientHeight - self.console.scrollTop <= 0;
-
-        // New content is inserted at the end...
-        // ES6 template strings can't be used here because it may be unavailable
-        // and THIS function will be used to notify that to the end user!
-        self.console.insertAdjacentHTML('beforeend', '<p' + (type ? ' class="' + type + '"':'') + '>' + message);
-        // This has to be calculated AFTER inserting the new content...
-        if (mustScroll) self.console.scrollTop = self.console.scrollHeight - self.console.clientHeight;
-    };
-
-    // Print a logging message on the console.
-    self.log = DEBUG ? function (message) {
-        self.print('• ' + message, 'trujaman_logmsg');
-    }: function () {};  // If not in debugging mode, this function is a NOP.
-
-    // Print an error message on the console.
-    self.error = function (message) {
-        self.print('• ERROR •\n' + message, 'trujaman_errmsg');
-    };
-
-    return self;
-}();
+    // Terminate script execution.
+    // There are many ways of stopping execution and this is both terse and effective... of sorts.
+    // Asynchronous tasks in other threads will happen anyway. So really this is a best effort.
+    throw new Error('Fatal error ocurred, terminating');
+}
 
 
 // Detect needed features. This function MUST BE CALLED on the window.onload event handler,
@@ -131,22 +106,16 @@ function trujamanDetectFeatures () {
 
     if (trujamanMissingFeatures.length) {
         // Show the list of missing features.
-        trujamanConsole.error('La aplicación no puede funcionar porque este navegador no es compatible con:');
-        trujamanMissingFeatures.forEach(function (item) {
-            trujamanConsole.print(item, 'trujaman_missing_feature');
+        var innerHTML = '<div>La aplicación no puede funcionar porque este navegador no es compatible con:</div>';
+        trujamanMissingFeatures.forEach(function (feature) {
+            innerHTML += '<div class="trujaman_error_body_tty">' + feature + '</div>';
         });
-
-        // Terminate script execution.
-        // There are many ways of stopping execution.
-        // This is terse and effective.
-        window.onerror = function () { return true; };
-        throw true;
+        trujamanError(innerHTML);
     }
 }
 
 
 window.addEventListener('load', function () {
-
     // Detect needed features and show error messages if needed.
     trujamanDetectFeatures();
 
@@ -173,12 +142,12 @@ window.addEventListener('load', function () {
     window.addEventListener('beforeinstallprompt', event => event.preventDefault());
 
     // Register service worker.
-    navigator.serviceWorker.register('sw.js').catch(error => {
-        trujamanConsole.error('Una parte esencial de la aplicación no se pudo inicializar correctamente.\n' +
-                      'El funcionamiento podría ser incorrecto.\n' +
-                      'El error producido se detalla a continuación:');
-        trujamanConsole.print(error);
-    });
+    navigator.serviceWorker.register('sw.js').catch(error => trujamanError(
+        '<div>Una parte esencial de la aplicación no se pudo inicializar correctamente.</div>' +
+        '<div>El funcionamiento podría ser incorrecto.</div>' +
+        '<div>El error producido se detalla a continuación:</div>' +
+        '<div class="trujaman_error_body_tty">' + error + '</div>'
+    ));
 
     // Set up file picker.
     const filePicker = document.querySelector('#trujaman_filepicker');

@@ -322,40 +322,27 @@ button:active {
     background-color: var(--bg);
 }
 
-#trujaman_console, noscript > div {
-    font-family: "Trujaman Mono";
-    font-size: clamp(0.5em, 10vw, 0.75em);
-    overflow: auto;
+#trujaman_error, noscript > div {
+    font-size: clamp(0.5em, 5vw, 1em);
+    /* font-weight: bold; */
     margin: 2rem auto 0;
-    width: max-content;
-    max-width: 100%;
+    padding: 1em;
     color: var(--bg);
     background-color: var(--fg);
 }
 
-#trujaman_console > p, noscript > div > p {
-  white-space: pre-wrap;
-  overflow-wrap: break-word;
-  margin: 1em;
-}
-
-#trujaman_console > p.trujaman_logmsg {
-    /* Unit MUST be ch to have a proper hanging indent with the monospaced font. */
-    text-indent: -2ch;
-    padding-left: 2ch;
-}
-
-#trujaman_console > p.trujaman_errmsg, noscript > div > p {
-    font-size: 1.1em;
+#trujaman_error_header {
+    font-size: 1.5em;
     font-weight: bold;
+}
+
+#trujaman_error div, noscript > div {
     text-align: center;
 }
 
-#trujaman_console > p.trujaman_missing_feature {
-    text-align: center;
-    margin: 0.5em 1em;
-}
-
-#trujaman_console > p.trujaman_missing_feature:last-child {
-    margin-bottom: revert;
+.trujaman_error_body_tty {
+    font-family: "Trujaman Mono";
+    font-size: 0.8em;
+    margin: 0.5em 0;
+    font-weight: normal;
 }

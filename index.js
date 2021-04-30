@@ -152,8 +152,6 @@ window.addEventListener('load', function () {
 
     // From this point on, advanced features can be used.
 
-    trujamanConsole.log('Versión de desarrollo.');
-
     // Show version number.
     navigator.serviceWorker.ready
     .then(() => {

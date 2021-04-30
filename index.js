@@ -310,7 +310,7 @@ class TrujamanJob {
                 }
                 this.status.innerHTML = `${errorMessage} <span class="trujaman_tty">(${error.name})</span>.`;
             } else {
-                this.status.innerText = `El fichero se leyó correctamente.`;
+                this.status.textContent = `El fichero se leyó correctamente.`;
                 this.downloadDropdown.hidden = false;
             }
         };
@@ -318,7 +318,7 @@ class TrujamanJob {
         // Right now, mainly for testing purposes, to slow down the reading process so the UI can be examined.
         this.reader.onprogress = event => {
             //let start = Date.now(); while (Date.now() - start < 500);  // 500ms delay on each read.
-            this.status.innerText = `${event.loaded} bytes leídos.`;
+            this.status.textContent = `${event.loaded} bytes leídos.`;
         }
 
         // Create the UI elements for the job by copying the existing template.
@@ -327,7 +327,7 @@ class TrujamanJob {
         this.element.hidden = false;
         this.element.removeAttribute('id');
         this.element.setAttribute('filename', file.name);
-        this.element.querySelector('.trujaman_job_filename').innerText = file.name;
+        this.element.querySelector('.trujaman_job_filename').textContent = file.name;
 
         // A status area, to keep the end user informed.
         this.status = this.element.querySelector('.trujaman_job_status');

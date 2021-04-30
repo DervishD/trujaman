@@ -153,7 +153,6 @@ window.addEventListener('load', function () {
     // From this point on, advanced features can be used.
 
     trujamanConsole.log('Versión de desarrollo.');
-    trujamanConsole.log(`La página${navigator.serviceWorker.controller?'':' no'} está controlada.`);
 
     // Show version number.
     navigator.serviceWorker.ready
@@ -166,7 +165,6 @@ window.addEventListener('load', function () {
     // Handle controller change.
     let refreshing = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-        trujamanConsole.log('La página tiene un nuevo controlador.');
         if (refreshing) return;
         refreshing = true;
         window.location.reload();
@@ -182,10 +180,6 @@ window.addEventListener('load', function () {
     // Register service worker.
     navigator.serviceWorker.register('sw.js')
     .then(registration => {
-        trujamanConsole.log('El service worker se registró con éxito.');
-
-        trujamanConsole.log(`${registration.active?'Hay':'No hay'} un service worker activo.`);
-
         if (registration.waiting) trujamanConsole.log('Hay un service worker esperando.');
 
         // Handle state changes for new service workers, including the first one.
@@ -200,7 +194,6 @@ window.addEventListener('load', function () {
         });
     })
     .catch(error => {
-        // Enable the console, which will be hidden in production.
         trujamanConsole.error('Una parte esencial de la aplicación no se pudo inicializar correctamente.\n' +
                       'El funcionamiento podría ser incorrecto.\n' +
                       'El error producido se detalla a continuación:');

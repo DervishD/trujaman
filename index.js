@@ -126,7 +126,11 @@ window.addEventListener('load', function () {
     .then(() => {
         fetch('version')
         .then(response => response.text())
-        .then(version => document.querySelector('#trujaman_version').textContent += 'v' + version);
+        .then(version => {
+            let trujamanVersion = document.querySelector('#trujaman_version');
+            trujamanVersion.hidden = false;
+            trujamanVersion.textContent += 'v' + version;
+        });
     });
 
     // Handle controller change.

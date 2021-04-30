@@ -178,22 +178,7 @@ window.addEventListener('load', function () {
     });
 
     // Register service worker.
-    navigator.serviceWorker.register('sw.js')
-    .then(registration => {
-        if (registration.waiting) trujamanConsole.log('Hay un service worker esperando.');
-
-        // Handle state changes for new service workers, including the first one.
-        registration.addEventListener('updatefound', () => {
-            trujamanConsole.log('Se encontró un nuevo service worker.');
-            registration.installing.onstatechange = event => {
-                if (event.target.state === 'installed')
-                    trujamanConsole.log('Se ha instalado un nuevo service worker.');
-                if (event.target.state === 'activated')
-                    trujamanConsole.log('Hay un nuevo service worker activo.');
-            };
-        });
-    })
-    .catch(error => {
+    navigator.serviceWorker.register('sw.js').catch(error => {
         trujamanConsole.error('Una parte esencial de la aplicación no se pudo inicializar correctamente.\n' +
                       'El funcionamiento podría ser incorrecto.\n' +
                       'El error producido se detalla a continuación:');

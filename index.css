@@ -306,7 +306,6 @@ button:active {
     right: 0;
     color: var(--bg);
     background-color: var(--accent);
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
 }
 
 .trujaman_job_formats_list * {
@@ -318,8 +317,8 @@ button:active {
 }
 
 .trujaman_job_formats_list *:hover {
-    color: var(--accent);
-    background-color: var(--bg);
+    filter: brightness(111%);
+    border-radius: 0.2em;
 }
 
 #trujaman_error, noscript > div {

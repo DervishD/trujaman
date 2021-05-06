@@ -307,7 +307,6 @@ button:active {
 
 .trujaman_job_formats_list *:hover {
     filter: brightness(111%);
-    border-radius: 0.2em;
 }
 
 #trujaman_error, noscript > div {

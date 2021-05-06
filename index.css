@@ -153,19 +153,8 @@ button {
     background-color: var(--accent);
 }
 
-button, button:hover:focus {
-    outline: none;
-    border-radius: 0.2em;
-}
-
 button:hover, button:focus {
     filter: brightness(111%);
-}
-
-button:focus {
-    outline: 1px solid var(--accent);
-    outline-offset: 1px;
-    border-radius: 0;
 }
 
 button:active {

@@ -292,7 +292,7 @@ class TrujamanJob {
         // A dropdown control, to choose the download format from a list.
         this.formatsList = this.element.querySelector('.trujaman_job_formats_list');
         this.downloadDropdown = this.element.querySelector('.trujaman_job_download_dropdown');
-        this.downloadDropdown.onclick = event => this.formatsList.hidden = !this.formatsList.hidden;
+        this.downloadDropdown.onclick = () => this.formatsList.hidden = !this.formatsList.hidden;
 
         // A dismiss button, to delete the current job.
         this.element.querySelector('.trujaman_job_dismiss_button').addEventListener('click', event => {

@@ -318,16 +318,21 @@ button:active {
     background-color: var(--fg);
 }
 
+#trujaman_error div, noscript > div {
+    text-align: center;
+}
+
 #trujaman_error_header {
     font-size: 1.5em;
     font-weight: bold;
 }
 
-#trujaman_error div, noscript > div {
-    text-align: center;
+#trujaman_error_message {
+    font-size: 1.25em;
+    margin: 1em 0;
 }
 
-.trujaman_error_body_tty {
+#trujaman_error_details {
     font-family: "Trujaman Mono";
     font-size: 0.8em;
     margin: 0.5em 0;

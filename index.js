@@ -4,18 +4,21 @@
 // Helper for showing an HTML error message within
 // the DOM element whose id is 'trujaman_error_body'.
 //
-// After showing the HTML error message, the script is stopped.
+// The helper accepts two parameters. The first one is the error message,
+// preferably a one-liner explaining (tersely) the main cause of the error.
+// The second one can be more verbose and contains the details of the error,
+// and will be rendered differently. Usually it's the stringified version of
+// the error as returned by the interpreter.
 //
 // Advanced features can't be used here because this helper is used by
 // the feature detection system itself, and it is possible that some
 // advanced feature used in this helper is missing, making impossible
 // to properly report the missing feature!
-function trujamanError (errorMessageHTML) {
+function trujamanError (errorMessage, errorDetails) {
     // Show the DOM element for error notifications.
     document.querySelector('#trujaman_error').hidden = false;
-
-    // Yes, this is safe, because the HTML content is neither arbitrary nor coming from the user.
-    document.querySelector('#trujaman_error_body').innerHTML = errorMessageHTML;
+    document.querySelector('#trujaman_error_message').innerText = errorMessage;
+    document.querySelector('#trujaman_error_details').innerText = errorDetails;
 }
 
 
@@ -107,11 +110,10 @@ window.addEventListener('load', function () {
     const trujamanMissingFeatures = trujamanGetMissingFeatures();
     if (trujamanMissingFeatures.length) {
         // Show the list of missing features.
-        var innerHTML = '<div>La aplicación no puede funcionar porque este navegador no es compatible con:</div>';
-        trujamanMissingFeatures.forEach(function (feature) {
-            innerHTML += '<div class="trujaman_error_body_tty">' + feature + '</div>';
-        });
-        trujamanError(innerHTML);
+        var message = 'Este navegador no es compatible con:';
+        var details = '';
+        trujamanMissingFeatures.forEach(function (feature) {details += feature + '<br>';});
+        trujamanError(message, details);
         return;
     }
 
@@ -143,7 +145,12 @@ window.addEventListener('load', function () {
 
     // Register service worker.
     navigator.serviceWorker.register('sw.js')
-    .then(() => {  // Service worker successfully registered, proceed with setting up the app.
+    .catch(error => {
+        trujamanError('Falló una parte esencial.', error);
+        return Promise.reject(null);
+    })
+    // Service worker successfully registered, proceed with setting up the app.
+    .then(() => {
         // Set up file picker.
         const filePicker = document.querySelector('#trujaman_filepicker');
         filePicker.hidden = false;
@@ -196,13 +203,10 @@ window.addEventListener('load', function () {
             event.target.value = null;
         });
     })
-    .catch(error => trujamanError(
-        '<div>Una parte esencial de la aplicación no se pudo inicializar correctamente.</div>' +
-        '<div>El funcionamiento podría ser incorrecto.</div>' +
-        '<div>El error producido se detalla a continuación:</div>' +
-        '<div class="trujaman_error_body_tty">' + error + '</div>'
-    ));
-
+    .catch(error => {  // For unhandled errors.
+        if (error === null) return;
+        trujamanError('Se produjo un error inesperado.', error);
+    });
 });
 
 

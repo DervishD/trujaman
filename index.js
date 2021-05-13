@@ -16,11 +16,6 @@ function trujamanError (errorMessageHTML) {
 
     // Yes, this is safe, because the HTML content is neither arbitrary nor coming from the user.
     document.querySelector('#trujaman_error_body').innerHTML = errorMessageHTML;
-
-    // Terminate script execution.
-    // There are many ways of stopping execution and this is both terse and effective... of sorts.
-    // Asynchronous tasks in other threads will happen anyway. So really this is a best effort.
-    throw new Error('Fatal error ocurred, terminating');
 }
 
 

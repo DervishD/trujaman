@@ -19,9 +19,8 @@ function trujamanError (errorMessageHTML) {
 }
 
 
-// Detect needed features. This function MUST BE CALLED on the window.onload event handler,
-// because it needs access to the web page body in order to show the error messages.
-function trujamanDetectFeatures () {
+// Helper for getting the list of missing features.
+function trujamanGetMissingFeatures () {
     // Can't use 'let' because that's still an undetected feature.
     var trujamanMissingFeatures = [];
 
@@ -99,6 +98,13 @@ function trujamanDetectFeatures () {
         trujamanMissingFeatures.push('HTML5: File API');
     }
 
+    return trujamanMissingFeatures;
+}
+
+
+window.addEventListener('load', function () {
+    // If there are missing features, notify the user and stop.
+    const trujamanMissingFeatures = trujamanGetMissingFeatures();
     if (trujamanMissingFeatures.length) {
         // Show the list of missing features.
         var innerHTML = '<div>La aplicación no puede funcionar porque este navegador no es compatible con:</div>';
@@ -106,13 +112,8 @@ function trujamanDetectFeatures () {
             innerHTML += '<div class="trujaman_error_body_tty">' + feature + '</div>';
         });
         trujamanError(innerHTML);
+        return;
     }
-}
-
-
-window.addEventListener('load', function () {
-    // Detect needed features and show error messages if needed.
-    trujamanDetectFeatures();
 
     // From this point on, advanced features can be used.
 

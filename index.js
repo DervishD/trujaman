@@ -150,7 +150,20 @@ window.addEventListener('load', function () {
         return Promise.reject(null);
     })
     // Service worker successfully registered, proceed with setting up the app.
-    .then(() => {
+    .then(() => fetch('formats.json'))
+    .then(response => response.json().catch(error => {
+        trujamanError('No se pudo procesar la lista de formatos.', error);
+        return Promise.reject(null);
+    }))
+    .then(formatList => {  // Set up the core of the application and the UI.
+        // Update job template with the list of formats.
+        const formatListTemplate = document.querySelector('#trujaman_job_template .trujaman_job_formats_list');
+        for (const format in formatList) {
+            let aParagraph = document.createElement('p');
+            aParagraph.innerText = format;
+            formatListTemplate.appendChild(aParagraph);
+        }
+
         // Set up file picker.
         const filePicker = document.querySelector('#trujaman_filepicker');
         filePicker.hidden = false;

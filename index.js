@@ -155,10 +155,10 @@ window.addEventListener('load', function () {
         trujamanError('No se pudo procesar la lista de formatos.', error);
         return Promise.reject(null);
     }))
-    .then(formatList => {  // Set up the core of the application and the UI.
+    .then(formats => {  // Set up the core of the application and the UI.
         // Update job template with the list of formats.
         const formatListTemplate = document.querySelector('#trujaman_job_template .trujaman_job_formats_list');
-        for (const format in formatList) {
+        for (const format in formats) {
             let aParagraph = document.createElement('p');
             aParagraph.innerText = format;
             formatListTemplate.appendChild(aParagraph);
@@ -179,7 +179,7 @@ window.addEventListener('load', function () {
         const trujamanCreateJobs = function (iterable) {
             for (let i = 0; i < iterable.length; i++) {
                 // Add the container itself to the page.
-                const theJob = new TrujamanJob(iterable[i]).element;
+                const theJob = new TrujamanJob(iterable[i], formats).element;
                 if (theJob) jobsContainer.appendChild(theJob);
             }
         }
@@ -224,7 +224,7 @@ window.addEventListener('load', function () {
 
 
 class TrujamanJob {
-    constructor (file) {
+    constructor (file, formats) {
         // Do not add duplicate jobs.
         for (const jobElement of document.querySelectorAll('.trujaman_job').values()) {
             if (jobElement.getAttribute('filename') === file.name) {
@@ -234,6 +234,7 @@ class TrujamanJob {
         }
 
         this.file = file;
+        this.formats = formats;
 
         // Create the file reader.
         this.reader = new FileReader();

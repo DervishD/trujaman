@@ -329,7 +329,7 @@ class TrujamanJob {
         } else {
             this.retryButton.hidden = true;
             this.cancelButton.hidden = false;
-            this.reader.readAsText(this.file);
+            this.reader.readAsArrayBuffer(this.file);
         }
     }
 }

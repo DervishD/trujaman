@@ -172,7 +172,7 @@ window.addEventListener('load', function () {
             filePicker.querySelector('#trujaman_filepicker_input').click();
         });
 
-        // Set up jobs container
+        // Set up jobs container.
         const jobsContainer = document.querySelector('#trujaman_jobs');
         jobsContainer.hidden = false;
 

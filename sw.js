@@ -1,6 +1,6 @@
 'use strict';
 
-const serviceworkerVersion = '20210513' + '-alpha';
+const serviceworkerVersion = '20210529' + '-alpha';
 
 const landingPage = '.';  // Maybe: "new URL(self.registration.scope).pathname"???
 
@@ -18,6 +18,7 @@ const coreAssets = [
     'index_n400m.woff2',
     'index_n700m.woff2',
     'index.js',
+    'ww.js',
     'manifest.json',
     'appicon.png',
     'favicon.ico',

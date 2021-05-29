@@ -1,18 +1,18 @@
 'use strict';
 
 
-// Helper for showing an HTML error message within
+// Function for showing an HTML error message within
 // the DOM element whose id is 'trujaman_error_body'.
 //
-// The helper accepts two parameters. The first one is the error message,
+// The function accepts two parameters. The first one is the error message,
 // preferably a one-liner explaining (tersely) the main cause of the error.
 // The second one can be more verbose and contains the details of the error,
 // and will be rendered differently. Usually it's the stringified version of
 // the error as returned by the interpreter.
 //
-// Advanced features can't be used here because this helper is used by
+// Advanced features can't be used here because this function is used by
 // the feature detection system itself, and it is possible that some
-// advanced feature used in this helper is missing, making impossible
+// advanced feature used in this function is missing, making impossible
 // to properly report the missing feature!
 function trujamanError (errorMessage, errorDetails) {
     // Show the DOM element for error notifications, hide the remaining ones.
@@ -28,7 +28,7 @@ function trujamanError (errorMessage, errorDetails) {
 }
 
 
-// Helper for getting the list of missing features.
+// Function for getting the list of missing features.
 function trujamanGetMissingFeatures () {
     // Can't use 'let' because that's still an undetected feature.
     var trujamanMissingFeatures = [];
@@ -182,6 +182,7 @@ window.addEventListener('load', function () {
         const jobsContainer = document.querySelector('#trujaman_jobs');
         jobsContainer.hidden = false;
 
+        // Function to create a bunch of jobs.
         const trujamanCreateJobs = function (iterable) {
             for (let i = 0; i < iterable.length; i++) {
                 // Add the container itself to the page.

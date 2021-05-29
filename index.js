@@ -79,7 +79,10 @@ function trujamanGetMissingFeatures () {
         trujamanMissingFeatures.push('Promises');
     }
 
-    // Service workers.
+    if ('ArrayBuffer' in window === false) {
+        trujamanMissingFeatures.push('ArrayBuffer');
+    }
+
     if ('serviceWorker' in navigator === false) {
         trujamanMissingFeatures.push('Service workers');
     }

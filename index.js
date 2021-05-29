@@ -87,7 +87,22 @@ function trujamanGetMissingFeatures () {
         trujamanMissingFeatures.push('Service workers');
     }
 
-    // Cookies (needed for registering a service worker).
+    if ('Worker' in window === false) {
+        trujamanMissingFeatures.push('Web workers');
+    }
+
+    try {
+        eval('\
+            var w = new Worker(URL.createObjectURL(new Blob(["var x = null"], {type: "text/javascript"})));\
+            w.onerror = function () {throw "";};\
+            var b = new ArrayBuffer(1);\
+            w.postMessage(b, [b]);\
+            if (b.byteLength !== 0) throw "";\
+        ')
+    } catch (e) {
+        trujamanMissingFeatures.push('Transferables');
+    }
+
     if (!navigator.cookieEnabled) {
         trujamanMissingFeatures.push('Cookies');
     }

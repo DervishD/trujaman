@@ -178,16 +178,49 @@ window.addEventListener('load', function () {
             filePicker.querySelector('#trujaman_filepicker_input').click();
         });
 
-        // Set up jobs container.
+        // Set up web worker.
+        const webWorker = new TrujamanWebWorker('ww.js');
+
+        // Show jobs container.
         const jobsContainer = document.querySelector('#trujaman_jobs');
         jobsContainer.hidden = false;
 
         // Function to create a bunch of jobs.
         const trujamanCreateJobs = function (iterable) {
             for (let i = 0; i < iterable.length; i++) {
-                // Add the container itself to the page.
-                const theJob = new TrujamanJob(iterable[i], formats).element;
-                if (theJob) jobsContainer.appendChild(theJob);
+                const file = iterable[i];
+
+                // There's a problem with File objects: they don't have paths, only names.
+                // So, there's no way of telling if two user-selected files are the same or not,
+                // because they may have the same name but come from different directories.
+                //
+                // Best effort here is to create a kind of hash from the file name, the file size
+                // and the last modification time. This is not bulletproof, as the user may have
+                // and select to different files from different directores whose names are equal,
+                // their sizes and modification times too, but still have different contents.
+                //
+                // Still, this minimizes the possibility of leaving the user unable to add a file
+                // just because it has the same name than one previously selected, if they come
+                // from different folders. The chances of both files having the exact same size
+                // and modification time are quite reduced. Hopefully.
+                file.hash = `${file.name}.${file.size}.${file.lastModified}`;
+
+                // Do not add duplicate jobs, using the previously calculated hash.
+                let existingJobs = Array.from(document.querySelectorAll('.trujaman_job_id').values());
+                existingJobs = existingJobs.map(element => element.textContent);
+                if (existingJobs.includes(file.hash)) continue;
+
+                // Create a new job.
+                file.readFile = () => webWorker.do('readFile', [file]);
+                file.abortRead = () => webWorker.do('abortRead', [file]);
+                file.forgetFile = () => webWorker.do('forgetFile', [file]);
+                const newJob = new TrujamanJob(file);
+
+                // Store the job id.
+                newJob.element.querySelector('.trujaman_job_id').textContent = file.hash;
+
+                // Add the job to the web page.
+                jobsContainer.appendChild(newJob.element);
             }
         }
 
@@ -230,36 +263,92 @@ window.addEventListener('load', function () {
 });
 
 
-class TrujamanJob {
-    constructor (file, formats) {
-        // Do not add duplicate jobs.
-        for (const jobElement of document.querySelectorAll('.trujaman_job').values()) {
-            if (jobElement.getAttribute('filename') === file.name) {
-                this.element = null;
-                return;
+// This class encapsulates the web worker for background tasks.
+class TrujamanWebWorker {
+    constructor (script) {
+        this.settlers = [];  // For settling the appropriate Promise for a transaction.
+        this.currentId = 0;  // Current transaction identifier.
+
+        // Create the web worker.
+        this.worker = new Worker(script);
+
+        // This error handler only handles loading errors and syntax errors.
+        this.worker.onerror = event => {
+            let details = '';
+            if (event instanceof ErrorEvent) {
+                // For syntax errors, that should not happen in production,
+                // the event will be an ErrorEvent instance and will contain
+                // information pertaining to the error.
+                details += `Error de sintaxis en línea ${event.lineno}\n(${event.message}).`;
+            } else {
+                // For loading errors the event will be Event.
+                details += `No se pudo iniciar el gestor de tareas en segundo plano.`;
             }
+            trujamanError('No se pueden ejecutar tareas en segundo plano.', details);
         }
 
-        this.file = file;
-        this.formats = formats;
+        // This handles responses from the web worker.
+        this.worker.addEventListener('message', event => {
+            const {id, status, payload} = event.data;
 
-        // Create the file reader.
-        this.reader = new FileReader();
+            // Internal error in web worker.
+            if (status === null) {
+                const details = `${payload.message} «${payload.data}».`;
+                trujamanError('No existe el comando en segundo plano solicitado.', details);
+            } else {
+                // Response from web worker.
+                // Settle the promise according to the returned status
+                // and call the settler registered for this transaction
+                // to resolve or reject the Promise.
+                if (status) {
+                    this.settlers[id].resolve(payload);
+                } else {
+                    this.settlers[id].reject(payload);
+                }
+            }
+            // Clean callbacks that are no longer needed.
+            delete this.settlers[id];
+        });
+    }
+
+    // Method to execute a command on the web worker and promisify the response.
+    do (command, args) {
+        // This builds a new Promise around the message sent to the web worker,
+        // so the replies from the web worker will settle that Promise, making
+        // the asynchronous interaction code much cleaner and easier to follow.
+        //
+        // Commands are arbitrary, they are send as-is to the web worker.
+        // If they are unimplemented the web worker will reply with an internal error.
+        return new Promise((resolve, reject) => {
+            // Store the Promise settlers for use inside onmessage event handler.
+            this.settlers[this.currentId] = {'resolve': resolve, 'reject': reject};
+            // Send message to web worker.
+            this.worker.postMessage({id: this.currentId++, command: command, args: args});
+        })
+    }
+}
+
+
+// This class encapsulates the user interface for a file job.
+// That includes reading the file, cancelling and retrying file reads,
+// removing jobs, downloading conversion results, etc.
+class TrujamanJob {
+    constructor (file) {
+        this.file = file;
 
         // Create the UI elements for the job by copying the existing template.
         // That way, this code can be more agnostic about the particular layout of the UI elements.
         this.element = document.querySelector('#trujaman_job_template').cloneNode(true);
         this.element.hidden = false;
         this.element.removeAttribute('id');
-        this.element.setAttribute('filename', file.name);
-        this.element.querySelector('.trujaman_job_filename').textContent = file.name;
+        this.element.querySelector('.trujaman_job_filename').textContent = this.file.name;
 
         // A status area, to keep the end user informed.
         this.status = this.element.querySelector('.trujaman_job_status');
 
         // A cancel button, to cancel current loading operation.
         this.cancelButton = this.element.querySelector('.trujaman_job_cancel_button');
-        this.cancelButton.onclick = () => this.reader.abort();
+        this.cancelButton.onclick = () => this.file.abortRead();
 
         // A retry button, to retry current loading operation, if previously aborted.
         this.retryButton = this.element.querySelector('.trujaman_job_retry_button');
@@ -272,16 +361,12 @@ class TrujamanJob {
 
         // A dismiss button, to delete the current job.
         this.element.querySelector('.trujaman_job_dismiss_button').addEventListener('click', event => {
-            // Remove the onloadend handler, to avoid messing with the UI once the element is removed.
-            // This is because that handler modifies DOM elements within the job UI element.
-            this.reader.onloadend = null;
-
             // Remove job UI element.
-            const theJob = event.target.closest('.trujaman_job');
-            theJob.parentNode.removeChild(theJob);
+            const currentJob = event.target.closest('.trujaman_job');
+            currentJob.parentNode.removeChild(currentJob);
 
             // Abort file reading, just in case.
-            this.reader.abort();
+            this.file.abortRead();
         }, {once: true});
 
         // Finally, read the file.
@@ -290,53 +375,49 @@ class TrujamanJob {
 
     // Read the file associated with this job.
     readFile () {
-        // Handling errors here is simpler and more convenient than having two
-        // nearly identical handlers for 'onerror' and 'onabort', since this
-        // event will fire no matter whether the file reading process finished
-        // successfully or not.
-        this.reader.onloadend = event => {
-            let error = this.reader.error || this.reader.trujamanError;
-
+        // Show needed UI elements.
+        this.retryButton.hidden = true;
+        this.cancelButton.hidden = false;
+        // Do the actual file read.
+        this.file.readFile()
+        .then(payload => {
             this.cancelButton.hidden = true;
-            if (error) {
-                this.retryButton.hidden = false;
-                let errorMessage = 'ERROR: ';
-                switch (error.name) {
-                    case 'AbortError':
-                        errorMessage += 'lectura cancelada';
-                        break;
-                    case 'FileTooLargeError':
-                        errorMessage += 'el fichero es muy grande';
-                        break;
-                    case 'NotFoundError':
-                        errorMessage += 'el fichero no existe';
-                        break;
-                    case 'NotReadableError':
-                        errorMessage += 'el fichero no tiene permisos de lectura';
-                        break;
-                    case 'SecurityError':
-                        errorMessage += 'el fichero no se puede leer de forma segura';
-                        break;
-                    default:
-                        errorMessage += 'el fichero no pudo ser leído';
-                        break;
-                }
-                this.status.innerHTML = `${errorMessage} <span class="trujaman_tty">(${error.name})</span>.`;
-            } else {
-                this.status.textContent = `El fichero se leyó correctamente.`;
-                this.downloadDropdown.hidden = false;
+            this.status.textContent = `El fichero se leyó correctamente.`;
+            this.downloadDropdown.hidden = false;
+            console.log(new Uint8Array(payload, 0, 10));
+        })
+        .then(() => this.file.forgetFile())  // For cleaning up no longer needed resources.
+        .catch(error => {
+            // Something went wrong.
+            this.cancelButton.hidden = true;
+            this.retryButton.hidden = false;
+            let errorMessage = 'ERROR: ';
+            switch (error.name) {
+                case 'AbortError':
+                    errorMessage += 'lectura cancelada';
+                    break;
+                case 'FileTooLargeError':
+                    errorMessage += 'el fichero es muy grande';
+                    break;
+                case 'NotFoundError':
+                    errorMessage += 'el fichero no existe';
+                    break;
+                case 'NotReadableError':
+                    errorMessage += 'el fichero no tiene permisos de lectura';
+                    break;
+                case 'SecurityError':
+                    errorMessage += 'el fichero no se puede leer de forma segura';
+                    break;
+                default:
+                    // Unexpected error condition that should not happen in production.
+                    // So, it is notified differently, by using trujamanError.
+                    let details = `Se produjo un error «${error.name}» leyendo el fichero «${error.data}».`;
+                    trujamanError('Ocurrió un error inesperado leyendo un fichero.', details);
+                    // Notify in the file's status area, too...
+                    errorMessage += 'el fichero no pudo ser leído';
+                    break;
             }
-        };
-
-        if (this.file.size > 99 * 1024 * 1024) {  // Absolutely arbitrary maximum file size...
-            // Use a fake event to handle this 'error' so all error handling happens in one place.
-            let event = new ProgressEvent('loadend', {loaded: 0, total: 0});
-            this.reader.trujamanError = new DOMException('', 'FileTooLargeError');  // Fake event, fake error...
-            this.reader.dispatchEvent(event);
-        } else {
-            this.retryButton.hidden = true;
-            this.cancelButton.hidden = false;
-            this.reader.readAsArrayBuffer(this.file);
-        }
+            this.status.innerHTML = `${errorMessage} <span class="trujaman_tty">(${error.name})</span>.`;
+        });
     }
 }

@@ -33,78 +33,68 @@ function trujamanGetMissingFeatures () {
     // Can't use 'let' because that's still an undetected feature.
     var trujamanMissingFeatures = [];
 
-    // ECMAScript 6 arrow functions.
     try {
         eval('var f = x => x');
     } catch (e) {
-        trujamanMissingFeatures.push('JavaScript ES6: arrow functions');
+        trujamanMissingFeatures.push('Arrow functions');
     }
 
-    // ECMAScript 6 classes.
     try {
         eval('class X {}');
     } catch (e) {
-        trujamanMissingFeatures.push('JavaScript ES6: classes');
+        trujamanMissingFeatures.push('Classes');
     }
 
-    // ECMAScript 6 let.
     try {
         eval('let x = true');
     } catch (e) {
-        trujamanMissingFeatures.push('JavaScript ES6: let statement');
+        trujamanMissingFeatures.push('let statement');
     }
 
-    // ECMAScript 6 const.
     try {
         eval('const x = true');
     } catch (e) {
-        trujamanMissingFeatures.push('JavaScript ES6: const statement');
+        trujamanMissingFeatures.push('const statement');
     }
 
-    // ECMAScript 6 template strings.
     try {
         eval('let x = `x`');
     } catch (e) {
-        trujamanMissingFeatures.push('JavaScript ES6: template strings');
+        trujamanMissingFeatures.push('Template strings');
     }
 
-    // ECMAScript 6 default parameters.
     try {
         eval('function f (x=1) {}');
     } catch (e) {
-        trujamanMissingFeatures.push('JavaScript ES6: default function parameters');
+        trujamanMissingFeatures.push('Default function parameters');
     }
 
-    // ECMAScript 6 async functions.
     try {
         eval('async function f() {}');
     } catch (e) {
-        trujamanMissingFeatures.push('JavaScript ES6: async functions');
+        trujamanMissingFeatures.push('async functions');
     }
 
-    // ECMAScript 6 promises.
     if (typeof Promise === 'undefined') {
-        trujamanMissingFeatures.push('JavaScript ES6: promises');
+        trujamanMissingFeatures.push('Promises');
     }
 
     // Service workers.
     if ('serviceWorker' in navigator === false) {
-        trujamanMissingFeatures.push('Progressive Web Apps: service workers');
+        trujamanMissingFeatures.push('Service workers');
     }
 
     // Cookies (needed for registering a service worker).
     if (!navigator.cookieEnabled) {
-        trujamanMissingFeatures.push('Progressive Web Apps: cookies');
+        trujamanMissingFeatures.push('Cookies');
     }
 
-    // Cache storage.
     if ('caches' in window === false) {
-        trujamanMissingFeatures.push('Progressive Web Apps: cache storage');
+        trujamanMissingFeatures.push('Cache storage');
     }
 
-    // HTML5 File API.
     if (!('File' in window && 'Blob' in window && 'FileReader' in window && 'FileList' in window)) {
-        trujamanMissingFeatures.push('HTML5: File API');
+        trujamanMissingFeatures.push('File API');
     }
 
     return trujamanMissingFeatures;
@@ -118,7 +108,7 @@ window.addEventListener('load', function () {
         // Show the list of missing features.
         var message = 'Este navegador no es compatible con:';
         var details = '';
-        trujamanMissingFeatures.forEach(function (feature) {details += feature + '<br>';});
+        trujamanMissingFeatures.forEach(function (feature) {details += feature + '\n';});
         trujamanError(message, details);
         return;
     }

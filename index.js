@@ -15,10 +15,16 @@
 // advanced feature used in this helper is missing, making impossible
 // to properly report the missing feature!
 function trujamanError (errorMessage, errorDetails) {
-    // Show the DOM element for error notifications.
-    document.querySelector('#trujaman_error').hidden = false;
-    document.querySelector('#trujaman_error_message').innerText = errorMessage;
-    document.querySelector('#trujaman_error_details').innerText = errorDetails;
+    // Show the DOM element for error notifications, hide the remaining ones.
+    var errorContainer = document.querySelector('#trujaman_error');
+    errorContainer.hidden = false;
+    errorContainer.querySelector('#trujaman_error_message').innerText = errorMessage;
+    errorContainer.querySelector('#trujaman_error_details').innerText = errorDetails;
+    var elementToHide = errorContainer.nextElementSibling;
+    while (elementToHide) {
+        elementToHide.hidden = true;
+        elementToHide = elementToHide.nextElementSibling;
+    }
 }
 
 

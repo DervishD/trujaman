@@ -98,6 +98,7 @@ function trujamanGetMissingFeatures () {
             var b = new ArrayBuffer(1);\
             w.postMessage(b, [b]);\
             if (b.byteLength !== 0) throw "";\
+            w.terminate();\
         ')
     } catch (e) {
         trujamanMissingFeatures.push('Transferables');

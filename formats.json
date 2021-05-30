@@ -1,0 +1,17 @@
+{
+    "Europeana" : {
+        "marker" : "http://www.europeana.eu/schemas/ese/",
+        "map" : {
+            "europeana:record" : "trujaman:item",
+            "dc:subject" : "trujaman:subject"
+        },
+        "inputOnly": "no"
+    },
+    "LIBNOVA" : {
+        "marker" : "urn:memoriademadrid:mdm",
+        "map" : {
+            "mdm:TipoDocumento" : "trujaman:doctype",
+            "mdm:Lote" : "trujaman:batch"
+        }
+    }
+}

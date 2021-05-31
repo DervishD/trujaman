@@ -35,7 +35,11 @@ function readFile (file) {
     // Remember it for further handling.
     self.fileReaders[file.name] = reader;
 
-    reader.fileName = file.name;
+    // Right now, mainly for testing purposes, to slow down the reading process so the UI can be examined.
+    reader.onprogress = event => {
+        let start = Date.now(); while (Date.now() - start < 500);  // Delay each reading operation.
+        console.log(`${event.loaded} bytes read.`);
+    }
 
     return new Promise ((resolve, reject) => {
         // Handle file reading errors.

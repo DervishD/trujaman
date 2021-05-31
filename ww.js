@@ -12,86 +12,71 @@ self.addEventListener('message', event => {
     const {id, command, args} = event.data;
     if (command in self) {
         // Run the appropriate command. The response will be sent back by the command itself.
-        return self[command](id, args);
+        self[command](args)
+        .then(payload => self.postMessage({id:id, status: true, payload:payload}))
+        .catch(payload => self.postMessage({id:id, status: false, payload:payload}));
     } else {
         // Notify the internal error. Should not happen on production.
-        const message = {
-            id: id,
-            status: null,
-            payload: {  // This is needed because Firefox can't clone an Error object.
-                name: 'TypeError',
-                message: 'No existe el comando',
-                data: command
-            }
+        const payload = {  // This is needed because Firefox can't clone an Error object.
+            name: 'TypeError',
+            message: 'No existe el comando',
+            data: command
         };
-        return self.postMessage(message);
+        return self.postMessage({id:id, status: null, payload: payload});
     }
 });
 
 
 // Read the file specified by the provided File object, using the HTML5 File API.
-function readFile (id, args) {
+function readFile (args) {
     let file = args[0];
 
     // Create a new FileReader to handle this File.
     let reader = new FileReader();
 
     // Remember it for further handling.
-    self.fileReaders[file.hash] = reader;
+    self.fileReaders[file.name] = reader;
 
     reader.fileName = file.name;
 
-    // Instead of having three separate handlers, one for successful reads,
-    // another for unsuccessful reads and a third one for aborted reads,
-    // it's easier to have a single one for the three possible conditions.
-    reader.onloadend = event => {
-        const message = {
-            id: id,
-            status: null,
-            payload: null
-        };
+    return new Promise ((resolve, reject) => {
+        // Handle file reading errors.
+        // This includes unsuccessful reads and discarded huge files.
+        // The convoluted call to 'reject' is needed because Firefox can't clone an Error object.
+        reader.onerror = event => reject({name: error.name, message: error.message, data: file.name});
 
-        // To handle the fake error used to filter out huge files.
-        let error = reader.error || reader.fileTooLargeError;
+        // Handle successful reads.
+        // Return file contents as a Transferable object, for efficiency.
+        reader.onload = event => resolve(event.target.result);
 
-        if (error) {
-            // This includes unsuccessful reads, discarded huge files and aborted reads.
-            message.status = false;
-            message.payload = {  // This is needed because Firefox can't clone an Error object.
-                name: error.name,
-                message: error.message,
-                data: reader.fileName
-            };
-            self.postMessage(message);
+        if (file.size > 9999 * 1024 * 1024) {  // Absolutely arbitrary maximum file size...
+            const error = new DOMException('', 'FileTooLargeError');
+            // Again, the convoluted call to 'reject' is needed because Firefox can't clone an Error object.
+            reject({name: error.name, message: error.message, data: file.name});
         } else {
-            // Successful reads, return file contents as a Transferable object, for efficiency.
-            message.status = true;
-            message.payload = event.target.result;
-            self.postMessage(message, [event.target.result]);
+            // Read the file as ArrayBuffer.
+            reader.readAsArrayBuffer(file);
         }
-    };
-
-    if (file.size > 9999 * 1024 * 1024) {  // Absolutely arbitrary maximum file size...
-        // Use a fake event to handle this 'error' so all error handling happens in one place.
-        let event = new ProgressEvent('loadend', {loaded: 0, total: 0});
-        reader.fileTooLargeError = new DOMException('', 'FileTooLargeError');  // Fake event, fake error...
-        reader.dispatchEvent(event);
-    } else {
-        // Read the file as ArrayBuffer.
-        reader.readAsArrayBuffer(file);
-    }
+    });
 }
 
 
 // This command aborts an in-progress file reading operation for the given File.
 // It is a nop if no file reading operation is currently happening.
-// This works even though id is not used, because the correct FileReader is retrieved for this file.
-// The aforementioned FileReader has an onloadend handler with the correct id for this transaction,
-// and that handler will send the reply back to the main thread.
-function abortRead (id, args) {
+//
+// This is usually a successful operation, because the user actually requested
+// the aborting of the current file reading operation, so when it's aborted it
+// actually IS a successful response to the request.
+function abortRead (args) {
     let file = args[0];
-    let reader = self.fileReaders[file.hash];  // FileReader for this File.
-    if (reader) reader.abort();
+    let reader = self.fileReaders[file.name];  // FileReader for this File.
+
+    return new Promise ((resolve) => {
+        if (reader) {
+            reader.onabort = () => resolve(file.name);
+            reader.abort();
+        } else resolve(file.name);
+    });
 }
 
 
@@ -101,28 +86,23 @@ function abortRead (id, args) {
 // It should always resolve successfully with a null payload,
 // but if for some reason a FileReader is not found for the current File,
 // it will reject with an error. That should never happen in production.
-function forgetFile (id, args) {
+function forgetFile (args) {
     let file = args[0];
-    let reader = self.fileReaders[file.hash];  // FileReader for this File.
-    const message = {
-        id: id,
-        status: true,
-        payload: null
-    }
+    let reader = self.fileReaders[file.name];  // FileReader for this File.
 
-    if (reader) {
-        // Free resources.
-        reader.onloadend = null;
-        reader = null;
-        delete self.fileReaders[file.hash];
-    } else {
-        // This really should not happen in production, but it's better to be safe than sorry.
-        message.status = false;
-        message.payload = {
-            name: 'TypeError',
-            message: 'No existe un FileReader para el fichero',
-            data: file.name
-        };
-    }
-    self.postMessage(message);
+    return new Promise((resolve, reject) => {
+        if (reader) {
+            // Free resources.
+            reader.onload = null;
+            reader.onerror = null;
+            reader.onabort = null;
+            reader = null;
+            delete self.fileReaders[file.name];
+            console.log(self.fileReaders);
+            resolve(file.name)
+        } else {
+            // This really should not happen in production, but it's better to be safe than sorry.
+            reject({name: 'TypeError', message: 'No existe un FileReader para el fichero', data: file.name});
+        }
+    });
 }

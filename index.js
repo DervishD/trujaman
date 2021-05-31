@@ -357,7 +357,14 @@ class TrujamanJob {
 
         // A cancel button, to cancel current loading operation.
         this.cancelButton = this.element.querySelector('.trujaman_job_cancel_button');
-        this.cancelButton.onclick = () => this.file.abortRead();
+        this.cancelButton.onclick = () => {
+            this.file.abortRead()
+            .then(() => {
+                this.cancelButton.hidden = true;
+                this.retryButton.hidden = false;
+                this.status.textContent = 'Lectura cancelada.';
+            });
+        }
 
         // A retry button, to retry current loading operation, if previously aborted.
         this.retryButton = this.element.querySelector('.trujaman_job_retry_button');
@@ -374,8 +381,8 @@ class TrujamanJob {
             const currentJob = event.target.closest('.trujaman_job');
             currentJob.parentNode.removeChild(currentJob);
 
-            // Abort file reading, just in case.
-            this.file.abortRead();
+            // Abort file reading, just in case, and free resources for the file.
+            this.file.abortRead().then(() => this.file.forgetFile());
         }, {once: true});
 
         // Finally, read the file.

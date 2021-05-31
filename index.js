@@ -220,9 +220,9 @@ window.addEventListener('load', function () {
                 if (existingJobs.includes(file.hash)) continue;
 
                 // Create a new job.
-                file.readFile = () => webWorker.do('readFile', [file]);
-                file.abortRead = () => webWorker.do('abortRead', [file]);
-                file.forgetFile = () => webWorker.do('forgetFile', [file]);
+                file.readFile = () => webWorker.do('readFile', file);
+                file.abortRead = () => webWorker.do('abortRead', file);
+                file.forgetFile = () => webWorker.do('forgetFile', file);
                 const newJob = new TrujamanJob(file);
 
                 // Store the job id.

@@ -28,9 +28,7 @@ self.addEventListener('message', event => {
 
 
 // Read the file specified by the provided File object, using the HTML5 File API.
-function readFile (args) {
-    let file = args[0];
-
+function readFile (file) {
     // Create a new FileReader to handle this File.
     let reader = new FileReader();
 
@@ -67,8 +65,7 @@ function readFile (args) {
 // This is usually a successful operation, because the user actually requested
 // the aborting of the current file reading operation, so when it's aborted it
 // actually IS a successful response to the request.
-function abortRead (args) {
-    let file = args[0];
+function abortRead (file) {
     let reader = self.fileReaders[file.name];  // FileReader for this File.
 
     return new Promise ((resolve) => {
@@ -86,8 +83,7 @@ function abortRead (args) {
 // It should always resolve successfully with a null payload,
 // but if for some reason a FileReader is not found for the current File,
 // it will reject with an error. That should never happen in production.
-function forgetFile (args) {
-    let file = args[0];
+function forgetFile (file) {
     let reader = self.fileReaders[file.name];  // FileReader for this File.
 
     return new Promise((resolve, reject) => {

@@ -406,12 +406,8 @@ class TrujamanJob {
         .catch(error => {
             // Something went wrong.
             this.cancelButton.hidden = true;
-            this.retryButton.hidden = false;
             let errorMessage = 'ERROR: ';
             switch (error.name) {
-                case 'AbortError':
-                    errorMessage += 'lectura cancelada';
-                    break;
                 case 'FileTooLargeError':
                     errorMessage += 'el fichero es muy grande';
                     break;
@@ -427,11 +423,10 @@ class TrujamanJob {
                 default:
                     // Unexpected error condition that should not happen in production.
                     // So, it is notified differently, by using trujamanError.
-                    let details = `Se produjo un error «${error.name}» leyendo el fichero «${error.data}».`;
-                    trujamanError('Ocurrió un error inesperado leyendo un fichero.', details);
-                    // Notify in the file's status area, too...
-                    errorMessage += 'el fichero no pudo ser leído';
-                    break;
+                    return trujamanError(
+                        'Ocurrió un error inesperado leyendo un fichero.',
+                        `Se produjo un error «${error.name}» leyendo el fichero «${error.data}».\n${error.message}.`
+                    );
             }
             this.status.innerHTML = `${errorMessage} <span class="trujaman_tty">(${error.name})</span>.`;
         });

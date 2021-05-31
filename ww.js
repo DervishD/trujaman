@@ -44,8 +44,7 @@ function readFile (file) {
         reader.onerror = event => reject({name: error.name, message: error.message, data: file.name});
 
         // Handle successful reads.
-        // Return file contents as a Transferable object, for efficiency.
-        reader.onload = event => resolve(event.target.result);
+        reader.onload = event => resolve((new Uint8Array(event.target.result))[0]);
 
         if (file.size > 9999 * 1024 * 1024) {  // Absolutely arbitrary maximum file size...
             const error = new DOMException('', 'FileTooLargeError');

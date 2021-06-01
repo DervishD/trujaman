@@ -2,6 +2,7 @@
 
 // To keep track of File Readers used in different transactions.
 self.fileReaders = {};
+function hash (file) { return `${file.name}${file.size}${file.lastModified}`}
 
 
 // Main entry point for web worker, a simple command dispatcher.
@@ -30,10 +31,10 @@ self.addEventListener('message', event => {
 // Read the file specified by the provided File object, using the HTML5 File API.
 function readFile (file) {
     // Create a new FileReader to handle this File.
-    let reader = new FileReader();
+    const reader = new FileReader();
 
     // Remember it for further handling.
-    self.fileReaders[file.name] = reader;
+    self.fileReaders[hash(file)] = reader;
 
     // Right now, mainly for testing purposes, to slow down the reading process so the UI can be examined.
     reader.onprogress = event => {
@@ -69,7 +70,7 @@ function readFile (file) {
 // the aborting of the current file reading operation, so when it's aborted it
 // actually IS a successful response to the request.
 function abortRead (file) {
-    let reader = self.fileReaders[file.name];  // FileReader for this File.
+    const reader = self.fileReaders[hash(file)];  // FileReader for this File.
 
     return new Promise ((resolve) => {
         if (reader) {
@@ -87,7 +88,7 @@ function abortRead (file) {
 // but if for some reason a FileReader is not found for the current File,
 // it will reject with an error. That should never happen in production.
 function forgetFile (file) {
-    let reader = self.fileReaders[file.name];  // FileReader for this File.
+    let reader = self.fileReaders[hash(file)];  // FileReader for this File.
 
     return new Promise((resolve, reject) => {
         if (reader) {
@@ -96,8 +97,7 @@ function forgetFile (file) {
             reader.onerror = null;
             reader.onabort = null;
             reader = null;
-            delete self.fileReaders[file.name];
-            console.log(self.fileReaders);
+            delete self.fileReaders[hash(file)];
             resolve(file.name)
         } else {
             // This really should not happen in production, but it's better to be safe than sorry.

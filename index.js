@@ -398,9 +398,10 @@ class TrujamanJob {
         this.file.readFile()
         .then(payload => {
             this.cancelButton.hidden = true;
-            this.status.textContent = `El fichero se leyó correctamente.`;
+            payload = payload ? `0x${payload.toString(16)}` : '××';
+            payload = `<span class="trujaman_tty">[${payload}]</span>`;
+            this.status.innerHTML = `El fichero se leyó correctamente. ${payload}`;
             this.downloadDropdown.hidden = false;
-            console.log(new Uint8Array(payload, 0, 10));
         })
         .then(() => this.file.forgetFile())  // For cleaning up no longer needed resources.
         .catch(error => {

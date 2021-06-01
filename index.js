@@ -394,6 +394,7 @@ class TrujamanJob {
         // Show needed UI elements.
         this.retryButton.hidden = true;
         this.cancelButton.hidden = false;
+        this.status.textContent = 'Leyendo el fichero…';
         // Do the actual file read.
         this.file.readFile()
         .then(payload => {

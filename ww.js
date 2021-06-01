@@ -20,7 +20,7 @@ self.addEventListener('message', event => {
         const payload = {  // This is needed because Firefox can't clone an Error object.
             name: 'TypeError',
             message: 'No existe el comando',
-            data: command
+            command: command
         };
         return self.postMessage({id:id, status: null, payload: payload});
     }
@@ -45,7 +45,7 @@ function readFile (file) {
         // Handle file reading errors.
         // This includes unsuccessful reads and discarded huge files.
         // The convoluted call to 'reject' is needed because Firefox can't clone an Error object.
-        reader.onerror = event => reject({name: error.name, message: error.message, data: file.name});
+        reader.onerror = event => reject({name: error.name, message: error.message, fileName: file.name});
 
         // Handle successful reads.
         reader.onload = event => resolve((new Uint8Array(event.target.result))[0]);
@@ -53,7 +53,7 @@ function readFile (file) {
         if (file.size > 9999 * 1024 * 1024) {  // Absolutely arbitrary maximum file size...
             const error = new DOMException('', 'FileTooLargeError');
             // Again, the convoluted call to 'reject' is needed because Firefox can't clone an Error object.
-            reject({name: error.name, message: error.message, data: file.name});
+            reject({name: error.name, message: error.message, fileName: file.name});
         } else {
             // Read the file as ArrayBuffer.
             reader.readAsArrayBuffer(file);
@@ -101,7 +101,7 @@ function forgetFile (file) {
             resolve(file.name)
         } else {
             // This really should not happen in production, but it's better to be safe than sorry.
-            reject({name: 'TypeError', message: 'No existe un FileReader para el fichero', data: file.name});
+            reject({name: 'TypeError', message: 'No existe un FileReader para el fichero', fileName: file.name});
         }
     });
 }

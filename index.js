@@ -302,7 +302,7 @@ class TrujamanWebWorker {
 
             // Internal error in web worker.
             if (status === null) {
-                const details = `${payload.message} «${payload.data}».`;
+                const details = `${payload.message} «${payload.command}».`;
                 trujamanError('No existe el comando en segundo plano solicitado.', details);
             } else {
                 // Response from web worker.
@@ -425,7 +425,7 @@ class TrujamanJob {
                     // So, it is notified differently, by using trujamanError.
                     return trujamanError(
                         'Ocurrió un error inesperado leyendo un fichero.',
-                        `Se produjo un error «${error.name}» leyendo el fichero «${error.data}».\n${error.message}.`
+                        `Ocurrió un error «${error.name}» leyendo el fichero «${error.fileName}».\n${error.message}.`
                     );
             }
             this.status.innerHTML = `${errorMessage} <span class="trujaman_tty">(${error.name})</span>.`;

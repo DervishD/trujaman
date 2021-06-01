@@ -85,16 +85,17 @@ function abortRead (file) {
 }
 
 
-// This command marks the resources associated with the given File as no longer needed.
-// The event handlers are removed, too.
+// This command frees the resources associated with the given File.
 // So, everything can be garbage collected at a later time.
-// It should always resolve successfully with a null payload,
-// but if for some reason a FileReader is not found for the current File,
-// it will reject with an error. That should never happen in production.
+//
+// It always resolves successfully, even if the file has been already
+// forgotten and all its resources have already been properly freed.
+//
+// The payload is the file name, for convenience.
 function forgetFile (file) {
     let reader = self.fileReaders[hash(file)];  // FileReader for this File.
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         if (reader) {
             // Free resources.
             reader.onload = null;
@@ -102,10 +103,7 @@ function forgetFile (file) {
             reader.onabort = null;
             reader = null;
             delete self.fileReaders[hash(file)];
-            resolve(file.name)
-        } else {
-            // This really should not happen in production, but it's better to be safe than sorry.
-            reject({name: 'TypeError', message: 'No existe un FileReader para el fichero', fileName: file.name});
         }
+        resolve(file.name);
     });
 }

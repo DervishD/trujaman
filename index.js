@@ -212,12 +212,12 @@ window.addEventListener('load', function () {
                 // just because it has the same name than one previously selected, if they come
                 // from different folders. The chances of both files having the exact same size
                 // and modification time are quite reduced. Hopefully.
-                file.hash = `${file.name}.${file.size}.${file.lastModified}`;
+                const jobId = `${iterable[i].name}_${iterable[i].size}_${iterable[i].lastModified}`;
 
                 // Do not add duplicate jobs, using the previously calculated hash.
                 let existingJobs = Array.from(document.querySelectorAll('.trujaman_job_id').values());
                 existingJobs = existingJobs.map(element => element.textContent);
-                if (existingJobs.includes(file.hash)) continue;
+                if (existingJobs.includes(jobId)) continue;
 
                 // Create a new job.
                 file.readFile = () => webWorker.do('readFile', file);
@@ -226,7 +226,7 @@ window.addEventListener('load', function () {
                 const newJob = new TrujamanJob(file);
 
                 // Store the job id.
-                newJob.element.querySelector('.trujaman_job_id').textContent = file.hash;
+                newJob.element.querySelector('.trujaman_job_id').textContent = jobId;
 
                 // Add the job to the web page.
                 jobsContainer.appendChild(newJob.element);

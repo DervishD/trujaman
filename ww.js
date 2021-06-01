@@ -46,7 +46,11 @@ function readFile (file) {
         // Handle file reading errors.
         // This includes unsuccessful reads and discarded huge files.
         // The convoluted call to 'reject' is needed because Firefox can't clone an Error object.
-        reader.onerror = event => reject({name: error.name, message: error.message, fileName: file.name});
+        reader.onerror = event => reject({
+            name: event.target.error.name,
+            message: event.target.error.message,
+            fileName: file.name
+        });
 
         // Handle successful reads.
         reader.onload = event => resolve((new Uint8Array(event.target.result))[0]);

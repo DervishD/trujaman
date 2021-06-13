@@ -20,11 +20,8 @@ function trujamanError (errorMessage, errorDetails) {
     errorContainer.hidden = false;
     errorContainer.querySelector('#error_message').innerText = errorMessage;
     errorContainer.querySelector('#error_details').innerText = errorDetails;
-    var elementToHide = errorContainer.nextElementSibling;
-    while (elementToHide) {
-        elementToHide.hidden = true;
-        elementToHide = elementToHide.nextElementSibling;
-    }
+    var element = errorContainer;
+    while (element = element.nextElementSibling) element.hidden = true;
 }
 
 

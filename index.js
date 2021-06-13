@@ -14,7 +14,7 @@
 // the feature detection system itself, and it is possible that some
 // advanced feature used in this function is missing, making impossible
 // to properly report the missing feature!
-function trujamanError (errorMessage, errorDetails) {
+function errorize (errorMessage, errorDetails) {
     // Show the DOM element for error notifications, hide the remaining ones.
     var errorContainer = document.querySelector('#error');
     errorContainer.hidden = false;
@@ -26,66 +26,66 @@ function trujamanError (errorMessage, errorDetails) {
 
 
 // Function for getting the list of missing features.
-function trujamanGetMissingFeatures () {
+function getMissingFeatures () {
     // Can't use 'let' because that's still an undetected feature.
-    var trujamanMissingFeatures = [];
+    var missingFeatures = [];
 
     try {
         eval('var f = x => x');
     } catch (e) {
-        trujamanMissingFeatures.push('Arrow functions');
+        missingFeatures.push('Arrow functions');
     }
 
     try {
         eval('class X {}');
     } catch (e) {
-        trujamanMissingFeatures.push('Classes');
+        missingFeatures.push('Classes');
     }
 
     try {
         eval('let x = true');
     } catch (e) {
-        trujamanMissingFeatures.push('let statement');
+        missingFeatures.push('let statement');
     }
 
     try {
         eval('const x = true');
     } catch (e) {
-        trujamanMissingFeatures.push('const statement');
+        missingFeatures.push('const statement');
     }
 
     try {
         eval('let x = `x`');
     } catch (e) {
-        trujamanMissingFeatures.push('Template strings');
+        missingFeatures.push('Template strings');
     }
 
     try {
         eval('function f (x=1) {}');
     } catch (e) {
-        trujamanMissingFeatures.push('Default function parameters');
+        missingFeatures.push('Default function parameters');
     }
 
     try {
         eval('async function f() {}');
     } catch (e) {
-        trujamanMissingFeatures.push('async functions');
+        missingFeatures.push('async functions');
     }
 
     if (typeof Promise === 'undefined') {
-        trujamanMissingFeatures.push('Promises');
+        missingFeatures.push('Promises');
     }
 
     if ('ArrayBuffer' in window === false) {
-        trujamanMissingFeatures.push('ArrayBuffer');
+        missingFeatures.push('ArrayBuffer');
     }
 
     if ('serviceWorker' in navigator === false) {
-        trujamanMissingFeatures.push('Service workers');
+        missingFeatures.push('Service workers');
     }
 
     if ('Worker' in window === false) {
-        trujamanMissingFeatures.push('Web workers');
+        missingFeatures.push('Web workers');
     }
 
     try {
@@ -98,34 +98,34 @@ function trujamanGetMissingFeatures () {
             w.terminate();\
         ')
     } catch (e) {
-        trujamanMissingFeatures.push('Transferables');
+        missingFeatures.push('Transferables');
     }
 
     if (!navigator.cookieEnabled) {
-        trujamanMissingFeatures.push('Cookies');
+        missingFeatures.push('Cookies');
     }
 
     if ('caches' in window === false) {
-        trujamanMissingFeatures.push('Cache storage');
+        missingFeatures.push('Cache storage');
     }
 
     if (!('File' in window && 'Blob' in window && 'FileReader' in window && 'FileList' in window)) {
-        trujamanMissingFeatures.push('File API');
+        missingFeatures.push('File API');
     }
 
-    return trujamanMissingFeatures;
+    return missingFeatures;
 }
 
 
 window.addEventListener('load', function () {
     // If there are missing features, notify the user and stop.
-    const trujamanMissingFeatures = trujamanGetMissingFeatures();
-    if (trujamanMissingFeatures.length) {
+    const missingFeatures = getMissingFeatures();
+    if (missingFeatures.length) {
         // Show the list of missing features.
         var message = 'Este navegador no es compatible con:';
         var details = '';
-        trujamanMissingFeatures.forEach(function (feature) {details += feature + '\n';});
-        trujamanError(message, details);
+        missingFeatures.forEach(function (feature) {details += feature + '\n';});
+        errorize(message, details);
         return;
     }
 
@@ -137,9 +137,9 @@ window.addEventListener('load', function () {
         fetch('version')
         .then(response => response.text())
         .then(version => {
-            let trujamanVersion = document.querySelector('#version');
-            trujamanVersion.hidden = false;
-            trujamanVersion.textContent += 'v' + version;
+            let appVersion = document.querySelector('#version');
+            appVersion.hidden = false;
+            appVersion.textContent += 'v' + version;
         });
     });
 
@@ -158,13 +158,13 @@ window.addEventListener('load', function () {
     // Register service worker.
     navigator.serviceWorker.register('sw.js')
     .catch(error => {
-        trujamanError('Falló una parte esencial.', error);
+        errorize('Falló una parte esencial.', error);
         return Promise.reject(null);
     })
     // Service worker successfully registered, proceed with setting up the app.
     .then(() => fetch('formats.json'))
     .then(response => response.json().catch(error => {
-        trujamanError('No se pudo procesar la lista de formatos.', error);
+        errorize('No se pudo procesar la lista de formatos.', error);
         return Promise.reject(null);
     }))
     .then(formats => {  // Set up the core of the application and the UI.
@@ -185,14 +185,14 @@ window.addEventListener('load', function () {
         });
 
         // Set up web worker.
-        const webWorker = new TrujamanWebWorker('ww.js');
+        const webWorker = new WebWorker('ww.js');
 
         // Show jobs container.
         const jobsContainer = document.querySelector('#jobs');
         jobsContainer.hidden = false;
 
         // Function to create a bunch of jobs.
-        const trujamanCreateJobs = function (iterable) {
+        const createJobs = function (iterable) {
             for (let i = 0; i < iterable.length; i++) {
                 const file = iterable[i];
 
@@ -220,7 +220,7 @@ window.addEventListener('load', function () {
                 file.readFile = () => webWorker.do('readFile', file);
                 file.abortRead = () => webWorker.do('abortRead', file);
                 file.forgetFile = () => webWorker.do('forgetFile', file);
-                const newJob = new TrujamanJob(file);
+                const newJob = new Job(file);
 
                 // Store the job id.
                 newJob.element.querySelector('.job_id').textContent = jobId;
@@ -250,27 +250,27 @@ window.addEventListener('load', function () {
             dropzone.ondrop = event => {
                 event.preventDefault();  // Prevent the browser from opening the file.
                 dropzone.dataset.state = 'dismissed';
-                trujamanCreateJobs(event.dataTransfer.files);
+                createJobs(event.dataTransfer.files);
             };
         }
 
         // Create new file processor with the selected file.
         filePicker.firstElementChild.addEventListener('change', event => {
             // Create the needed jobs.
-            trujamanCreateJobs(event.target.files);
+            createJobs(event.target.files);
             // Or the event won't be fired again if the user selects the same file...
             event.target.value = null;
         });
     })
     .catch(error => {  // For unhandled errors.
         if (error === null) return;
-        trujamanError('Se produjo un error inesperado.', error);
+        errorize('Se produjo un error inesperado.', error);
     });
 });
 
 
 // This class encapsulates the web worker for background tasks.
-class TrujamanWebWorker {
+class WebWorker {
     constructor (script) {
         this.settlers = [];  // For settling the appropriate Promise for a transaction.
         this.currentId = 0;  // Current transaction identifier.
@@ -290,7 +290,7 @@ class TrujamanWebWorker {
                 // For loading errors the event will be Event.
                 details += `No se pudo iniciar el gestor de tareas en segundo plano.`;
             }
-            trujamanError('No se pueden ejecutar tareas en segundo plano.', details);
+            errorize('No se pueden ejecutar tareas en segundo plano.', details);
         }
 
         // This handles responses from the web worker.
@@ -300,7 +300,7 @@ class TrujamanWebWorker {
             // Internal error in web worker.
             if (status === null) {
                 const details = `${payload.message} «${payload.command}».`;
-                trujamanError('No existe el comando en segundo plano solicitado.', details);
+                errorize('No existe el comando en segundo plano solicitado.', details);
             } else {
                 // Response from web worker.
                 // Settle the promise according to the returned status
@@ -338,7 +338,7 @@ class TrujamanWebWorker {
 // This class encapsulates the user interface for a file job.
 // That includes reading the file, cancelling and retrying file reads,
 // removing jobs, downloading conversion results, etc.
-class TrujamanJob {
+class Job {
     constructor (file) {
         this.file = file;
 
@@ -421,8 +421,8 @@ class TrujamanJob {
                     break;
                 default:
                     // Unexpected error condition that should not happen in production.
-                    // So, it is notified differently, by using trujamanError.
-                    return trujamanError(
+                    // So, it is notified differently, by using errorize().
+                    return errorize(
                         'Ocurrió un error inesperado leyendo un fichero.',
                         `Ocurrió un error «${error.name}» leyendo el fichero «${error.fileName}».\n${error.message}.`
                     );

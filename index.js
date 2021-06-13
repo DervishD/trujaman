@@ -1,8 +1,8 @@
 'use strict';
 
 
-// Function for showing an HTML error message within
-// the DOM element whose id is 'trujaman_error_body'.
+// Function for showing an HTML error message
+// within the DOM element whose id is 'error'.
 //
 // The function accepts two parameters. The first one is the error message,
 // preferably a one-liner explaining (tersely) the main cause of the error.
@@ -16,10 +16,10 @@
 // to properly report the missing feature!
 function trujamanError (errorMessage, errorDetails) {
     // Show the DOM element for error notifications, hide the remaining ones.
-    var errorContainer = document.querySelector('#trujaman_error');
+    var errorContainer = document.querySelector('#error');
     errorContainer.hidden = false;
-    errorContainer.querySelector('#trujaman_error_message').innerText = errorMessage;
-    errorContainer.querySelector('#trujaman_error_details').innerText = errorDetails;
+    errorContainer.querySelector('#error_message').innerText = errorMessage;
+    errorContainer.querySelector('#error_details').innerText = errorDetails;
     var elementToHide = errorContainer.nextElementSibling;
     while (elementToHide) {
         elementToHide.hidden = true;
@@ -140,7 +140,7 @@ window.addEventListener('load', function () {
         fetch('version')
         .then(response => response.text())
         .then(version => {
-            let trujamanVersion = document.querySelector('#trujaman_version');
+            let trujamanVersion = document.querySelector('#version');
             trujamanVersion.hidden = false;
             trujamanVersion.textContent += 'v' + version;
         });
@@ -172,7 +172,7 @@ window.addEventListener('load', function () {
     }))
     .then(formats => {  // Set up the core of the application and the UI.
         // Update job template with the list of formats.
-        const formatListTemplate = document.querySelector('#trujaman_job_template .trujaman_job_formats_list');
+        const formatListTemplate = document.querySelector('#job_template .job_formats_list');
         for (const format in formats) {
             let aParagraph = document.createElement('p');
             aParagraph.innerText = format;
@@ -180,18 +180,18 @@ window.addEventListener('load', function () {
         }
 
         // Set up file picker.
-        const filePicker = document.querySelector('#trujaman_filepicker');
+        const filePicker = document.querySelector('#filepicker');
         filePicker.hidden = false;
-        filePicker.querySelector('#trujaman_filepicker_button').addEventListener('click', () => {
+        filePicker.querySelector('#filepicker > button').addEventListener('click', () => {
             // Propagate the click.
-            filePicker.querySelector('#trujaman_filepicker_input').click();
+            filePicker.querySelector('#filepicker > input').click();
         });
 
         // Set up web worker.
         const webWorker = new TrujamanWebWorker('ww.js');
 
         // Show jobs container.
-        const jobsContainer = document.querySelector('#trujaman_jobs');
+        const jobsContainer = document.querySelector('#jobs');
         jobsContainer.hidden = false;
 
         // Function to create a bunch of jobs.
@@ -215,7 +215,7 @@ window.addEventListener('load', function () {
                 const jobId = `${iterable[i].name}_${iterable[i].size}_${iterable[i].lastModified}`;
 
                 // Do not add duplicate jobs, using the previously calculated hash.
-                let existingJobs = Array.from(document.querySelectorAll('.trujaman_job_id').values());
+                let existingJobs = Array.from(document.querySelectorAll('.job_id').values());
                 existingJobs = existingJobs.map(element => element.textContent);
                 if (existingJobs.includes(jobId)) continue;
 
@@ -226,7 +226,7 @@ window.addEventListener('load', function () {
                 const newJob = new TrujamanJob(file);
 
                 // Store the job id.
-                newJob.element.querySelector('.trujaman_job_id').textContent = jobId;
+                newJob.element.querySelector('.job_id').textContent = jobId;
 
                 // Add the job to the web page.
                 jobsContainer.appendChild(newJob.element);
@@ -236,23 +236,23 @@ window.addEventListener('load', function () {
         // If the browser supports file drag and drop, enable it for creating jobs.
         // This is not tested in feature detection because this is entirely optional.
         if (('draggable' in filePicker) || ('ondragstart' in filePicker && 'ondrop' in filePicker)) {
-            const theDropzone = document.querySelector('#trujaman_dropzone');
-            theDropzone.dataset.state = 'hidden';
-            theDropzone.hidden = false;
+            const dropzone = document.querySelector('#dropzone');
+            dropzone.dataset.state = 'hidden';
+            dropzone.hidden = false;
 
             // This is needed because the drag and drop overlay is HIDDEN, so it wouldn't get the event.
-            window.ondragenter = () => theDropzone.dataset.state = 'visible';
+            window.ondragenter = () => dropzone.dataset.state = 'visible';
 
             // Prevent the browser from opening the file.
-            theDropzone.ondragenter = event => event.preventDefault();  // FIXME: is this needed?
-            theDropzone.ondragover = event => event.preventDefault();
+            dropzone.ondragenter = event => event.preventDefault();  // FIXME: is this needed?
+            dropzone.ondragover = event => event.preventDefault();
 
             // Hide the drag and drop overlay if the user didn't drop the file.
-            theDropzone.ondragleave = () => theDropzone.dataset.state = 'hidden';
+            dropzone.ondragleave = () => dropzone.dataset.state = 'hidden';
 
-            theDropzone.ondrop = event => {
+            dropzone.ondrop = event => {
                 event.preventDefault();  // Prevent the browser from opening the file.
-                theDropzone.dataset.state = 'dismissed';
+                dropzone.dataset.state = 'dismissed';
                 trujamanCreateJobs(event.dataTransfer.files);
             };
         }
@@ -347,16 +347,16 @@ class TrujamanJob {
 
         // Create the UI elements for the job by copying the existing template.
         // That way, this code can be more agnostic about the particular layout of the UI elements.
-        this.element = document.querySelector('#trujaman_job_template').cloneNode(true);
+        this.element = document.querySelector('#job_template').cloneNode(true);
         this.element.hidden = false;
         this.element.removeAttribute('id');
-        this.element.querySelector('.trujaman_job_filename').textContent = this.file.name;
+        this.element.querySelector('.job_filename').textContent = this.file.name;
 
         // A status area, to keep the end user informed.
-        this.status = this.element.querySelector('.trujaman_job_status');
+        this.status = this.element.querySelector('.job_status');
 
         // A cancel button, to cancel current loading operation.
-        this.cancelButton = this.element.querySelector('.trujaman_job_cancel_button');
+        this.cancelButton = this.element.querySelector('.job_cancel_button');
         this.cancelButton.onclick = () => {
             this.file.abortRead()
             .then(() => {
@@ -367,18 +367,18 @@ class TrujamanJob {
         }
 
         // A retry button, to retry current loading operation, if previously aborted.
-        this.retryButton = this.element.querySelector('.trujaman_job_retry_button');
+        this.retryButton = this.element.querySelector('.job_retry_button');
         this.retryButton.onclick = () => this.readFile();
 
         // A dropdown control, to choose the download format from a list.
-        this.formatsList = this.element.querySelector('.trujaman_job_formats_list');
-        this.downloadDropdown = this.element.querySelector('.trujaman_job_download_dropdown');
+        this.formatsList = this.element.querySelector('.job_formats_list');
+        this.downloadDropdown = this.element.querySelector('.job_download_dropdown');
         this.downloadDropdown.onclick = () => this.formatsList.hidden = !this.formatsList.hidden;
 
         // A dismiss button, to delete the current job.
-        this.element.querySelector('.trujaman_job_dismiss_button').addEventListener('click', event => {
+        this.element.querySelector('.job_dismiss_button').addEventListener('click', event => {
             // Remove job UI element.
-            const currentJob = event.target.closest('.trujaman_job');
+            const currentJob = event.target.closest('.job');
             currentJob.parentNode.removeChild(currentJob);
 
             // Abort file reading, just in case, and free resources for the file.
@@ -400,7 +400,7 @@ class TrujamanJob {
         .then(payload => {
             this.cancelButton.hidden = true;
             payload = payload ? `0x${payload.toString(16)}` : '××';
-            payload = `<span class="trujaman_tty">[${payload}]</span>`;
+            payload = `<span class="monospaced">[${payload}]</span>`;
             this.status.innerHTML = `El fichero se leyó correctamente. ${payload}`;
             this.downloadDropdown.hidden = false;
         })
@@ -430,7 +430,7 @@ class TrujamanJob {
                         `Ocurrió un error «${error.name}» leyendo el fichero «${error.fileName}».\n${error.message}.`
                     );
             }
-            this.status.innerHTML = `${errorMessage} <span class="trujaman_tty">(${error.name})</span>.`;
+            this.status.innerHTML = `${errorMessage} <span class="monospaced">(${error.name})</span>.`;
         });
     }
 }

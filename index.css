@@ -161,30 +161,30 @@ button:active {
     filter: brightness(99%);
 }
 
-.trujaman_tty {
+.monospaced {
     font-family: "Trujaman Mono";
 }
 
-#trujaman_logo {
+#logo {
     font-weight: bold;
 }
 
-#trujaman_version {
+#version {
     font-family: "Trujaman Mono";
     font-size: 0.5em;
 }
 
-#trujaman_filepicker {
+#filepicker {
     margin: 1rem auto;
     text-align: center;
 }
 
-#trujaman_filepicker > button {
+#filepicker > button {
     margin: 0 auto;
     font-size: 0.8em;
 }
 
-#trujaman_filepicker > input {
+#filepicker > input {
     width: 0px;
     height: 0px;
     margin: 0;
@@ -193,7 +193,7 @@ button:active {
     display: none;  /* So it skips tabbing. */
 }
 
-#trujaman_dropzone {
+#dropzone {
     margin: 0;  /* Avoids duplicate window.dragenter events. */
     padding: 1rem;
     font-size: 3rem;
@@ -212,38 +212,38 @@ button:active {
     z-index: 9;
 }
 
-#trujaman_dropzone[data-state="hidden"] {
+#dropzone[data-state="hidden"] {
     opacity: 0;
     visibility: hidden;
 }
 
-#trujaman_dropzone[data-state="visible"] {
+#dropzone[data-state="visible"] {
     opacity: 1;
     visibility: visible;
 }
 
-#trujaman_dropzone[data-state="dismissed"] {
+#dropzone[data-state="dismissed"] {
     opacity: 0;
     visibility: hidden;
     transition: none;
 }
 
-#trujaman_dropzone > p {
+#dropzone > p {
     text-align: center;
     pointer-events: none;
 }
 
-.trujaman_job {
+.job {
     background-color: var(--bg_hi);
     margin-top: 1rem;
     font-size: 0.75rem;
 }
 
-.trujaman_job > * {
+.job > * {
     padding: 0.75em;
 }
 
-.trujaman_job_header {
+.job_header {
     display: flex;
     justify-content: space-between;
     gap: 0.5em;
@@ -252,20 +252,20 @@ button:active {
     border-bottom: none;
 }
 
-.trujaman_job_header > p {
+.job_header > p {
     font-weight: bold;
     overflow-wrap: break-word;
     min-width: 0px;
 }
 
-.trujaman_job_dismiss_button {
+.job_dismiss_button {
     font-size: 1.5em;
     padding: 0;
     color: var(--accent);
     background-color: unset;
 }
 
-.trujaman_job_body {
+.job_body {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -274,22 +274,22 @@ button:active {
     border: 1px solid;
 }
 
-.trujaman_job_body p  {
+.job_body p  {
     flex: 1 0 50%;
     overflow-wrap: break-word;
     min-width: 0px;
 }
 
-.trujaman_job_body button {
+.job_body button {
     flex: 0 0 auto;
     font-size: 0.8em;
 }
 
-.trujaman_job_download_dropdown {
+.job_download_dropdown {
     position: relative;
 }
 
-.trujaman_job_formats_list {
+.job_formats_list {
     font-size: 0.75em;
     position: absolute;
     z-index: 1;
@@ -298,7 +298,7 @@ button:active {
     background-color: var(--accent);
 }
 
-.trujaman_job_formats_list * {
+.job_formats_list * {
     cursor: pointer;
     background-color: var(--accent);
     margin: 0.5em;
@@ -306,11 +306,11 @@ button:active {
     white-space: nowrap;
 }
 
-.trujaman_job_formats_list *:hover {
+.job_formats_list *:hover {
     filter: brightness(111%);
 }
 
-#trujaman_error, noscript > div {
+#error, noscript > div {
     font-size: clamp(0.5em, 5vw, 1em);
     /* font-weight: bold; */
     margin: 2rem auto 0;
@@ -319,21 +319,21 @@ button:active {
     background-color: var(--fg);
 }
 
-#trujaman_error div, noscript > div {
+#error div, noscript > div {
     text-align: center;
 }
 
-#trujaman_error_header {
+#error_header {
     font-size: 1.5em;
     font-weight: bold;
 }
 
-#trujaman_error_message {
+#error_message {
     font-size: 1.25em;
     margin: 1em 0;
 }
 
-#trujaman_error_details {
+#error_details {
     font-family: "Trujaman Mono";
     font-size: 0.8em;
     margin: 0.5em 0;

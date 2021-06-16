@@ -50,6 +50,10 @@ class UI {
             // Or the event won't be fired again if the user selects the same file...
             event.target.value = null;
         });
+
+        // Show jobs container.
+        this.jobsContainer = document.querySelector('#jobs');
+        this.jobsContainer.hidden = false;
     }
 
     // Show version code on proper DOM element.
@@ -136,9 +140,6 @@ window.addEventListener('load', function () {
         // Set up web worker.
         const webWorker = new WebWorker('ww.js', ui);
 
-        // Show jobs container.
-        const jobsContainer = document.querySelector('#jobs');
-        jobsContainer.hidden = false;
 
         // Function to create a bunch of jobs.
         window.createJobs = function (iterable) {
@@ -175,7 +176,7 @@ window.addEventListener('load', function () {
                 newJob.element.querySelector('.job_id').textContent = jobId;
 
                 // Add the job to the web page.
-                jobsContainer.appendChild(newJob.element);
+                ui.jobsContainer.appendChild(newJob.element);
             }
         }
     })

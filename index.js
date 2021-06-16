@@ -12,12 +12,19 @@ class UI {
             filePicker.querySelector('#filepicker > input').click();
         });
 
-        // If the browser supports file drag and drop, enable it for creating jobs.
-        // This is not tested in feature detection because this is entirely optional.
-        if (('draggable' in filePicker) || ('ondragstart' in filePicker && 'ondrop' in filePicker)) {
+        // If the browser supports file drag and drop, enable it.
+        //
+        // This is entirely optional, and detection is performed by testing for
+        // the existence of the drag and drop events used. This is not orthodox
+        // but works for the needs of the application.
+        if (['dragenter', 'dragover', 'dragleave', 'drop'].every(event => 'on' + event in window)) {
             const dropzone = document.querySelector('#dropzone');
-            dropzone.dataset.state = 'hidden';
+
+            // Yes, this makes sense. The first statement enables the drop zone,
+            // so it can work. The second sets the initial state as not visible.
+            // That is, the drop zone ends up being active but not visible.
             dropzone.hidden = false;
+            dropzone.dataset.state = 'hidden';
 
             // This is needed because the drag and drop overlay is HIDDEN, so it wouldn't get the event.
             window.ondragenter = () => dropzone.dataset.state = 'visible';

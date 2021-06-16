@@ -25,10 +25,6 @@
             // Stop further loading of resources as soon as posible.
             window.stop();
 
-            // Stop further processing of the event.
-            event.preventDefault();
-            event.stopPropagation();
-
             // Dump the error event object to the console, just in case.
             console.dir(event);
 
@@ -42,9 +38,11 @@
                 '¡LA APLICACIÓN PODRÍA NO FUNCIONAR ADECUADAMENTE!'
             );
 
-            // Prevent the default handlers from taking place.
-            return true;
-        }, false);  // Fire just once.
+            // Prevent further processing of the event.
+            event.preventDefault();
+            event.stopPropagation();
+            return false;
+        });
     </script>
     <script src="index.js"></script>
 

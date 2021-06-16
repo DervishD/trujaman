@@ -1,6 +1,18 @@
 'use strict';
 
 
+// This class encapsulates the user interface.
+class UI {
+    constructor () {}
+
+    showVersion (version) {
+        const versionElement = document.querySelector('#version');
+        versionElement.hidden = false;
+        versionElement.textContent += 'v' + version;
+    }
+}
+
+
 // Function for showing an HTML error message
 // within the DOM element whose id is 'error'.
 //
@@ -21,16 +33,15 @@ function errorize (errorMessage, errorDetails) {
 
 
 window.addEventListener('load', function () {
+    // First step is setting up the user interface.
+    const ui = new UI();
+
     // Show version number.
     navigator.serviceWorker.ready
     .then(() => {
         fetch('version')
         .then(response => response.text())
-        .then(version => {
-            let appVersion = document.querySelector('#version');
-            appVersion.hidden = false;
-            appVersion.textContent += 'v' + version;
-        });
+        .then(version => ui.showVersion(version));
     });
 
     // Handle controller change.

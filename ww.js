@@ -56,7 +56,7 @@ function readFile (file) {
         reader.onload = event => resolve((new Uint8Array(event.target.result))[0]);
 
         if (file.size > 9999 * 1024 * 1024) {  // Absolutely arbitrary maximum file size...
-            const error = new DOMException('', 'FileTooLargeError');
+            const error = new DOMException('El fichero es demasiado grande para ser procesado', 'FileTooLargeError');
             // Again, the convoluted call to 'reject' is needed because Firefox can't clone an Error object.
             reject({name: error.name, message: error.message, fileName: file.name});
         } else {

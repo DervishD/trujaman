@@ -15,7 +15,37 @@
     <link rel="manifest" href="manifest.json">
 
     <link rel="stylesheet" href="index.css">
+    <script>
+        // The purpose of the following code is having a basic way of trapping
+        // unexpected errors, specially syntax errors, and reporting them to the
+        // end user as good as possible. Ideally, the error report should appear
+        // within the text of the web page, but unfortunately some errors may
+        // occur well before the page is even displayed.
+        window.addEventListener('error', function (event) {
+            // Stop further loading of resources as soon as posible.
+            window.stop();
 
+            // Stop further processing of the event.
+            event.preventDefault();
+            event.stopPropagation();
+
+            // Dump the error event object to the console, just in case.
+            console.dir(event);
+
+            // Show a modal alert.
+            alert(
+                'Se produjo un error inesperado (' + event.error.name + ')\n' +
+                'en «' + event.filename + '», línea ' + event.lineno + ', columna ' + event.colno + '.\n' +
+                '\n' +
+                '(' + event.message + ')\n' +
+                '\n' +
+                '¡LA APLICACIÓN PODRÍA NO FUNCIONAR ADECUADAMENTE!'
+            );
+
+            // Prevent the default handlers from taking place.
+            return true;
+        }, false);  // Fire just once.
+    </script>
     <script src="index.js"></script>
 
     <title>trujamán</title>

@@ -3,7 +3,47 @@
 
 // This class encapsulates the user interface.
 class UI {
-    constructor () {}
+    constructor () {
+        // Set up the file picker.
+        const filePicker = document.querySelector('#filepicker');
+        filePicker.hidden = false;
+        filePicker.querySelector('#filepicker > button').addEventListener('click', () => {
+            // Propagate the click.
+            filePicker.querySelector('#filepicker > input').click();
+        });
+
+        // If the browser supports file drag and drop, enable it for creating jobs.
+        // This is not tested in feature detection because this is entirely optional.
+        if (('draggable' in filePicker) || ('ondragstart' in filePicker && 'ondrop' in filePicker)) {
+            const dropzone = document.querySelector('#dropzone');
+            dropzone.dataset.state = 'hidden';
+            dropzone.hidden = false;
+
+            // This is needed because the drag and drop overlay is HIDDEN, so it wouldn't get the event.
+            window.ondragenter = () => dropzone.dataset.state = 'visible';
+
+            // Prevent the browser from opening the file.
+            dropzone.ondragenter = event => event.preventDefault();  // FIXME: is this needed?
+            dropzone.ondragover = event => event.preventDefault();
+
+            // Hide the drag and drop overlay if the user didn't drop the file.
+            dropzone.ondragleave = () => dropzone.dataset.state = 'hidden';
+
+            dropzone.ondrop = event => {
+                event.preventDefault();  // Prevent the browser from opening the file.
+                dropzone.dataset.state = 'dismissed';
+                window.createJobs(event.dataTransfer.files);
+            };
+        }
+
+        // Create new file processor with the selected file.
+        filePicker.firstElementChild.addEventListener('change', event => {
+            // Create the needed jobs.
+            window.createJobs(event.target.files);
+            // Or the event won't be fired again if the user selects the same file...
+            event.target.value = null;
+        });
+    }
 
     // Show version code on proper DOM element.
     showVersion (version) {
@@ -86,14 +126,6 @@ window.addEventListener('load', function () {
             formatListTemplate.appendChild(aParagraph);
         }
 
-        // Set up file picker.
-        const filePicker = document.querySelector('#filepicker');
-        filePicker.hidden = false;
-        filePicker.querySelector('#filepicker > button').addEventListener('click', () => {
-            // Propagate the click.
-            filePicker.querySelector('#filepicker > input').click();
-        });
-
         // Set up web worker.
         const webWorker = new WebWorker('ww.js', ui);
 
@@ -102,7 +134,7 @@ window.addEventListener('load', function () {
         jobsContainer.hidden = false;
 
         // Function to create a bunch of jobs.
-        const createJobs = function (iterable) {
+        window.createJobs = function (iterable) {
             for (let i = 0; i < iterable.length; i++) {
                 const file = iterable[i];
 
@@ -139,38 +171,6 @@ window.addEventListener('load', function () {
                 jobsContainer.appendChild(newJob.element);
             }
         }
-
-        // If the browser supports file drag and drop, enable it for creating jobs.
-        // This is not tested in feature detection because this is entirely optional.
-        if (('draggable' in filePicker) || ('ondragstart' in filePicker && 'ondrop' in filePicker)) {
-            const dropzone = document.querySelector('#dropzone');
-            dropzone.dataset.state = 'hidden';
-            dropzone.hidden = false;
-
-            // This is needed because the drag and drop overlay is HIDDEN, so it wouldn't get the event.
-            window.ondragenter = () => dropzone.dataset.state = 'visible';
-
-            // Prevent the browser from opening the file.
-            dropzone.ondragenter = event => event.preventDefault();  // FIXME: is this needed?
-            dropzone.ondragover = event => event.preventDefault();
-
-            // Hide the drag and drop overlay if the user didn't drop the file.
-            dropzone.ondragleave = () => dropzone.dataset.state = 'hidden';
-
-            dropzone.ondrop = event => {
-                event.preventDefault();  // Prevent the browser from opening the file.
-                dropzone.dataset.state = 'dismissed';
-                createJobs(event.dataTransfer.files);
-            };
-        }
-
-        // Create new file processor with the selected file.
-        filePicker.firstElementChild.addEventListener('change', event => {
-            // Create the needed jobs.
-            createJobs(event.target.files);
-            // Or the event won't be fired again if the user selects the same file...
-            event.target.value = null;
-        });
     })
     .catch(error => {  // For unhandled errors.
         if (error === null) return;

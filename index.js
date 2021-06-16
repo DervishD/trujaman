@@ -84,6 +84,20 @@ class UI {
 
         // FIXME: cancel jobs and hide filePicker instead. And REFACTOR!
     }
+
+    addJobElement (jobId, fileName) {
+        // Create the UI elements for the job by copying the existing template.
+        // That way, this code can be more agnostic about the particular layout of the UI elements.
+        const element = document.querySelector('#job_template').cloneNode(true);
+        element.hidden = false;
+        element.removeAttribute('id');
+
+        // Add initial attributes.
+        element.querySelector('.job_id').textContent = jobId;
+        element.querySelector('.job_filename').textContent = fileName;
+
+        this.jobsContainer.appendChild(element);
+    }
 }
 
 
@@ -172,11 +186,9 @@ window.addEventListener('load', function () {
                 file.forgetFile = () => webWorker.do('forgetFile', file);
                 const newJob = new Job(file, ui);
 
-                // Store the job id.
-                newJob.element.querySelector('.job_id').textContent = jobId;
 
                 // Add the job to the web page.
-                ui.jobsContainer.appendChild(newJob.element);
+                ui.addJobElement(jobId, file.name);
             }
         }
     })

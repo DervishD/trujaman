@@ -5,30 +5,34 @@
 class UI {
     constructor () {}
 
+    // Show version code on proper DOM element.
     showVersion (version) {
         const versionElement = document.querySelector('#version');
         versionElement.hidden = false;
         versionElement.textContent += 'v' + version;
     }
-}
 
+    // Show HTML error message on proper DOM element.
+    //
+    // The function accepts two parameters. The first one is the error message,
+    // preferably a one-liner explaining (tersely) the main cause of the error.
+    // The second one can be more verbose and contains the details of the error,
+    // and will be rendered differently. Usually it's the stringified version of
+    // the error as returned by the interpreter.
+    showError (message, details) {
+        // Show the error on the DOM element.
+        const errorElement = document.querySelector('#error');
+        errorElement.hidden = false;
+        errorElement.querySelector('#error_message').innerText = message;
+        errorElement.querySelector('#error_details').innerText = details;
 
-// Function for showing an HTML error message
-// within the DOM element whose id is 'error'.
-//
-// The function accepts two parameters. The first one is the error message,
-// preferably a one-liner explaining (tersely) the main cause of the error.
-// The second one can be more verbose and contains the details of the error,
-// and will be rendered differently. Usually it's the stringified version of
-// the error as returned by the interpreter.
-function errorize (errorMessage, errorDetails) {
-    // Show the DOM element for error notifications, hide the remaining ones.
-    let errorContainer = document.querySelector('#error');
-    errorContainer.hidden = false;
-    errorContainer.querySelector('#error_message').innerText = errorMessage;
-    errorContainer.querySelector('#error_details').innerText = errorDetails;
-    let element = errorContainer;
-    while (element = element.nextElementSibling) element.hidden = true;
+        // Hide the DOM elements following the error one.
+        // This effectively disables the user interface.
+        let element = document.querySelector('#error');
+        while (element = element.nextElementSibling) element.hidden = true;
+
+        // FIXME: cancel jobs and hide filePicker instead. And REFACTOR!
+    }
 }
 
 
@@ -64,13 +68,13 @@ window.addEventListener('load', function () {
         // enabled, that's probably the reason why the service worker cannot be
         // registered. If they are, in fact, enabled, the reason is different
         // and a generic error message is displayed instead.
-        errorize(navigator.cookieEnabled ? 'Falló una parte esencial.' : 'Las cookies están desactivadas.' , error);
+        ui.showError(navigator.cookieEnabled ? 'Falló una parte esencial.' : 'Las cookies están desactivadas.' , error);
         return Promise.reject(null);
     })
     // Service worker successfully registered, proceed with setting up the app.
     .then(() => fetch('formats.json'))
     .then(response => response.json().catch(error => {
-        errorize('No se pudo procesar la lista de formatos.', error);
+        ui.showError('No se pudo procesar la lista de formatos.', error);
         return Promise.reject(null);
     }))
     .then(formats => {  // Set up the core of the application and the UI.
@@ -91,7 +95,7 @@ window.addEventListener('load', function () {
         });
 
         // Set up web worker.
-        const webWorker = new WebWorker('ww.js');
+        const webWorker = new WebWorker('ww.js', ui);
 
         // Show jobs container.
         const jobsContainer = document.querySelector('#jobs');
@@ -126,7 +130,7 @@ window.addEventListener('load', function () {
                 file.readFile = () => webWorker.do('readFile', file);
                 file.abortRead = () => webWorker.do('abortRead', file);
                 file.forgetFile = () => webWorker.do('forgetFile', file);
-                const newJob = new Job(file);
+                const newJob = new Job(file, ui);
 
                 // Store the job id.
                 newJob.element.querySelector('.job_id').textContent = jobId;
@@ -170,14 +174,14 @@ window.addEventListener('load', function () {
     })
     .catch(error => {  // For unhandled errors.
         if (error === null) return;
-        errorize('Se produjo un error inesperado.', error);
+        ui.showError('Se produjo un error inesperado.', error);
     });
 });
 
 
 // This class encapsulates the web worker for background tasks.
 class WebWorker {
-    constructor (script) {
+    constructor (script, ui) {
         this.settlers = [];  // For settling the appropriate Promise for a transaction.
         this.currentId = 0;  // Current transaction identifier.
 
@@ -196,7 +200,12 @@ class WebWorker {
                 // For loading errors the event will be Event.
                 details += `No se pudo iniciar el gestor de tareas en segundo plano.`;
             }
-            errorize('No se pueden ejecutar tareas en segundo plano.', details);
+            ui.showError('No se pueden ejecutar tareas en segundo plano.', details);
+
+            // Prevent further processing of the event.
+            event.preventDefault();
+            event.stopPropagation();
+            return false;
         }
 
         // This handles responses from the web worker.
@@ -206,7 +215,7 @@ class WebWorker {
             // Internal error in web worker.
             if (status === null) {
                 const details = `${payload.message} «${payload.command}».`;
-                errorize('No existe el comando en segundo plano solicitado.', details);
+                ui.showError('No existe el comando en segundo plano solicitado.', details);
             } else {
                 // Response from web worker.
                 // Settle the promise according to the returned status
@@ -245,8 +254,10 @@ class WebWorker {
 // That includes reading the file, cancelling and retrying file reads,
 // removing jobs, downloading conversion results, etc.
 class Job {
-    constructor (file) {
+    constructor (file, ui) {
         this.file = file;
+
+        this.ui = ui;
 
         // Create the UI elements for the job by copying the existing template.
         // That way, this code can be more agnostic about the particular layout of the UI elements.
@@ -327,8 +338,8 @@ class Job {
                     break;
                 default:
                     // Unexpected error condition that should not happen in production.
-                    // So, it is notified differently, by using errorize().
-                    return errorize(
+                    // So, it is notified differently, by using ui.showError().
+                    return this.ui.showError(
                         'Ocurrió un error inesperado leyendo un fichero.',
                         `Ocurrió un error «${error.name}» leyendo el fichero «${error.fileName}».\n${error.message}.`
                     );

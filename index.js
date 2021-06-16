@@ -9,128 +9,18 @@
 // The second one can be more verbose and contains the details of the error,
 // and will be rendered differently. Usually it's the stringified version of
 // the error as returned by the interpreter.
-//
-// Advanced features can't be used here because this function is used by
-// the feature detection system itself, and it is possible that some
-// advanced feature used in this function is missing, making impossible
-// to properly report the missing feature!
 function errorize (errorMessage, errorDetails) {
     // Show the DOM element for error notifications, hide the remaining ones.
-    var errorContainer = document.querySelector('#error');
+    let errorContainer = document.querySelector('#error');
     errorContainer.hidden = false;
     errorContainer.querySelector('#error_message').innerText = errorMessage;
     errorContainer.querySelector('#error_details').innerText = errorDetails;
-    var element = errorContainer;
+    let element = errorContainer;
     while (element = element.nextElementSibling) element.hidden = true;
 }
 
 
-// Function for getting the list of missing features.
-function getMissingFeatures () {
-    // Can't use 'let' because that's still an undetected feature.
-    var missingFeatures = [];
-
-    try {
-        eval('var f = x => x');
-    } catch (e) {
-        missingFeatures.push('Arrow functions');
-    }
-
-    try {
-        eval('class X {}');
-    } catch (e) {
-        missingFeatures.push('Classes');
-    }
-
-    try {
-        eval('let x = true');
-    } catch (e) {
-        missingFeatures.push('let statement');
-    }
-
-    try {
-        eval('const x = true');
-    } catch (e) {
-        missingFeatures.push('const statement');
-    }
-
-    try {
-        eval('let x = `x`');
-    } catch (e) {
-        missingFeatures.push('Template strings');
-    }
-
-    try {
-        eval('function f (x=1) {}');
-    } catch (e) {
-        missingFeatures.push('Default function parameters');
-    }
-
-    try {
-        eval('async function f() {}');
-    } catch (e) {
-        missingFeatures.push('async functions');
-    }
-
-    if (typeof Promise === 'undefined') {
-        missingFeatures.push('Promises');
-    }
-
-    if ('ArrayBuffer' in window === false) {
-        missingFeatures.push('ArrayBuffer');
-    }
-
-    if ('serviceWorker' in navigator === false) {
-        missingFeatures.push('Service workers');
-    }
-
-    if ('Worker' in window === false) {
-        missingFeatures.push('Web workers');
-    }
-
-    try {
-        eval('\
-            var w = new Worker(URL.createObjectURL(new Blob(["var x = null"], {type: "text/javascript"})));\
-            w.onerror = function () {throw "";};\
-            var b = new ArrayBuffer(1);\
-            w.postMessage(b, [b]);\
-            if (b.byteLength !== 0) throw "";\
-            w.terminate();\
-        ')
-    } catch (e) {
-        missingFeatures.push('Transferables');
-    }
-
-    if (!navigator.cookieEnabled) {
-        missingFeatures.push('Cookies');
-    }
-
-    if ('caches' in window === false) {
-        missingFeatures.push('Cache storage');
-    }
-
-    if (!('File' in window && 'Blob' in window && 'FileReader' in window && 'FileList' in window)) {
-        missingFeatures.push('File API');
-    }
-
-    return missingFeatures;
-}
-
-
 window.addEventListener('load', function () {
-    // If there are missing features, notify the user and stop.
-    const missingFeatures = getMissingFeatures();
-    if (missingFeatures.length) {
-        // Show the list of missing features.
-        var message = 'Este navegador no es compatible con:';
-        var details = '';
-        missingFeatures.forEach(function (feature) {details += feature + '\n';});
-        errorize(message, details);
-        return;
-    }
-
-    // From this point on, advanced features can be used.
-
     // Show version number.
     navigator.serviceWorker.ready
     .then(() => {
@@ -158,7 +48,12 @@ window.addEventListener('load', function () {
     // Register service worker.
     navigator.serviceWorker.register('sw.js')
     .catch(error => {
-        errorize('Falló una parte esencial.', error);
+        // Service workers are considered site data ('cookies'...), so cookies
+        // have to be enabled for the application to work. If cookies are not
+        // enabled, that's probably the reason why the service worker cannot be
+        // registered. If they are, in fact, enabled, the reason is different
+        // and a generic error message is displayed instead.
+        errorize(navigator.cookieEnabled ? 'Falló una parte esencial.' : 'Las cookies están desactivadas.' , error);
         return Promise.reject(null);
     })
     // Service worker successfully registered, proceed with setting up the app.

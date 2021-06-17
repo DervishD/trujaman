@@ -129,6 +129,9 @@ class Presenter {
 
         // For keeping track of jobs. Indexed by job id.
         this.jobs = new Map();
+
+        // Set up web worker.
+        this.worker = new WebWorker('ww.js', ui);
     }
 
     // Handles the UI event fired when the user has chosen files.
@@ -168,6 +171,11 @@ class Presenter {
         // Create the UI element for this job.
         this.ui.createJob(job.id);
         this.ui.setJobFileName(job.id, job.file.name);
+
+        // Add handling functions to the job object itself.
+        job.process = () => this.worker.do('readFile', file);
+        job.abort = () => this.worker.do('abortRead', file);
+        job.forget = () => this.worker.do('forgetFile', file);
     }
 
     // Handles the UI event fired when the user has dismissed a job.
@@ -227,41 +235,6 @@ window.addEventListener('load', function () {
             let aParagraph = document.createElement('p');
             aParagraph.innerText = format;
             formatListTemplate.appendChild(aParagraph);
-        }
-
-        // Set up web worker.
-        const webWorker = new WebWorker('ww.js', ui);
-
-        // Function to create a bunch of jobs.
-        window.createJobs = function (iterable) {
-            for (let i = 0; i < iterable.length; i++) {
-                const file = iterable[i];
-
-                // There's a problem with File objects: they don't have paths, only names.
-                // So, there's no way of telling if two user-selected files are the same or not,
-                // because they may have the same name but come from different directories.
-                //
-                // Best effort here is to create a kind of hash from the file name, the file size
-                // and the last modification time. This is not bulletproof, as the user may have
-                // and select to different files from different directores whose names are equal,
-                // their sizes and modification times too, but still have different contents.
-                //
-                // Still, this minimizes the possibility of leaving the user unable to add a file
-                // just because it has the same name than one previously selected, if they come
-                // from different folders. The chances of both files having the exact same size
-                // and modification time are quite reduced. Hopefully.
-                // const jobId = `${iterable[i].name}_${iterable[i].size}_${iterable[i].lastModified}`;
-
-                // Do not add duplicate jobs, using the previously calculated hash.
-                // let existingJobs = Array.from(document.querySelectorAll('.job_id').values());
-                // existingJobs = existingJobs.map(element => element.textContent);
-                // if (existingJobs.includes(jobId)) continue;
-
-                // Create a new job.
-                file.readFile = () => webWorker.do('readFile', file);
-                file.abortRead = () => webWorker.do('abortRead', file);
-                file.forgetFile = () => webWorker.do('forgetFile', file);
-            }
         }
     })
     .catch(error => {  // For unhandled errors.

@@ -142,44 +142,45 @@ class Presenter {
     // Process a list of files.
     processFiles (files) {
         for (let i = 0; i < files.length; i++) {
-            this.createJob(files[i]);
+            // There's a problem with File objects: they don't have paths, only names.
+            // So, there's no way of telling if two user-selected files are the same or not,
+            // because they may have the same name but come from different directories.
+            //
+            // Best effort here is to create a kind of hash from the file name, the file size
+            // and the last modification time. This is not bulletproof, as the user may have
+            // and select to different files from different directores whose names are equal,
+            // their sizes and modification times too, but still have different contents.
+            //
+            // Still, this minimizes the possibility of leaving the user unable to add a file
+            // just because it has the same name than one previously selected, if they come
+            // from different folders. The chances of both files having the exact same size
+            // and modification time are quite reduced. Hopefully.
+            const jobId = `${files[i].name}_${files[i].size}_${files[i].lastModified}`;
+
+            // Do not add duplicate jobs.
+            if (this.jobs.has(jobId)) continue;
+            this.jobs.set(jobId, files[i]);
+
+            // Create the UI element for this job.
+            this.ui.createJob(jobId);
+            this.ui.setJobFileName(jobId, files[i].name);
+
+            // Process the job.
+            this.processJob(jobId);
         }
     }
 
-    // Create a new job to handle the given file.
-    createJob (file) {
-        const job = {};
-
-        // Store the file object for handling it later.
-        job.file = file;
-
-        // There's a problem with File objects: they don't have paths, only names.
-        // So, there's no way of telling if two user-selected files are the same or not,
-        // because they may have the same name but come from different directories.
-        //
-        // Best effort here is to create a kind of hash from the file name, the file size
-        // and the last modification time. This is not bulletproof, as the user may have
-        // and select to different files from different directores whose names are equal,
-        // their sizes and modification times too, but still have different contents.
-        //
-        // Still, this minimizes the possibility of leaving the user unable to add a file
-        // just because it has the same name than one previously selected, if they come
-        // from different folders. The chances of both files having the exact same size
-        // and modification time are quite reduced. Hopefully.
-        job.id = `${file.name}_${file.size}_${file.lastModified}`;
-
-        // Do not add duplicate jobs.
-        if (this.jobs.has(job.id)) return;
-        this.jobs.set(job.id, job);
-
-        // Create the UI element for this job.
-        this.ui.createJob(job.id);
-        this.ui.setJobFileName(job.id, job.file.name);
-
-        // Add handling functions to the job object itself.
-        job.process = () => this.worker.do('readFile', file);
-        job.abort = () => this.worker.do('abortRead', file);
-        job.forget = () => this.worker.do('forgetFile', file);
+    // Process a job.
+    processJob (jobId) {
+        const file = this.jobs.get(jobId);
+        this.worker.do('readFile', file)
+        .then(payload => {
+            payload = payload ? `0x${payload.toString(16)}` : '××';
+            payload = `<span class="monospaced">[${payload}]</span>`;
+            this.ui.setJobStatus(jobId, `El fichero se leyó correctamente. ${payload}`);
+            console.log(`El fichero se leyó correctamente. ${payload}`);
+        })
+        .then(() => this.worker.do('forgetFile', file))  // For cleaning up no longer needed resources.
     }
 
     // Dismiss a job.

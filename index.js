@@ -43,14 +43,14 @@ class UI {
 
             dropzone.addEventListener('drop', event => {
                 dropzone.dataset.state = 'dismissed';
-                this.presenter.handleFilesChosen(event.dataTransfer.files);
+                this.presenter.processFiles(event.dataTransfer.files);
                 event.preventDefault();  // Prevent the browser from opening the file.
             });
         }
 
         // Create new file processor with the selected file.
         filePicker.firstElementChild.addEventListener('change', event => {
-            this.presenter.handleFilesChosen(event.target.files);
+            this.presenter.processFiles(event.target.files);
             // Or the event won't be fired again if the user selects the same file...
             event.target.value = null;
         });
@@ -99,7 +99,7 @@ class UI {
 
         // A dismiss button, to delete the current job.
         element.querySelector('.job_dismiss_button').addEventListener('click', () => {
-            this.presenter.handleDismissJob(jobId);
+            this.presenter.dismissJob(jobId);
         }, {once: true});
 
         this.jobsContainer.appendChild(element);
@@ -133,9 +133,8 @@ class Presenter {
         this.worker = new WebWorker('ww.js', ui);
     }
 
-    // Handles the UI event fired when the user has chosen files.
-    // Not a real event, really, but...
-    handleFilesChosen (files) {
+    // Process a list of files.
+    processFiles (files) {
         for (let i = 0; i < files.length; i++) {
             this.createJob(files[i]);
         }
@@ -177,8 +176,8 @@ class Presenter {
         job.forget = () => this.worker.do('forgetFile', file);
     }
 
-    // Handles the UI event fired when the user has dismissed a job.
-    handleDismissJob (jobId) {
+    // Dismiss a job.
+    dismissJob (jobId) {
         this.ui.removeJob(jobId);
         this.jobs.delete(jobId);
     }

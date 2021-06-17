@@ -101,7 +101,7 @@ class UI {
 
         // A dismiss button, to delete the current job.
         element.querySelector('.job_dismiss_button').addEventListener('click', event => {
-            this.presenter.removeJob(jobId);
+            this.presenter.handleDismissJob(jobId);
         }, {once: true});
 
         this.jobsContainer.appendChild(element);
@@ -179,7 +179,7 @@ class Presenter {
     }
 
     // Handles the UI event fired when the user has dismissed a job.
-    removeJob (jobId) {
+    handleDismissJob (jobId) {
         this.ui.removeJob(jobId);
         this.jobs.delete(jobId);
     }

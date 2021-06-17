@@ -102,6 +102,27 @@ class UI {
             this.presenter.dismissJob(jobId);
         }, {once: true});
 
+        // A cancel button, to cancel the current job.
+        element.querySelector('.job_cancel_button').addEventListener('click', () => {
+            this.presenter.cancelJob(jobId);
+        });
+
+        // A retry button, to retry the current job.
+        element.querySelector('.job_retry_button').addEventListener('click', () => {
+            this.presenter.processJob(jobId);
+        });
+
+        // A dropdown control, to choose the download format from a list.
+        element.querySelector('.job_download_dropdown').addEventListener('click', () => {
+            const formatsList = element.querySelector('.job_formats_list');
+            formatsList.hidden = !formatsList.hidden;
+        });
+
+        // // For testing purposes.
+        // element.querySelector('.job_filename').addEventListener('click', () => {
+        //     this.presenter.processJob(jobId);
+        // });
+
         this.jobsContainer.appendChild(element);
         this.jobs.set(jobId, element);
     }
@@ -115,13 +136,41 @@ class UI {
     // Set the file name for the specified job id.
     setJobFileName (jobId, fileName) {
         const job = this.jobs.get(jobId);
-        if (job) job.querySelector('.job_filename').textContent = fileName;
+        if (!job) return;
+        job.querySelector('.job_filename').textContent = fileName;
     }
 
     // Set the status (HTML) for the specified job id.
     setJobStatus (jobId, status) {
         const job = this.jobs.get(jobId);
-        if (job) job.querySelector('.job_status').innerHTML = status;
+        if (!job) return;
+        job.querySelector('.job_status').innerHTML = status;
+    }
+
+    // Set the state for the specified job id.
+    // A job can be in the following states:
+    setJobState (jobId, state) {
+        const job = this.jobs.get(jobId);
+        if (!job) return;
+        switch (state) {
+            case 'processing':
+                job.querySelector('.job_retry_button').hidden = true;
+                job.querySelector('.job_cancel_button').hidden = false;
+                break;
+            case 'processed':
+                job.querySelector('.job_cancel_button').hidden = true;
+                job.querySelector('.job_download_dropdown').hidden = false;
+                break;
+            case 'cancelled':
+                job.querySelector('.job_cancel_button').hidden = true;
+                job.querySelector('.job_retry_button').hidden = false;
+                break;
+            case 'error':
+                job.querySelector('.job_cancel_button').hidden = true;
+                job.querySelector('.job_retry_button').hidden = true;
+                job.querySelector('.job_download_dropdown').hidden = true;
+                break;
+        }
     }
 }
 
@@ -173,20 +222,71 @@ class Presenter {
     // Process a job.
     processJob (jobId) {
         const file = this.jobs.get(jobId);
+
+        this.ui.setJobStatus(jobId, 'Leyendo el fichero…');
+        this.ui.setJobState(jobId, 'processing');
+
         this.worker.do('readFile', file)
         .then(payload => {
             payload = payload ? `0x${payload.toString(16)}` : '××';
             payload = `<span class="monospaced">[${payload}]</span>`;
             this.ui.setJobStatus(jobId, `El fichero se leyó correctamente. ${payload}`);
+            this.ui.setJobState(jobId, 'processed');
             console.log(`El fichero se leyó correctamente. ${payload}`);
         })
         .then(() => this.worker.do('forgetFile', file))  // For cleaning up no longer needed resources.
+        .catch(error => {
+            // Something went wrong.
+            this.ui.setJobState(jobId, 'error');
+            let errorMessage = 'ERROR: ';
+            switch (error.name) {
+                case 'FileTooLargeError':
+                    errorMessage += 'el fichero es muy grande';
+                    break;
+                case 'NotFoundError':
+                    errorMessage += 'el fichero no existe';
+                    break;
+                case 'NotReadableError':
+                    errorMessage += 'el fichero no tiene permisos de lectura';
+                    break;
+                case 'SecurityError':
+                    errorMessage += 'el fichero no se puede leer de forma segura';
+                    break;
+                default:
+                    // Unexpected error condition that should not happen in production.
+                    // So, it is notified differently, by using ui.showError().
+                    return this.ui.showError(
+                        'Ocurrió un error inesperado leyendo un fichero.',
+                        `Ocurrió un error «${error.name}» leyendo el fichero «${error.fileName}».\n${error.message}.`
+                    );
+            }
+            this.ui.setJobStatus(jobId, `${errorMessage} <span class="monospaced">(${error.name})</span>.`);
+        });
+
+    }
+
+    // Cancel a job.
+    cancelJob (jobId) {
+        const file = this.jobs.get(jobId);
+
+        this.worker.do('abortRead', file)
+        .then(() => {
+            this.ui.setJobState(jobId, 'cancelled');
+            this.ui.setJobStatus(jobId, 'Lectura cancelada.');
+        });
     }
 
     // Dismiss a job.
     dismissJob (jobId) {
+        const file = this.jobs.get(jobId);
+
         this.ui.removeJob(jobId);
         this.jobs.delete(jobId);
+
+        this.worker.do('abortRead', file)
+        .then(() => {
+            this.worker.do('forgetFile', file);
+        });
     }
 }
 
@@ -314,105 +414,5 @@ class WebWorker {
             // Send message to web worker.
             this.worker.postMessage({id: this.currentId++, command: command, args: args});
         })
-    }
-}
-
-
-// This class encapsulates the user interface for a file job.
-// That includes reading the file, cancelling and retrying file reads,
-// removing jobs, downloading conversion results, etc.
-class Job {
-    constructor (file, ui) {
-        this.file = file;
-
-        this.ui = ui;
-
-        // // Create the UI elements for the job by copying the existing template.
-        // // That way, this code can be more agnostic about the particular layout of the UI elements.
-        // this.element = document.querySelector('#job_template').cloneNode(true);
-        // this.element.hidden = false;
-        // this.element.removeAttribute('id');
-        // this.element.querySelector('.job_filename').textContent = this.file.name;
-
-        // A status area, to keep the end user informed.
-        this.status = this.element.querySelector('.job_status');
-
-        // A cancel button, to cancel current loading operation.
-        this.cancelButton = this.element.querySelector('.job_cancel_button');
-        this.cancelButton.onclick = () => {
-            this.file.abortRead()
-            .then(() => {
-                this.cancelButton.hidden = true;
-                this.retryButton.hidden = false;
-                this.status.textContent = 'Lectura cancelada.';
-            });
-        }
-
-        // A retry button, to retry current loading operation, if previously aborted.
-        this.retryButton = this.element.querySelector('.job_retry_button');
-        this.retryButton.onclick = () => this.readFile();
-
-        // A dropdown control, to choose the download format from a list.
-        this.formatsList = this.element.querySelector('.job_formats_list');
-        this.downloadDropdown = this.element.querySelector('.job_download_dropdown');
-        this.downloadDropdown.onclick = () => this.formatsList.hidden = !this.formatsList.hidden;
-
-        // // A dismiss button, to delete the current job.
-        // this.element.querySelector('.job_dismiss_button').addEventListener('click', event => {
-        //     // Remove job UI element.
-        //     const currentJob = event.target.closest('.job');
-        //     currentJob.parentNode.removeChild(currentJob);
-
-        //     // Abort file reading, just in case, and free resources for the file.
-        //     this.file.abortRead().then(() => this.file.forgetFile());
-        // }, {once: true});
-
-        // Finally, read the file.
-        this.readFile();
-    }
-
-    // Read the file associated with this job.
-    readFile () {
-        // Show needed UI elements.
-        this.retryButton.hidden = true;
-        this.cancelButton.hidden = false;
-        this.status.textContent = 'Leyendo el fichero…';
-        // Do the actual file read.
-        this.file.readFile()
-        .then(payload => {
-            this.cancelButton.hidden = true;
-            payload = payload ? `0x${payload.toString(16)}` : '××';
-            payload = `<span class="monospaced">[${payload}]</span>`;
-            this.status.innerHTML = `El fichero se leyó correctamente. ${payload}`;
-            this.downloadDropdown.hidden = false;
-        })
-        .then(() => this.file.forgetFile())  // For cleaning up no longer needed resources.
-        .catch(error => {
-            // Something went wrong.
-            this.cancelButton.hidden = true;
-            let errorMessage = 'ERROR: ';
-            switch (error.name) {
-                case 'FileTooLargeError':
-                    errorMessage += 'el fichero es muy grande';
-                    break;
-                case 'NotFoundError':
-                    errorMessage += 'el fichero no existe';
-                    break;
-                case 'NotReadableError':
-                    errorMessage += 'el fichero no tiene permisos de lectura';
-                    break;
-                case 'SecurityError':
-                    errorMessage += 'el fichero no se puede leer de forma segura';
-                    break;
-                default:
-                    // Unexpected error condition that should not happen in production.
-                    // So, it is notified differently, by using ui.showError().
-                    return this.ui.showError(
-                        'Ocurrió un error inesperado leyendo un fichero.',
-                        `Ocurrió un error «${error.name}» leyendo el fichero «${error.fileName}».\n${error.message}.`
-                    );
-            }
-            this.status.innerHTML = `${errorMessage} <span class="monospaced">(${error.name})</span>.`;
-        });
     }
 }

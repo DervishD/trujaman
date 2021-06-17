@@ -8,6 +8,10 @@ class UI {
         // This will be set by the presenter on initialization.
         this.presenter = null;
 
+        // For keeping track of job related DOM elements.
+        // The dictionary is indexed by jobId.
+        this.jobElements = new Map();
+
         // Set up the file picker.
         const filePicker = document.querySelector('#filepicker');
         filePicker.hidden = false;
@@ -96,10 +100,21 @@ class UI {
         element.removeAttribute('id');
 
         // Add initial attributes.
-        element.querySelector('.job_id').textContent = jobId;
+        this.jobElements.set(jobId, element);
         element.querySelector('.job_filename').textContent = fileName;
 
+        // A dismiss button, to delete the current job.
+        element.querySelector('.job_dismiss_button').addEventListener('click', event => {
+            this.presenter.removeJob(jobId);
+        }, {once: true});
+
         this.jobsContainer.appendChild(element);
+    }
+
+    removeJobElement (jobId) {
+        const element = this.jobElements.get(jobId);
+        element.parentNode.removeChild(element);
+        this.jobElements.delete(jobId);
     }
 }
 
@@ -114,7 +129,7 @@ class Presenter {
         this.jobs = [];
     }
 
-    // Handles the UI event fired when the end user has chosen files.
+    // Handles the UI event fired when the user has chosen files.
     // Not a real event, really, but...
     handleFilesChosen (files) {
         for (let i = 0; i < files.length; i++) {
@@ -144,6 +159,12 @@ class Presenter {
             // Create the UI element for this job.
             this.ui.createJobElement(jobId, file.name);
         }
+    }
+
+    // Handles the UI event fired when the user has dismissed a job.
+    removeJob (jobId) {
+        this.ui.removeJobElement(jobId);
+        this.jobs = this.jobs.filter(targetJobId => targetJobId !== jobId);
     }
 }
 
@@ -220,12 +241,12 @@ window.addEventListener('load', function () {
                 // just because it has the same name than one previously selected, if they come
                 // from different folders. The chances of both files having the exact same size
                 // and modification time are quite reduced. Hopefully.
-                const jobId = `${iterable[i].name}_${iterable[i].size}_${iterable[i].lastModified}`;
+                // const jobId = `${iterable[i].name}_${iterable[i].size}_${iterable[i].lastModified}`;
 
                 // Do not add duplicate jobs, using the previously calculated hash.
-                let existingJobs = Array.from(document.querySelectorAll('.job_id').values());
-                existingJobs = existingJobs.map(element => element.textContent);
-                if (existingJobs.includes(jobId)) continue;
+                // let existingJobs = Array.from(document.querySelectorAll('.job_id').values());
+                // existingJobs = existingJobs.map(element => element.textContent);
+                // if (existingJobs.includes(jobId)) continue;
 
                 // Create a new job.
                 file.readFile = () => webWorker.do('readFile', file);
@@ -321,12 +342,12 @@ class Job {
 
         this.ui = ui;
 
-        // Create the UI elements for the job by copying the existing template.
-        // That way, this code can be more agnostic about the particular layout of the UI elements.
-        this.element = document.querySelector('#job_template').cloneNode(true);
-        this.element.hidden = false;
-        this.element.removeAttribute('id');
-        this.element.querySelector('.job_filename').textContent = this.file.name;
+        // // Create the UI elements for the job by copying the existing template.
+        // // That way, this code can be more agnostic about the particular layout of the UI elements.
+        // this.element = document.querySelector('#job_template').cloneNode(true);
+        // this.element.hidden = false;
+        // this.element.removeAttribute('id');
+        // this.element.querySelector('.job_filename').textContent = this.file.name;
 
         // A status area, to keep the end user informed.
         this.status = this.element.querySelector('.job_status');
@@ -351,15 +372,15 @@ class Job {
         this.downloadDropdown = this.element.querySelector('.job_download_dropdown');
         this.downloadDropdown.onclick = () => this.formatsList.hidden = !this.formatsList.hidden;
 
-        // A dismiss button, to delete the current job.
-        this.element.querySelector('.job_dismiss_button').addEventListener('click', event => {
-            // Remove job UI element.
-            const currentJob = event.target.closest('.job');
-            currentJob.parentNode.removeChild(currentJob);
+        // // A dismiss button, to delete the current job.
+        // this.element.querySelector('.job_dismiss_button').addEventListener('click', event => {
+        //     // Remove job UI element.
+        //     const currentJob = event.target.closest('.job');
+        //     currentJob.parentNode.removeChild(currentJob);
 
-            // Abort file reading, just in case, and free resources for the file.
-            this.file.abortRead().then(() => this.file.forgetFile());
-        }, {once: true});
+        //     // Abort file reading, just in case, and free resources for the file.
+        //     this.file.abortRead().then(() => this.file.forgetFile());
+        // }, {once: true});
 
         // Finally, read the file.
         this.readFile();

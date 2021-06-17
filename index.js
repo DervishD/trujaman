@@ -8,9 +8,8 @@ class UI {
         // This will be set by the presenter on initialization.
         this.presenter = null;
 
-        // For keeping track of job related DOM elements.
-        // The dictionary is indexed by jobId.
-        this.jobElements = new Map();
+        // For keeping track of jobs. Indexed by job id.
+        this.jobs = new Map();
 
         // Set up the file picker.
         const filePicker = document.querySelector('#filepicker');
@@ -92,16 +91,13 @@ class UI {
         // FIXME: cancel jobs and hide filePicker instead. And REFACTOR!
     }
 
-    createJobElement (jobId, fileName) {
+    // Create a job user interface element with the specified job id.
+    createJob (jobId) {
         // Create the UI elements for the job by copying the existing template.
         // That way, this code can be more agnostic about the particular layout of the UI elements.
         const element = document.querySelector('#job_template').cloneNode(true);
         element.hidden = false;
         element.removeAttribute('id');
-
-        // Add initial attributes.
-        this.jobElements.set(jobId, element);
-        element.querySelector('.job_filename').textContent = fileName;
 
         // A dismiss button, to delete the current job.
         element.querySelector('.job_dismiss_button').addEventListener('click', event => {
@@ -109,12 +105,18 @@ class UI {
         }, {once: true});
 
         this.jobsContainer.appendChild(element);
+        this.jobs.set(jobId, element);
     }
 
-    removeJobElement (jobId) {
-        const element = this.jobElements.get(jobId);
-        element.parentNode.removeChild(element);
-        this.jobElements.delete(jobId);
+    // Remove the job user interface element with the specified job id.
+    removeJob (jobId) {
+        this.jobsContainer.removeChild(this.jobs.get(jobId));
+        this.jobs.delete(jobId);
+    }
+
+    // Set the file name for the specified job id.
+    setJobFileName (jobId, fileName) {
+        this.jobs.get(jobId).querySelector('.job_filename').textContent = fileName;
     }
 }
 
@@ -125,46 +127,53 @@ class Presenter {
         this.ui = ui;
         this.ui.presenter = this;
 
-        // For keeping track of jobs.
-        this.jobs = [];
+        // For keeping track of jobs. Indexed by job id.
+        this.jobs = new Map();
     }
 
     // Handles the UI event fired when the user has chosen files.
     // Not a real event, really, but...
     handleFilesChosen (files) {
         for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-
-            // There's a problem with File objects: they don't have paths, only names.
-            // So, there's no way of telling if two user-selected files are the same or not,
-            // because they may have the same name but come from different directories.
-            //
-            // Best effort here is to create a kind of hash from the file name, the file size
-            // and the last modification time. This is not bulletproof, as the user may have
-            // and select to different files from different directores whose names are equal,
-            // their sizes and modification times too, but still have different contents.
-            //
-            // Still, this minimizes the possibility of leaving the user unable to add a file
-            // just because it has the same name than one previously selected, if they come
-            // from different folders. The chances of both files having the exact same size
-            // and modification time are quite reduced. Hopefully.
-            const jobId = `${file.name}_${file.size}_${file.lastModified}`;
-
-            // Do not add duplicate jobs.
-            if (this.jobs.includes(jobId)) continue;
-            this.jobs.push(jobId);
-
-            console.log(file.name, jobId);
-
-            // Create the UI element for this job.
-            this.ui.createJobElement(jobId, file.name);
+            this.createJob(files[i]);
         }
+    }
+
+    // Create a new job to handle the given file.
+    createJob (file) {
+        const job = {};
+
+        // Store the file object for handling it later.
+        job.file = file;
+
+        // There's a problem with File objects: they don't have paths, only names.
+        // So, there's no way of telling if two user-selected files are the same or not,
+        // because they may have the same name but come from different directories.
+        //
+        // Best effort here is to create a kind of hash from the file name, the file size
+        // and the last modification time. This is not bulletproof, as the user may have
+        // and select to different files from different directores whose names are equal,
+        // their sizes and modification times too, but still have different contents.
+        //
+        // Still, this minimizes the possibility of leaving the user unable to add a file
+        // just because it has the same name than one previously selected, if they come
+        // from different folders. The chances of both files having the exact same size
+        // and modification time are quite reduced. Hopefully.
+        job.id = `${file.name}_${file.size}_${file.lastModified}`;
+
+        // Do not add duplicate jobs.
+        if (this.jobs.has(job.id)) return;
+        this.jobs.set(job.id, job);
+
+        // Create the UI element for this job.
+        this.ui.createJob(job.id);
+        this.ui.setJobFileName(job.id, job.file.name);
     }
 
     // Handles the UI event fired when the user has dismissed a job.
     removeJob (jobId) {
-        this.ui.removeJobElement(jobId);
-        this.jobs = this.jobs.filter(targetJobId => targetJobId !== jobId);
+        this.ui.removeJob(jobId);
+        this.jobs.delete(jobId);
     }
 }
 

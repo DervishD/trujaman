@@ -116,7 +116,8 @@ class UI {
 
     // Set the file name for the specified job id.
     setJobFileName (jobId, fileName) {
-        this.jobs.get(jobId).querySelector('.job_filename').textContent = fileName;
+        const job = this.jobs.get(jobId);
+        if (job) job.querySelector('.job_filename').textContent = fileName;
     }
 }
 

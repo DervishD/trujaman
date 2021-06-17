@@ -14,9 +14,8 @@ class UI {
         // Set up the file picker.
         const filePicker = document.querySelector('#filepicker');
         filePicker.hidden = false;
-        filePicker.querySelector('#filepicker > button').addEventListener('click', () => {
-            // Propagate the click.
-            filePicker.querySelector('#filepicker > input').click();
+        filePicker.querySelector('button').addEventListener('click', () => {
+            filePicker.querySelector('input').click();  // Propagate the click.
         });
 
         // If the browser supports file drag and drop, enable it.
@@ -34,20 +33,19 @@ class UI {
             dropzone.dataset.state = 'hidden';
 
             // This is needed because the drag and drop overlay is HIDDEN, so it wouldn't get the event.
-            window.ondragenter = () => dropzone.dataset.state = 'visible';
+            window.addEventListener('dragenter', () => { dropzone.dataset.state = 'visible'; });
 
             // Prevent the browser from opening the file.
-            dropzone.ondragenter = event => event.preventDefault();  // FIXME: is this needed?
-            dropzone.ondragover = event => event.preventDefault();
+            dropzone.addEventListener('dragover', event => { event.preventDefault(); });
 
             // Hide the drag and drop overlay if the user didn't drop the file.
-            dropzone.ondragleave = () => dropzone.dataset.state = 'hidden';
+            dropzone.addEventListener('dragleave', () => { dropzone.dataset.state = 'hidden'; });
 
-            dropzone.ondrop = event => {
-                event.preventDefault();  // Prevent the browser from opening the file.
+            dropzone.addEventListener('drop', event => {
                 dropzone.dataset.state = 'dismissed';
                 this.presenter.handleFilesChosen(event.dataTransfer.files);
-            };
+                event.preventDefault();  // Prevent the browser from opening the file.
+            });
         }
 
         // Create new file processor with the selected file.
@@ -100,7 +98,7 @@ class UI {
         element.removeAttribute('id');
 
         // A dismiss button, to delete the current job.
-        element.querySelector('.job_dismiss_button').addEventListener('click', event => {
+        element.querySelector('.job_dismiss_button').addEventListener('click', () => {
             this.presenter.handleDismissJob(jobId);
         }, {once: true});
 
@@ -187,7 +185,7 @@ class Presenter {
 }
 
 
-window.addEventListener('load', function () {
+window.addEventListener('load', () => {
     // First step is setting up the user interface.
     const ui = new UI();
     new Presenter(ui);
@@ -255,7 +253,7 @@ class WebWorker {
         this.worker = new Worker(script);
 
         // This error handler only handles loading errors and syntax errors.
-        this.worker.onerror = event => {
+        this.worker.addEventListener('error', event => {
             let details = '';
             if (event instanceof ErrorEvent) {
                 // For syntax errors, that should not happen in production,
@@ -270,9 +268,7 @@ class WebWorker {
 
             // Prevent further processing of the event.
             event.preventDefault();
-            event.stopPropagation();
-            return false;
-        }
+        });
 
         // This handles responses from the web worker.
         this.worker.addEventListener('message', event => {

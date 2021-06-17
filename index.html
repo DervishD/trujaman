@@ -41,7 +41,7 @@
             // Prevent further processing of the event.
             event.preventDefault();
             event.stopPropagation();
-            return false;
+            event.stopImmediatePropagation();
         });
     </script>
     <script src="index.js"></script>

@@ -117,6 +117,12 @@ class UI {
         const job = this.jobs.get(jobId);
         if (job) job.querySelector('.job_filename').textContent = fileName;
     }
+
+    // Set the status (HTML) for the specified job id.
+    setJobStatus (jobId, status) {
+        const job = this.jobs.get(jobId);
+        if (job) job.querySelector('.job_status').innerHTML = status;
+    }
 }
 
 

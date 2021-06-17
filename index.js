@@ -4,6 +4,10 @@
 // This class encapsulates the user interface.
 class UI {
     constructor () {
+        // No presenter wired right now.
+        // This will be set by the presenter on initialization.
+        this.presenter = null;
+
         // Set up the file picker.
         const filePicker = document.querySelector('#filepicker');
         filePicker.hidden = false;
@@ -39,14 +43,13 @@ class UI {
             dropzone.ondrop = event => {
                 event.preventDefault();  // Prevent the browser from opening the file.
                 dropzone.dataset.state = 'dismissed';
-                window.createJobs(event.dataTransfer.files);
+                this.presenter.handleFilesChosen(event.dataTransfer.files);
             };
         }
 
         // Create new file processor with the selected file.
         filePicker.firstElementChild.addEventListener('change', event => {
-            // Create the needed jobs.
-            window.createJobs(event.target.files);
+            this.presenter.handleFilesChosen(event.target.files);
             // Or the event won't be fired again if the user selects the same file...
             event.target.value = null;
         });
@@ -85,7 +88,7 @@ class UI {
         // FIXME: cancel jobs and hide filePicker instead. And REFACTOR!
     }
 
-    addJobElement (jobId, fileName) {
+    createJobElement (jobId, fileName) {
         // Create the UI elements for the job by copying the existing template.
         // That way, this code can be more agnostic about the particular layout of the UI elements.
         const element = document.querySelector('#job_template').cloneNode(true);
@@ -101,9 +104,54 @@ class UI {
 }
 
 
+// This class encapsulates the event handling and nearly all business logic.
+class Presenter {
+    constructor (ui) {
+        this.ui = ui;
+        this.ui.presenter = this;
+
+        // For keeping track of jobs.
+        this.jobs = [];
+    }
+
+    // Handles the UI event fired when the end user has chosen files.
+    // Not a real event, really, but...
+    handleFilesChosen (files) {
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+
+            // There's a problem with File objects: they don't have paths, only names.
+            // So, there's no way of telling if two user-selected files are the same or not,
+            // because they may have the same name but come from different directories.
+            //
+            // Best effort here is to create a kind of hash from the file name, the file size
+            // and the last modification time. This is not bulletproof, as the user may have
+            // and select to different files from different directores whose names are equal,
+            // their sizes and modification times too, but still have different contents.
+            //
+            // Still, this minimizes the possibility of leaving the user unable to add a file
+            // just because it has the same name than one previously selected, if they come
+            // from different folders. The chances of both files having the exact same size
+            // and modification time are quite reduced. Hopefully.
+            const jobId = `${file.name}_${file.size}_${file.lastModified}`;
+
+            // Do not add duplicate jobs.
+            if (this.jobs.includes(jobId)) continue;
+            this.jobs.push(jobId);
+
+            console.log(file.name, jobId);
+
+            // Create the UI element for this job.
+            this.ui.createJobElement(jobId, file.name);
+        }
+    }
+}
+
+
 window.addEventListener('load', function () {
     // First step is setting up the user interface.
     const ui = new UI();
+    new Presenter(ui);
 
     // Show version number.
     navigator.serviceWorker.ready
@@ -154,7 +202,6 @@ window.addEventListener('load', function () {
         // Set up web worker.
         const webWorker = new WebWorker('ww.js', ui);
 
-
         // Function to create a bunch of jobs.
         window.createJobs = function (iterable) {
             for (let i = 0; i < iterable.length; i++) {
@@ -184,11 +231,6 @@ window.addEventListener('load', function () {
                 file.readFile = () => webWorker.do('readFile', file);
                 file.abortRead = () => webWorker.do('abortRead', file);
                 file.forgetFile = () => webWorker.do('forgetFile', file);
-                const newJob = new Job(file, ui);
-
-
-                // Add the job to the web page.
-                ui.addJobElement(jobId, file.name);
             }
         }
     })

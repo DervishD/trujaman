@@ -4,9 +4,8 @@
 // This class encapsulates the user interface.
 class UI {
     constructor () {
-        // No presenter wired right now.
-        // This will be set by the presenter on initialization.
-        this.presenter = null;
+        // No observer wired right now.
+        this.observer = null;
 
         // For keeping track of jobs. Indexed by job id.
         this.jobs = new Map();
@@ -43,14 +42,14 @@ class UI {
 
             dropzone.addEventListener('drop', event => {
                 dropzone.dataset.state = 'dismissed';
-                this.presenter.processFiles(event.dataTransfer.files);
+                this.sendEvent('processFiles', event.dataTransfer.files);
                 event.preventDefault();  // Prevent the browser from opening the file.
             });
         }
 
         // Create new file processor with the selected file.
         filePicker.firstElementChild.addEventListener('change', event => {
-            this.presenter.processFiles(event.target.files);
+            this.sendEvent('processFiles', event.target.files);
             // Or the event won't be fired again if the user selects the same file...
             event.target.value = null;
         });
@@ -58,6 +57,11 @@ class UI {
         // Show jobs container.
         this.jobsContainer = document.querySelector('#jobs');
         this.jobsContainer.hidden = false;
+    }
+
+    // Send event to observer, if any.
+    sendEvent (event, payload) {
+        this.observer && this.observer.handleEvent(event, payload);
     }
 
     // Show version code on proper DOM element.
@@ -99,17 +103,17 @@ class UI {
 
         // A dismiss button, to delete the current job.
         element.querySelector('.job_dismiss_button').addEventListener('click', () => {
-            this.presenter.dismissJob(jobId);
+            this.sendEvent('dismissJob', jobId);
         }, {once: true});
 
         // A cancel button, to cancel the current job.
         element.querySelector('.job_cancel_button').addEventListener('click', () => {
-            this.presenter.cancelJob(jobId);
+            this.sendEvent('cancelJob', jobId);
         });
 
         // A retry button, to retry the current job.
         element.querySelector('.job_retry_button').addEventListener('click', () => {
-            this.presenter.processJob(jobId);
+            this.sendEvent('retryJob', jobId);
         });
 
         // A dropdown control, to choose the download format from a list.
@@ -120,7 +124,7 @@ class UI {
 
         // // For testing purposes.
         // element.querySelector('.job_filename').addEventListener('click', () => {
-        //     this.presenter.processJob(jobId);
+        //     this.sendEvent('processJob', jobId);
         // });
 
         this.jobsContainer.appendChild(element);
@@ -177,15 +181,24 @@ class UI {
 
 // This class encapsulates the event handling and nearly all business logic.
 class Presenter {
-    constructor (ui) {
-        this.ui = ui;
-        this.ui.presenter = this;
+    constructor (view) {
+        this.view = view;
+        this.view.observer = this;  // Register as observer of the view (UI).
 
         // For keeping track of jobs. Indexed by job id.
         this.jobs = new Map();
 
         // Set up web worker.
-        this.worker = new WebWorker('ww.js', ui);
+        this.worker = new WebWorker('ww.js', view);
+    }
+
+    // Handle events received from view.
+    handleEvent (event, payload) {
+        // This is a bit unorthodox, because a real event handling mechanism is
+        // not used, but for this application needs this is enough and it works.
+        // Right now, a full featured event handling system, like the one which
+        // EventTarget provides, would be overkill.
+        this[event](payload);
     }
 
     // Process a list of files.
@@ -211,8 +224,8 @@ class Presenter {
             this.jobs.set(jobId, files[i]);
 
             // Create the UI element for this job.
-            this.ui.createJob(jobId);
-            this.ui.setJobFileName(jobId, files[i].name);
+            this.view.createJob(jobId);
+            this.view.setJobFileName(jobId, files[i].name);
 
             // Process the job.
             this.processJob(jobId);
@@ -223,21 +236,21 @@ class Presenter {
     processJob (jobId) {
         const file = this.jobs.get(jobId);
 
-        this.ui.setJobStatus(jobId, 'Leyendo el fichero…');
-        this.ui.setJobState(jobId, 'processing');
+        this.view.setJobStatus(jobId, 'Leyendo el fichero…');
+        this.view.setJobState(jobId, 'processing');
 
         this.worker.do('readFile', file)
         .then(payload => {
             payload = payload ? `0x${payload.toString(16)}` : '××';
             payload = `<span class="monospaced">[${payload}]</span>`;
-            this.ui.setJobStatus(jobId, `El fichero se leyó correctamente. ${payload}`);
-            this.ui.setJobState(jobId, 'processed');
+            this.view.setJobStatus(jobId, `El fichero se leyó correctamente. ${payload}`);
+            this.view.setJobState(jobId, 'processed');
             console.log(`El fichero se leyó correctamente. ${payload}`);
         })
         .then(() => this.worker.do('forgetFile', file))  // For cleaning up no longer needed resources.
         .catch(error => {
             // Something went wrong.
-            this.ui.setJobState(jobId, 'error');
+            this.view.setJobState(jobId, 'error');
             let errorMessage = 'ERROR: ';
             switch (error.name) {
                 case 'FileTooLargeError':
@@ -255,12 +268,12 @@ class Presenter {
                 default:
                     // Unexpected error condition that should not happen in production.
                     // So, it is notified differently, by using ui.showError().
-                    return this.ui.showError(
+                    return this.view.showError(
                         'Ocurrió un error inesperado leyendo un fichero.',
                         `Ocurrió un error «${error.name}» leyendo el fichero «${error.fileName}».\n${error.message}.`
                     );
             }
-            this.ui.setJobStatus(jobId, `${errorMessage} <span class="monospaced">(${error.name})</span>.`);
+            this.view.setJobStatus(jobId, `${errorMessage} <span class="monospaced">(${error.name})</span>.`);
         });
 
     }
@@ -271,16 +284,21 @@ class Presenter {
 
         this.worker.do('abortRead', file)
         .then(() => {
-            this.ui.setJobState(jobId, 'cancelled');
-            this.ui.setJobStatus(jobId, 'Lectura cancelada.');
+            this.view.setJobState(jobId, 'cancelled');
+            this.view.setJobStatus(jobId, 'Lectura cancelada.');
         });
+    }
+
+    // Retry a job.
+    retryJob (jobId) {
+        this.processJob(jobId);
     }
 
     // Dismiss a job.
     dismissJob (jobId) {
         const file = this.jobs.get(jobId);
 
-        this.ui.removeJob(jobId);
+        this.view.removeJob(jobId);
         this.jobs.delete(jobId);
 
         this.worker.do('abortRead', file)

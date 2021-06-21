@@ -1,5 +1,5 @@
 @font-face {
-    font-family: 'Trujaman';
+    font-family: 'Noto Sans';
     font-display: swap;
     font-style: normal;
     font-weight: 400;
@@ -8,7 +8,7 @@
 }
 
 @font-face {
-    font-family: 'Trujaman';
+    font-family: 'Noto Sans';
     font-display: swap;
     font-style: normal;
     font-weight: 700;
@@ -17,7 +17,7 @@
 }
 
 @font-face {
-    font-family: 'Trujaman';
+    font-family: 'Noto Sans';
     font-display: swap;
     font-style: italic;
     font-weight: 400;
@@ -26,7 +26,7 @@
 }
 
 @font-face {
-    font-family: 'Trujaman';
+    font-family: 'Noto Sans';
     font-display: swap;
     font-style: italic;
     font-weight: 700;
@@ -35,7 +35,7 @@
 }
 
 @font-face {
-    font-family: 'Trujaman Mono';
+    font-family: 'Roboto Mono';
     font-display: swap;
     font-style: normal;
     font-weight: 400;
@@ -44,7 +44,7 @@
 }
 
 @font-face {
-    font-family: 'Trujaman Mono';
+    font-family: 'Roboto Mono';
     font-display: swap;
     font-style: normal;
     font-weight: 700;
@@ -75,7 +75,7 @@
 }
 
 :root {
-    font-family: "Trujaman", sans-serif;
+    font-family: "Noto Sans", sans-serif;
     font-size : clamp(1em, 1vw + 1vh + .5vmin, 3em);  /* A good starting point... */
     /* And some other alternatives... */
     /*
@@ -143,7 +143,7 @@ header {
 }
 
 button {
-    font-family: Trujaman;
+    font-family: "Noto Sans";
     font-weight: bold;
     cursor: pointer;
     margin: 0;
@@ -162,7 +162,7 @@ button:active {
 }
 
 .monospaced {
-    font-family: "Trujaman Mono";
+    font-family: "Roboto Mono";
 }
 
 #logo {
@@ -170,7 +170,7 @@ button:active {
 }
 
 #version {
-    font-family: "Trujaman Mono";
+    font-family: "Roboto Mono";
     font-size: 0.5em;
 }
 
@@ -334,7 +334,7 @@ button:active {
 }
 
 #error_details {
-    font-family: "Trujaman Mono";
+    font-family: "Roboto Mono";
     font-size: 0.8em;
     margin: 0.5em 0;
     font-weight: normal;

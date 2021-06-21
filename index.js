@@ -157,23 +157,23 @@ class UI {
         const job = this.jobs.get(jobId);
         if (!job) return;
         switch (state) {
-            case 'processing':
-                job.querySelector('.job_retry_button').hidden = true;
-                job.querySelector('.job_cancel_button').hidden = false;
-                break;
-            case 'processed':
-                job.querySelector('.job_cancel_button').hidden = true;
-                job.querySelector('.job_download_dropdown').hidden = false;
-                break;
-            case 'cancelled':
-                job.querySelector('.job_cancel_button').hidden = true;
-                job.querySelector('.job_retry_button').hidden = false;
-                break;
-            case 'error':
-                job.querySelector('.job_cancel_button').hidden = true;
-                job.querySelector('.job_retry_button').hidden = true;
-                job.querySelector('.job_download_dropdown').hidden = true;
-                break;
+        case 'processing':
+            job.querySelector('.job_retry_button').hidden = true;
+            job.querySelector('.job_cancel_button').hidden = false;
+            break;
+        case 'processed':
+            job.querySelector('.job_cancel_button').hidden = true;
+            job.querySelector('.job_download_dropdown').hidden = false;
+            break;
+        case 'cancelled':
+            job.querySelector('.job_cancel_button').hidden = true;
+            job.querySelector('.job_retry_button').hidden = false;
+            break;
+        case 'error':
+            job.querySelector('.job_cancel_button').hidden = true;
+            job.querySelector('.job_retry_button').hidden = true;
+            job.querySelector('.job_download_dropdown').hidden = true;
+            break;
         }
     }
 }
@@ -189,7 +189,76 @@ class Presenter {
         this.jobs = new Map();
 
         // Set up web worker.
-        this.worker = new WebWorker('ww.js', view);
+        this.worker = new Worker('ww.js');
+
+        // This error handler for the web worker only handles loading errors and syntax errors.
+        this.worker.addEventListener('error', event => {
+            if (event instanceof ErrorEvent) {
+                // For syntax errors, that should not happen in production,
+                // the event will be an ErrorEvent instance and will contain
+                // information pertaining to the error.
+                this.view.showError(
+                    'Error inesperado en el gestor de tareas en segundo plano.',
+                    `Error de sintaxis en línea ${event.lineno}\n(${event.message}).`
+                );
+            } else {
+                // For loading errors the event will be Event.
+                this.view.showError(
+                    'No se pueden ejecutar tareas en segundo plano.',
+                    `No se pudo iniciar el gestor de tareas en segundo plano.`
+                );
+            }
+            // Prevent further processing of the event.
+            event.preventDefault();
+        });
+
+        // This handles responses from the web worker.
+        this.worker.addEventListener('message', event => {
+            const {reply, payload} = event.data;
+            console.log('Got async reply:', reply, payload);
+
+            switch (reply) {
+            case 'jobCreated':  // Job was successfully created.
+                this.processJob(payload.jobId);
+                break;
+            case 'jobDeleted':  // Job was successfully deleted.
+                this.view.removeJob(payload.jobId);
+                break;
+            case 'jobCancelled':  // Job was successfully cancelled.
+                this.view.setJobStatus(payload.jobId, 'Lectura cancelada.');
+                break;
+            case 'fileReadOK':  // Job was successfully processed.
+                payload.data = payload.data ? `0x${payload.data.toString(16)}` : '××';
+                payload.data = `<span class="monospaced">[${payload.data}]</span>`;
+                this.view.setJobStatus(payload.jobId, `El fichero se leyó correctamente. ${payload.data}`);
+                this.view.setJobState(payload.jobId, 'processed');
+                break;
+            case 'fileReadError':
+                const error = payload.error;
+                // Something went wrong.
+                const errorMessages = {
+                    'FileTooLargeError': 'el fichero es muy grande',
+                    'NotFoundError': 'el fichero no existe',
+                    'NotReadableError': 'el fichero no tiene permisos de lectura',
+                    'SecurityError': 'el fichero no se puede leer de forma segura',
+                };
+                this.view.setJobState(payload.jobId, 'error');
+                if (error.name in errorMessages) {
+                    let status = `ERROR: ${errorMessages[error.name]}`;
+                    status += ` <span class="monospaced">(${error.name})</span>.`;
+                    this.view.setJobStatus(payload.jobId, status);
+                } else {
+                    // Unexpected error condition that should not happen in production.
+                    // So, it is notified differently, by using view.showError().
+                    this.view.showError(
+                        'Ocurrió un error inesperado leyendo un fichero.',
+                        `Ocurrió un error «${error.name}» leyendo el fichero «${error.fileName}».\n` +
+                        `${error.message}.`
+                    );
+                }
+                break;
+            }
+        });
     }
 
     // Handle events received from view.
@@ -227,66 +296,31 @@ class Presenter {
             this.view.createJob(jobId);
             this.view.setJobFileName(jobId, files[i].name);
 
-            // Process the job.
-            this.processJob(jobId);
+            // Create the job in the web worker.
+            this.asyncDo('createJob', [jobId, files[i]]);
         }
+    }
+
+    // Do an operation (command) asynchronously, by sending it to the web worker.
+    asyncDo (command, args) {
+        this.worker.postMessage({
+            command: command,
+            args: args
+        });
     }
 
     // Process a job.
     processJob (jobId) {
-        const file = this.jobs.get(jobId);
-
         this.view.setJobStatus(jobId, 'Leyendo el fichero…');
         this.view.setJobState(jobId, 'processing');
-
-        this.worker.do('readFile', file)
-        .then(payload => {
-            payload = payload ? `0x${payload.toString(16)}` : '××';
-            payload = `<span class="monospaced">[${payload}]</span>`;
-            this.view.setJobStatus(jobId, `El fichero se leyó correctamente. ${payload}`);
-            this.view.setJobState(jobId, 'processed');
-            console.log(`El fichero se leyó correctamente. ${payload}`);
-        })
-        .then(() => this.worker.do('forgetFile', file))  // For cleaning up no longer needed resources.
-        .catch(error => {
-            // Something went wrong.
-            this.view.setJobState(jobId, 'error');
-            let errorMessage = 'ERROR: ';
-            switch (error.name) {
-                case 'FileTooLargeError':
-                    errorMessage += 'el fichero es muy grande';
-                    break;
-                case 'NotFoundError':
-                    errorMessage += 'el fichero no existe';
-                    break;
-                case 'NotReadableError':
-                    errorMessage += 'el fichero no tiene permisos de lectura';
-                    break;
-                case 'SecurityError':
-                    errorMessage += 'el fichero no se puede leer de forma segura';
-                    break;
-                default:
-                    // Unexpected error condition that should not happen in production.
-                    // So, it is notified differently, by using ui.showError().
-                    return this.view.showError(
-                        'Ocurrió un error inesperado leyendo un fichero.',
-                        `Ocurrió un error «${error.name}» leyendo el fichero «${error.fileName}».\n${error.message}.`
-                    );
-            }
-            this.view.setJobStatus(jobId, `${errorMessage} <span class="monospaced">(${error.name})</span>.`);
-        });
-
+        this.asyncDo('processJob', jobId);
     }
 
     // Cancel a job.
     cancelJob (jobId) {
-        const file = this.jobs.get(jobId);
-
-        this.worker.do('abortRead', file)
-        .then(() => {
-            this.view.setJobState(jobId, 'cancelled');
-            this.view.setJobStatus(jobId, 'Lectura cancelada.');
-        });
+        this.view.setJobStatus(jobId, 'Cancelando el fichero…');
+        this.view.setJobState(jobId, 'cancelled');
+        this.asyncDo('cancelJob', jobId);
     }
 
     // Retry a job.
@@ -296,15 +330,7 @@ class Presenter {
 
     // Dismiss a job.
     dismissJob (jobId) {
-        const file = this.jobs.get(jobId);
-
-        this.view.removeJob(jobId);
-        this.jobs.delete(jobId);
-
-        this.worker.do('abortRead', file)
-        .then(() => {
-            this.worker.do('forgetFile', file);
-        });
+        this.asyncDo('deleteJob', jobId);
     }
 }
 
@@ -365,72 +391,3 @@ window.addEventListener('load', () => {
         ui.showError('Se produjo un error inesperado.', error);
     });
 });
-
-
-// This class encapsulates the web worker for background tasks.
-class WebWorker {
-    constructor (script, ui) {
-        this.settlers = [];  // For settling the appropriate Promise for a transaction.
-        this.currentId = 0;  // Current transaction identifier.
-
-        // Create the web worker.
-        this.worker = new Worker(script);
-
-        // This error handler only handles loading errors and syntax errors.
-        this.worker.addEventListener('error', event => {
-            let details = '';
-            if (event instanceof ErrorEvent) {
-                // For syntax errors, that should not happen in production,
-                // the event will be an ErrorEvent instance and will contain
-                // information pertaining to the error.
-                details += `Error de sintaxis en línea ${event.lineno}\n(${event.message}).`;
-            } else {
-                // For loading errors the event will be Event.
-                details += `No se pudo iniciar el gestor de tareas en segundo plano.`;
-            }
-            ui.showError('No se pueden ejecutar tareas en segundo plano.', details);
-
-            // Prevent further processing of the event.
-            event.preventDefault();
-        });
-
-        // This handles responses from the web worker.
-        this.worker.addEventListener('message', event => {
-            const {id, status, payload} = event.data;
-
-            // Internal error in web worker.
-            if (status === null) {
-                const details = `${payload.message} «${payload.command}».`;
-                ui.showError('No existe el comando en segundo plano solicitado.', details);
-            } else {
-                // Response from web worker.
-                // Settle the promise according to the returned status
-                // and call the settler registered for this transaction
-                // to resolve or reject the Promise.
-                if (status) {
-                    this.settlers[id].resolve(payload);
-                } else {
-                    this.settlers[id].reject(payload);
-                }
-            }
-            // Clean callbacks that are no longer needed.
-            delete this.settlers[id];
-        });
-    }
-
-    // Method to execute a command on the web worker and promisify the response.
-    do (command, args) {
-        // This builds a new Promise around the message sent to the web worker,
-        // so the replies from the web worker will settle that Promise, making
-        // the asynchronous interaction code much cleaner and easier to follow.
-        //
-        // Commands are arbitrary, they are send as-is to the web worker.
-        // If they are unimplemented the web worker will reply with an internal error.
-        return new Promise((resolve, reject) => {
-            // Store the Promise settlers for use inside onmessage event handler.
-            this.settlers[this.currentId] = {'resolve': resolve, 'reject': reject};
-            // Send message to web worker.
-            this.worker.postMessage({id: this.currentId++, command: command, args: args});
-        })
-    }
-}

@@ -11,10 +11,11 @@ self.jobs = {};
 // The only exception are internal errors, of course.
 self.addEventListener('message', event => {
     const {command, args} = event.data;
-    if (command in self) {
+    const handler = 'handle' + command[0].toUpperCase() + command.slice(1);
+    if (handler in self) {
         console.log('Got async command:', command, args);
         // Run the appropriate command.
-        self[command](args);
+        self[handler](args);
     } else {
         // Notify the internal error. Should not happen on production.
         self.postMessage({
@@ -27,7 +28,7 @@ self.addEventListener('message', event => {
 
 // This command creates a new file processing job, with the specified jobId, for
 // the specified File object, assigning the necessary resources.
-function createJob ([jobId, file]) {
+function handleCreateJob ([jobId, file]) {
     // This should not happen in production, but helps tracking weird errors.
     if (jobId in self.jobs) {
         self.postMessage({
@@ -101,13 +102,13 @@ function createJob ([jobId, file]) {
 
 // This command frees the resources associated with the job with the given
 // jobId, so everything can be garbage collected at a later time.
-function deleteJob (jobId) {
+function handleDeleteJob (jobId) {
     const job = self.jobs[jobId];
 
     if (!job) return;
 
     // Cancel the job first.
-    cancelJob(jobId);
+    handleCancelJob(jobId);
 
     // Free resources.
     job.reader.onload = null;
@@ -129,7 +130,7 @@ function deleteJob (jobId) {
 // performing any other needed operation on that file or its contents.
 //
 // The file is read using the HTML5 File API.
-function processJob (jobId) {
+function handleProcessJob (jobId) {
     const job = self.jobs[jobId];
 
     if (!job) return;
@@ -162,7 +163,7 @@ function processJob (jobId) {
 // This is usually a successful operation, because the user actually requested
 // the cancellation of the current job processing operation, so when it's
 // aborted it actually IS a successful response to the request.
-function cancelJob (jobId) {
+function handleCancelJob (jobId) {
     const job = self.jobs[jobId];
 
     if (!job) return;

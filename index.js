@@ -1,8 +1,10 @@
 'use strict';
 
+/* eslint max-classes-per-file: ["error", 2] */
 
 // This class encapsulates the user interface.
 class UI {
+    /* eslint-disable max-lines-per-function, max-statements */
     constructor () {
         // No observer wired right now.
         this.observer = null;
@@ -22,7 +24,7 @@ class UI {
         // This is entirely optional, and detection is performed by testing for
         // the existence of the drag and drop events used. This is not orthodox
         // but works for the needs of the application.
-        if (['dragenter', 'dragover', 'dragleave', 'drop'].every(event => 'on' + event in window)) {
+        if (['dragenter', 'dragover', 'dragleave', 'drop'].every(event => `on${event}` in window)) {
             const dropzone = document.querySelector('#dropzone');
 
             // Yes, this makes sense. The first statement enables the drop zone,
@@ -58,6 +60,7 @@ class UI {
         this.jobsContainer = document.querySelector('#jobs');
         this.jobsContainer.hidden = false;
     }
+    /* eslint-enable max-lines-per-function, max-statements */
 
     // Send event to observer, if any.
     sendEvent (event, payload) {
@@ -65,10 +68,10 @@ class UI {
     }
 
     // Show version code on proper DOM element.
-    showVersion (version) {
+    static showVersion (version) {
         const versionElement = document.querySelector('#version');
         versionElement.hidden = false;
-        versionElement.textContent += 'v' + version;
+        versionElement.textContent += `v${version}`;
     }
 
     // Show HTML error message on proper DOM element.
@@ -78,7 +81,7 @@ class UI {
     // The second one can be more verbose and contains the details of the error,
     // and will be rendered differently. Usually it's the stringified version of
     // the error as returned by the interpreter.
-    showError (message, details) {
+    static showError (message, details) {
         // Show the error on the DOM element.
         const errorElement = document.querySelector('#error');
         errorElement.hidden = false;
@@ -88,7 +91,7 @@ class UI {
         // Hide the DOM elements following the error one.
         // This effectively disables the user interface.
         let element = document.querySelector('#error');
-        while (element = element.nextElementSibling) element.hidden = true;
+        while ((element = element.nextElementSibling)) element.hidden = true;
 
         // FIXME: cancel jobs and hide filePicker instead. And REFACTOR!
     }
@@ -104,7 +107,7 @@ class UI {
         // A dismiss button, to delete the current job.
         element.querySelector('.job_dismiss_button').addEventListener('click', () => {
             this.sendEvent('dismissJob', jobId);
-        }, {once: true});
+        }, {'once': true});
 
         // A cancel button, to cancel the current job.
         element.querySelector('.job_cancel_button').addEventListener('click', () => {
@@ -181,6 +184,7 @@ class UI {
 
 // This class encapsulates the event handling and nearly all business logic.
 class Presenter {
+    /* eslint-disable max-lines-per-function */
     constructor (view) {
         this.view = view;
         this.view.observer = this;  // Register as observer of the view (UI).
@@ -205,7 +209,7 @@ class Presenter {
                 // For loading errors the event will be Event.
                 this.view.showError(
                     'No se pueden ejecutar tareas en segundo plano.',
-                    `No se pudo iniciar el gestor de tareas en segundo plano.`
+                    'No se pudo iniciar el gestor de tareas en segundo plano.'
                 );
             }
             // Prevent further processing of the event.
@@ -213,6 +217,7 @@ class Presenter {
         });
 
         // This handles responses from the web worker.
+        /* eslint-disable max-statements */
         this.worker.addEventListener('message', event => {
             const {reply, payload} = event.data;
             console.log('Got async reply:', reply, payload);
@@ -228,19 +233,19 @@ class Presenter {
                 this.view.setJobStatus(payload.jobId, 'Lectura cancelada.');
                 break;
             case 'fileReadOK':  // Job was successfully processed.
+                // eslint-disable-next-line no-magic-numbers
                 payload.data = payload.data ? `0x${payload.data.toString(16)}` : '××';
                 payload.data = `<span class="monospaced">[${payload.data}]</span>`;
                 this.view.setJobStatus(payload.jobId, `El fichero se leyó correctamente. ${payload.data}`);
                 this.view.setJobState(payload.jobId, 'processed');
                 break;
-            case 'fileReadError':
-                const error = payload.error;
-                // Something went wrong.
+            case 'fileReadError': {
+                const {error} = payload;
                 const errorMessages = {
                     'FileTooLargeError': 'el fichero es muy grande',
                     'NotFoundError': 'el fichero no existe',
                     'NotReadableError': 'el fichero no tiene permisos de lectura',
-                    'SecurityError': 'el fichero no se puede leer de forma segura',
+                    'SecurityError': 'el fichero no se puede leer de forma segura'
                 };
                 this.view.setJobState(payload.jobId, 'error');
                 if (error.name in errorMessages) {
@@ -258,7 +263,9 @@ class Presenter {
                 }
                 break;
             }
+            }
         });
+        /* eslint-disable max-statements */
     }
 
     // Handle events received from view.
@@ -304,8 +311,8 @@ class Presenter {
     // Do an operation (command) asynchronously, by sending it to the web worker.
     asyncDo (command, args) {
         this.worker.postMessage({
-            command: command,
-            args: args
+            command,
+            args
         });
     }
 
@@ -368,7 +375,7 @@ window.addEventListener('load', () => {
         // enabled, that's probably the reason why the service worker cannot be
         // registered. If they are, in fact, enabled, the reason is different
         // and a generic error message is displayed instead.
-        ui.showError(navigator.cookieEnabled ? 'Falló una parte esencial.' : 'Las cookies están desactivadas.' , error);
+        ui.showError(navigator.cookieEnabled ? 'Falló una parte esencial.' : 'Las cookies están desactivadas.', error);
         return Promise.reject(null);
     })
     // Service worker successfully registered, proceed with setting up the app.
@@ -381,7 +388,7 @@ window.addEventListener('load', () => {
         // Update job template with the list of formats.
         const formatListTemplate = document.querySelector('#job_template .job_formats_list');
         for (const format in formats) {
-            let aParagraph = document.createElement('p');
+            const aParagraph = document.createElement('p');
             aParagraph.innerText = format;
             formatListTemplate.appendChild(aParagraph);
         }

@@ -186,7 +186,6 @@ class Presenter {
     /* eslint-disable max-lines-per-function */
     constructor (view) {
         this.view = view;
-        this.view.observer = this;  // Register as observer of the view (UI).
 
         // Set up web worker.
         this.worker = new Worker('ww.js');
@@ -327,7 +326,7 @@ class Presenter {
 window.addEventListener('load', () => {
     // First step is setting up the user interface.
     const ui = new UI();
-    new Presenter(ui);
+    ui.observer = new Presenter(ui);  // Register as observer of the view (UI).
 
     // Show version number.
     navigator.serviceWorker.ready

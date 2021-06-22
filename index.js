@@ -145,14 +145,12 @@ class UI {
     // Set the file name for the specified job id.
     setJobFileName (jobId, fileName) {
         const job = this.jobs.get(jobId);
-        if (!job) return;
         job.querySelector('.job_filename').textContent = fileName;
     }
 
     // Set the status (HTML) for the specified job id.
     setJobStatus (jobId, status) {
         const job = this.jobs.get(jobId);
-        if (!job) return;
         job.querySelector('.job_status').innerHTML = status;
     }
 
@@ -160,7 +158,6 @@ class UI {
     // A job can be in the following states:
     setJobState (jobId, state) {
         const job = this.jobs.get(jobId);
-        if (!job) return;
         switch (state) {
         case 'processing':
             job.querySelector('.job_retry_button').hidden = true;
@@ -190,9 +187,6 @@ class Presenter {
     constructor (view) {
         this.view = view;
         this.view.observer = this;  // Register as observer of the view (UI).
-
-        // For keeping track of jobs. Indexed by job id.
-        this.jobs = new Map();
 
         // Set up web worker.
         this.worker = new Worker('ww.js');
@@ -232,6 +226,9 @@ class Presenter {
                 );
                 break;
             case 'jobCreated':  // Job was successfully created.
+                // Create the UI element for this job.
+                this.view.createJob(jobId);
+                this.view.setJobFileName(jobId, payload);
                 this.processJob(jobId);
                 break;
             case 'jobDeleted':  // Job was successfully deleted.
@@ -288,31 +285,8 @@ class Presenter {
     // Process a list of files.
     processFiles (files) {
         for (let i = 0; i < files.length; i++) {
-            // There's a problem with File objects: they don't have paths, only names.
-            // So, there's no way of telling if two user-selected files are the same or not,
-            // because they may have the same name but come from different directories.
-            //
-            // Best effort here is to create a kind of hash from the file name, the file size
-            // and the last modification time. This is not bulletproof, as the user may have
-            // and select to different files from different directores whose names are equal,
-            // their sizes and modification times too, but still have different contents.
-            //
-            // Still, this minimizes the possibility of leaving the user unable to add a file
-            // just because it has the same name than one previously selected, if they come
-            // from different folders. The chances of both files having the exact same size
-            // and modification time are quite reduced. Hopefully.
-            const jobId = `${files[i].name}_${files[i].size}_${files[i].lastModified}`;
-
-            // Do not add duplicate jobs.
-            if (this.jobs.has(jobId)) continue;
-            this.jobs.set(jobId, files[i]);
-
-            // Create the UI element for this job.
-            this.view.createJob(jobId);
-            this.view.setJobFileName(jobId, files[i].name);
-
             // Create the job in the web worker.
-            this.asyncDo('createJob', [jobId, files[i]]);
+            this.asyncDo('createJob', files[i]);
         }
     }
 

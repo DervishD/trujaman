@@ -360,7 +360,7 @@ window.addEventListener('load', () => {
     .then(() => {
         fetch('version')
         .then(response => response.text())
-        .then(version => ui.showVersion(version));
+        .then(version => version && ui.showVersion(version));
     });
 
     // Handle controller change.

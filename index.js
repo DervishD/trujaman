@@ -61,6 +61,7 @@ class UI {
         this.jobsContainer.hidden = false;
 
         // Store references to some DOM elements for later use.
+        this.version = document.querySelector('#version');
         this.error = document.querySelector('#error');
     }
     /* eslint-enable max-lines-per-function, max-statements */
@@ -72,9 +73,8 @@ class UI {
 
     // Show version code on proper DOM element.
     showVersion (version) {
-        const versionElement = document.querySelector('#version');
-        versionElement.hidden = false;
-        versionElement.textContent += `v${version}`;
+        this.version.hidden = false;
+        this.version.textContent += `v${version}`;
     }
 
     // Show HTML error message on proper DOM element.

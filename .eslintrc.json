@@ -16,6 +16,7 @@
         "default-case": "off",
         "dot-location": ["error", "property"],
         "function-call-argument-newline": ["error", "consistent"],
+        "function-paren-newline": ["error", "multiline-arguments"],
         "guard-for-in": "off",
         "id-length": ["error", { "exceptions": ["i"] }],
         "indent": ["error", 4, { "MemberExpression": 0}],

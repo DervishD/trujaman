@@ -13,10 +13,10 @@ class UI {
         this.jobs = new Map();
 
         // Set up the file picker.
-        const filePicker = document.querySelector('#filepicker');
-        filePicker.hidden = false;
-        filePicker.querySelector('button').addEventListener('click', () => {
-            filePicker.querySelector('input').click();  // Propagate the click.
+        this.filePicker = document.querySelector('#filepicker');
+        this.filePicker.hidden = false;
+        this.filePicker.querySelector('button').addEventListener('click', () => {
+            this.filePicker.querySelector('input').click();  // Propagate the click.
         });
 
         // If the browser supports file drag and drop, enable it.
@@ -50,7 +50,7 @@ class UI {
         }
 
         // Create new file processor with the selected file.
-        filePicker.firstElementChild.addEventListener('change', event => {
+        this.filePicker.firstElementChild.addEventListener('change', event => {
             this.sendEvent('processFiles', event.target.files);
             // Or the event won't be fired again if the user selects the same file...
             event.target.value = null;
@@ -59,6 +59,9 @@ class UI {
         // Show jobs container.
         this.jobsContainer = document.querySelector('#jobs');
         this.jobsContainer.hidden = false;
+
+        // Store references to some DOM elements for later use.
+        this.error = document.querySelector('#error');
     }
     /* eslint-enable max-lines-per-function, max-statements */
 
@@ -81,19 +84,18 @@ class UI {
     // The second one can be more verbose and contains the details of the error,
     // and will be rendered differently. Usually it's the stringified version of
     // the error as returned by the interpreter.
-    static showError (message, details) {
-        // Show the error on the DOM element.
-        const errorElement = document.querySelector('#error');
-        errorElement.hidden = false;
-        errorElement.querySelector('#error_message').innerText = message;
-        errorElement.querySelector('#error_details').innerText = details;
+    showError (message, details) {
+        // Don't overwrite currently shown message.
+        if (!this.error.hidden) return;
 
-        // Hide the DOM elements following the error one.
-        // This effectively disables the user interface.
-        let element = document.querySelector('#error');
-        while ((element = element.nextElementSibling)) element.hidden = true;
+        // First, clean and disable the user interface.
+        for (const jobId of this.jobs.keys()) this.sendEvent('dismissJob', jobId); // Dismiss (delete) all jobs.
+        this.filePicker.hidden = true;  // Hide the file picker, thus disabling the user interface.
 
-        // FIXME: cancel jobs and hide filePicker instead. And REFACTOR!
+        // Finally, show the error on the DOM element.
+        this.error.hidden = false;
+        this.error.querySelector('#error_message').innerText = message;
+        this.error.querySelector('#error_details').innerText = details;
     }
 
     // Create a job user interface element with the specified job id.

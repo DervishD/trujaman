@@ -39,9 +39,7 @@ self.handleCreateJob = function handleCreateJob ([jobId, file]) {
                     'name': 'ExistingFileError',
                     'message': 'Este fichero está siendo procesado',
                     'fileName': file.name
-                }
-            }
-        });
+        return;
     }
 
     // Store a reference for future use.

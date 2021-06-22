@@ -1,0 +1,41 @@
+{
+    "env": {
+        "browser": true,
+        "es6": true
+    },
+    "extends": "eslint:all",
+    "parserOptions": {
+        "ecmaVersion": 2020
+    },
+    "rules": {
+        "array-element-newline": ["error", "consistent"],
+        "arrow-parens": ["error", "as-needed"],
+        "brace-style": ["error", "1tbs", { "allowSingleLine": true }],
+        "capitalized-comments": ["error", "always", { "ignoreConsecutiveComments": true }],
+        "curly": ["error", "multi-line"],
+        "default-case": "off",
+        "dot-location": ["error", "property"],
+        "function-call-argument-newline": ["error", "consistent"],
+        "guard-for-in": "off",
+        "id-length": ["error", { "exceptions": ["i"] }],
+        "indent": ["error", 4, { "MemberExpression": 0}],
+        "line-comment-position": "off",
+        "max-len": ["error", { "code": 120 }],
+        "max-lines": ["error", {"max": 500, "skipBlankLines": true, "skipComments": true}],
+        "max-statements-per-line": "off",
+        "multiline-comment-style": ["error", "separate-lines"],
+        "multiline-ternary": ["error", "always-multiline"],
+        "no-extra-parens": ["error", "all", { "conditionalAssign": false }],
+        "no-inline-comments": "off",
+        "no-magic-numbers": ["error", { "ignoreArrayIndexes": true }],
+        "no-multi-spaces": ["error", { "ignoreEOLComments": true }],
+        "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
+        "no-ternary": "off",
+        "no-unused-expressions": ["error", { "allowShortCircuit": true }],
+        "one-var": "off",
+        "padded-blocks": ["error", "never"],
+        "quotes": ["error", "single"],
+        "sort-keys": "off",
+        "strict": ["error", "global"]
+    }
+}

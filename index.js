@@ -384,13 +384,13 @@ window.addEventListener('load', () => {
         // registered. If they are, in fact, enabled, the reason is different
         // and a generic error message is displayed instead.
         ui.showError(navigator.cookieEnabled ? 'Falló una parte esencial.' : 'Las cookies están desactivadas.', error);
-        return Promise.reject(null);
+        return Promise.reject(new Error('BreakPromiseChainError'));  // To break the Promise chain.
     })
     // Service worker successfully registered, proceed with setting up the app.
     .then(() => fetch('formats.json'))
     .then(response => response.json().catch(error => {
         ui.showError('No se pudo procesar la lista de formatos.', error);
-        return Promise.reject(null);
+        return Promise.reject(new Error('BreakPromiseChainError'));  // To break the Promise chain.
     }))
     .then(formats => {  // Set up the core of the application and the UI.
         // Update job template with the list of formats.
@@ -402,7 +402,7 @@ window.addEventListener('load', () => {
         }
     })
     .catch(error => {  // For unhandled errors.
-        if (error === null) return;
+        if (error === 'BreakPromiseChainError') return;
         ui.showError('Se produjo un error inesperado.', error);
     });
 });

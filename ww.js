@@ -3,6 +3,9 @@
 // To keep track of FileReaders.
 self.jobs = {};
 
+// Absolutely arbitrary maximum file size.
+self.MAX_FILE_SIZE = 9999 * 1024 * 1024;  // eslint-disable-line no-magic-numbers
+
 // Main entry point for web worker, a simple command dispatcher.
 // Commands are responsible for replying with postmessage themselves because some of them are asynchronous.
 // So, they don't return a value to this dispatcher that can be used to reply to main thread.
@@ -118,7 +121,7 @@ self.handleProcessJob = function handleProcessJob (jobId) {
     const job = self.jobs[jobId];
 
     // Refuse to process very large files.
-    if (job.file.size > 9999 * 1024 * 1024) {  // Absolutely arbitrary maximum file size...
+    if (job.file.size > self.MAX_FILE_SIZE) {
         const error = {
             'name': 'FileTooLargeError',
             'message': 'El fichero es demasiado grande para ser procesado',

@@ -236,6 +236,9 @@ class Presenter {
             case 'jobCancelled':  // Job was successfully cancelled.
                 this.view.setJobStatus(jobId, 'Lectura cancelada.');
                 break;
+            case 'bytesLoaded':
+                this.view.setJobStatus(jobId, `Leyendo el fichero (${payload}%).`);
+                break;
             case 'fileReadOK': {  // Job was successfully processed.
                 // eslint-disable-next-line no-magic-numbers
                 const data = `<span class="monospaced">[${payload ? `0x${payload.toString(16)}` : '××'}]</span>`;
@@ -299,7 +302,6 @@ class Presenter {
 
     // Process a job.
     processJob (jobId) {
-        this.view.setJobStatus(jobId, 'Leyendo el fichero…');
         this.view.setJobState(jobId, 'processing');
         this.asyncDo('processJob', jobId);
     }

@@ -32,6 +32,7 @@
         "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
         "no-ternary": "off",
         "no-unused-expressions": ["error", { "allowShortCircuit": true }],
+        "object-property-newline": ["error", { "allowAllPropertiesOnSameLine": true }],
         "one-var": "off",
         "padded-blocks": ["error", "never"],
         "quotes": ["error", "single"],

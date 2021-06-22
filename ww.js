@@ -17,28 +17,31 @@ self.addEventListener('message', event => {
         self[handler](args);
     } else {
         // Notify the internal error. Should not happen on production.
-        self.postMessage({
-            'reply': 'commandNotFound',
-            'payload': {}
-        });
+        self.postReply('commandNotFound', '', command);
     }
 });
 
 
+// Helper for building the object needed in calls to postMessage(), so calling
+// code is cleaner and simpler. This way
+self.postReply = function postReply (reply, jobId = '', payload = '') {
+    self.postMessage({reply, jobId, payload});
+};
+
+
 // This command creates a new file processing job, with the specified jobId, for
 // the specified File object, assigning the necessary resources.
-/* eslint-disable max-lines-per-function */
+/* eslint-disable max-lines-per-function, max-statements */
 self.handleCreateJob = function handleCreateJob ([jobId, file]) {
     // This should not happen in production, but helps tracking weird errors.
     if (jobId in self.jobs) {
-        self.postMessage({
-            'reply': 'fileReadError',
-            'payload': {
-                jobId,
-                'error': {
-                    'name': 'ExistingFileError',
-                    'message': 'Este fichero está siendo procesado',
-                    'fileName': file.name
+        console.log('duped!!');
+        const error = {
+            'name': 'ExistingFileError',
+            'message': 'Este fichero ya está siendo procesado',
+            'fileName': file.name
+        };
+        self.postReply('fileReadError', jobId, error);
         return;
     }
 
@@ -60,44 +63,25 @@ self.handleCreateJob = function handleCreateJob ([jobId, file]) {
     // Handle file reading errors.
     // This includes unsuccessful reads and discarded huge files.
     // The convoluted call to 'reject' is needed because Firefox can't clone an Error object.
-    reader.onerror = event => self.postMessage({
-        'reply': 'fileReadError',
-        'payload': {
-            jobId,
-            'error': {
-                'name': event.target.error.name,
-                'message': event.target.error.message,
-                'fileName': file.name
-            }
-        }
-    });
+    reader.onerror = event => {
+        const error = {
+            'name': event.target.error.name,
+            'message': event.target.error.message,
+            'fileName': file.name
+        };
+        self.postReply('fileReadError', jobId, error);
+    };
 
     // Handle successful reads.
-    reader.onload = event => self.postMessage({
-        'reply': 'fileReadOK',
-        'payload': {
-            jobId,
-            'data': new Uint8Array(event.target.result)[0]
-        }
-    });
+    reader.onload = event => self.postReply('fileReadOK', jobId, new Uint8Array(event.target.result)[0]);
 
     // Handle cancellation of reading process.
-    reader.onabort = () => self.postMessage({
-        'reply': 'jobCancelled',
-        'payload': {
-            jobId
-        }
-    });
+    reader.onabort = () => self.postReply('jobCancelled', jobId);
 
     // Notify the operation was successful.
-    self.postMessage({
-        'reply': 'jobCreated',
-        'payload': {
-            jobId
-        }
-    });
+    self.postReply('jobCreated', jobId);
 };
-/* eslint-enable max-lines-per-function */
+/* eslint-enable max-lines-per-function, max-statements */
 
 
 // This command frees the resources associated with the job with the given
@@ -117,12 +101,7 @@ self.handleDeleteJob = function handleDeleteJob (jobId) {
     delete self.jobs[jobId];
 
     // Notify the operation was successful.
-    self.postMessage({
-        'reply': 'jobDeleted',
-        'payload': {
-            jobId
-        }
-    });
+    self.postReply('jobDeleted', jobId);
 };
 
 
@@ -131,24 +110,19 @@ self.handleDeleteJob = function handleDeleteJob (jobId) {
 //
 // The file is read using the HTML5 File API.
 self.handleProcessJob = function handleProcessJob (jobId) {
+    console.log('handling processing of job', jobId);
     const job = self.jobs[jobId];
 
     if (!job) return;
 
-
     // Refuse to process very large files.
     if (job.file.size > 9999 * 1024 * 1024) {  // Absolutely arbitrary maximum file size...
-        self.postMessage({
-            'reply': 'fileReadError',
-            'payload': {
-                jobId,
-                'error': {
-                    'name': 'FileTooLargeError',
-                    'message': 'El fichero es demasiado grande para ser procesado',
-                    'fileName': job.file.name
-                }
-            }
-        });
+        const error = {
+            'name': 'FileTooLargeError',
+            'message': 'El fichero es demasiado grande para ser procesado',
+            'fileName': job.file.name
+        }
+        self.postReply('fileReadError', jobId, error);
     } else {
         // Read the file as ArrayBuffer.
         job.reader.readAsArrayBuffer(job.file);

@@ -219,39 +219,39 @@ class Presenter {
         // This handles responses from the web worker.
         /* eslint-disable max-statements */
         this.worker.addEventListener('message', event => {
-            const {reply, payload} = event.data;
-            console.log('Got async reply:', reply, payload);
+            const {reply, jobId, payload} = event.data;
+            console.log('Got async reply:', reply, jobId, payload);
 
             switch (reply) {
             case 'jobCreated':  // Job was successfully created.
-                this.processJob(payload.jobId);
+                this.processJob(jobId);
                 break;
             case 'jobDeleted':  // Job was successfully deleted.
-                this.view.removeJob(payload.jobId);
+                this.view.removeJob(jobId);
                 break;
             case 'jobCancelled':  // Job was successfully cancelled.
-                this.view.setJobStatus(payload.jobId, 'Lectura cancelada.');
+                this.view.setJobStatus(jobId, 'Lectura cancelada.');
                 break;
-            case 'fileReadOK':  // Job was successfully processed.
+            case 'fileReadOK': {  // Job was successfully processed.
                 // eslint-disable-next-line no-magic-numbers
-                payload.data = payload.data ? `0x${payload.data.toString(16)}` : '××';
-                payload.data = `<span class="monospaced">[${payload.data}]</span>`;
-                this.view.setJobStatus(payload.jobId, `El fichero se leyó correctamente. ${payload.data}`);
-                this.view.setJobState(payload.jobId, 'processed');
+                const data = `<span class="monospaced">[${payload ? `0x${payload.toString(16)}` : '××'}]</span>`;
+                this.view.setJobStatus(jobId, `El fichero se leyó correctamente. ${data}`);
+                this.view.setJobState(jobId, 'processed');
                 break;
+            }
             case 'fileReadError': {
-                const {error} = payload;
+                const error = payload;
                 const errorMessages = {
                     'FileTooLargeError': 'el fichero es muy grande',
                     'NotFoundError': 'el fichero no existe',
                     'NotReadableError': 'el fichero no tiene permisos de lectura',
                     'SecurityError': 'el fichero no se puede leer de forma segura'
                 };
-                this.view.setJobState(payload.jobId, 'error');
+                this.view.setJobState(jobId, 'error');
                 if (error.name in errorMessages) {
                     let status = `ERROR: ${errorMessages[error.name]}`;
                     status += ` <span class="monospaced">(${error.name})</span>.`;
-                    this.view.setJobStatus(payload.jobId, status);
+                    this.view.setJobStatus(jobId, status);
                 } else {
                     // Unexpected error condition that should not happen in production.
                     // So, it is notified differently, by using view.showError().

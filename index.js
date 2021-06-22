@@ -68,7 +68,7 @@ class UI {
     }
 
     // Show version code on proper DOM element.
-    static showVersion (version) {
+    showVersion (version) {
         const versionElement = document.querySelector('#version');
         versionElement.hidden = false;
         versionElement.textContent += `v${version}`;
@@ -223,6 +223,12 @@ class Presenter {
             console.log('Got async reply:', reply, jobId, payload);
 
             switch (reply) {
+            case 'commandNotFound':
+                this.view.showError(
+                    'Se solicitó un comando en segundo plano desconocido.',
+                    `El comando «${payload.command}» no existe.`
+                );
+                break;
             case 'jobCreated':  // Job was successfully created.
                 this.processJob(jobId);
                 break;

@@ -170,7 +170,6 @@ button:active {
 }
 
 #version {
-    font-family: "Roboto Mono";
     font-size: 0.5em;
 }
 
@@ -334,7 +333,6 @@ button:active {
 }
 
 #error_details {
-    font-family: "Roboto Mono";
     font-size: 0.8em;
     margin: 0.5em 0;
     font-weight: normal;

@@ -1,10 +1,14 @@
+/*
+ * Thanks to the Noto Project people and to Google Inc. for making this font
+ * available under SIL Open Font License, and to Monotype for creating it.
+ */
+
 @font-face {
     font-family: 'Noto Sans';
     font-display: swap;
     font-style: normal;
     font-weight: 400;
-    src: url('index_n400.woff2') format('woff2');
-    unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+    src: url('index_sans_r_400.woff2') format('woff2');
 }
 
 @font-face {
@@ -12,44 +16,20 @@
     font-display: swap;
     font-style: normal;
     font-weight: 700;
-    src: url('index_n700.woff2') format('woff2');
-    unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+    src: url('index_sans_r_700.woff2') format('woff2');
 }
 
+/*
+ * Thanks to JetBrains for making this font available under SIL Open Font
+ * License, and to Philipp Nurullin <philipp.nurullin@jetbrains.com> and
+ * Konstantin Bulenkov <kb@jetbrains.com>, the font creators.
+ */
 @font-face {
-    font-family: 'Noto Sans';
-    font-display: swap;
-    font-style: italic;
-    font-weight: 400;
-    src: url('index_i400.woff2') format('woff2');
-    unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
-}
-
-@font-face {
-    font-family: 'Noto Sans';
-    font-display: swap;
-    font-style: italic;
-    font-weight: 700;
-    src: url('index_i700.woff2') format('woff2');
-    unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
-}
-
-@font-face {
-    font-family: 'Roboto Mono';
+    font-family: 'JetBrains Mono';
     font-display: swap;
     font-style: normal;
     font-weight: 400;
-    src: url('index_n400m.woff2') format('woff2');
-    unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
-}
-
-@font-face {
-    font-family: 'Roboto Mono';
-    font-display: swap;
-    font-style: normal;
-    font-weight: 700;
-    src: url('index_n700m.woff2') format('woff2');
-    unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+    src: url('index_mono_r_400.woff2') format('woff2');
 }
 
 @media (prefers-color-scheme: light) {
@@ -143,6 +123,7 @@ header {
 }
 
 button {
+    font-family: inherit;
     font-weight: 700;
     cursor: pointer;
     margin: 0;
@@ -161,7 +142,7 @@ button:active {
 }
 
 .monospaced {
-    font-family: "Roboto Mono";
+    font-family: "JetBrains Mono";
 }
 
 #logo {

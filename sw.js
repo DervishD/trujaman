@@ -17,7 +17,7 @@ const coreAssets = [
     'index.js',
     'formats.json',
     'ww.js',
-    'manifest.json',
+    'manifest.webmanifest',
     'appicon.png',
     'favicon.ico'
 ];

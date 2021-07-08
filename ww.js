@@ -25,9 +25,9 @@ self.addEventListener('message', event => {
 });
 
 
-// Helper for building the object needed in calls to postMessage(), so calling
-// code is cleaner and simpler. This way
-self.postReply = function postReply (reply, jobId = '', payload = '') {
+// Helper for building the object needed in calls to postMessage().
+// This way calling code is a bit cleaner and simpler.
+self.postReply = function postReply (reply, jobId, payload) {
     self.postMessage({reply, jobId, payload});
 };
 

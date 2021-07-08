@@ -100,7 +100,10 @@ body {
     width: 100%;
     height: 100%;
     margin: 0;
-    padding: 1em;
+    padding-top: max(env(safe-area-inset-top, 1em), 1em);
+    padding-right: max(env(safe-area-inset-right, 1em), 1em);
+    padding-bottom: max(env(safe-area-inset-bottom, 1em), 1em);
+    padding-left: max(env(safe-area-inset-left, 1em), 1em);
     color: var(--fg);
     background-color: var(--bg);
 }

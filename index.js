@@ -241,7 +241,8 @@ class Presenter {
                 break;
             case 'fileReadOK': {  // Job was successfully processed.
                 // eslint-disable-next-line no-magic-numbers
-                const data = `<span class="monospaced">[${payload ? `0x${payload.toString(16)}` : '××'}]</span>`;
+                let data = typeof payload === 'undefined' ? '××' : `0x${payload.toString(16).padStart(2, 0)}`;
+                data = `<span class="monospaced">[${data}]</span>`;
                 this.view.setJobStatus(jobId, `El fichero se leyó correctamente. ${data}`);
                 this.view.setJobState(jobId, 'processed');
                 break;

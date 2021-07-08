@@ -68,7 +68,8 @@ self.handleCreateJob = function handleCreateJob (file) {
         const DELAY = 500;
         const start = Date.now(); while (Date.now() - start < DELAY);  // Delay each reading operation.
         // eslint-disable-next-line no-magic-numbers
-        self.postReply('bytesLoaded', job.id, Math.floor(100 * event.loaded / event.total));
+        const percent = event.total ? Math.floor(100 * event.loaded / event.total) : 100;
+        self.postReply('bytesLoaded', job.id, percent);
     };
 
     // Handle file reading errors.

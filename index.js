@@ -243,95 +243,20 @@ class Presenter {
         });
 
         // This handles responses from the web worker.
-        /* eslint-disable max-statements */
         this.worker.addEventListener('message', event => {
-            let {jobId} = event.data;
-            const {reply, payload} = event.data;
+            const {reply, jobId, payload} = event.data;
             console.log('Got async reply:', reply, jobId, payload);
 
-            switch (reply) {
-            case 'commandNotFound':
+            const handler = `handle${reply[0].toUpperCase()}${reply.slice(1)}`;  // eslint-disable-line no-magic-numbers
+            if (handler in this) {
+                this[handler](jobId, payload);
+            } else {
                 this.view.showError(
-                    'Se solicitó un comando en segundo plano desconocido.',
-                    `El comando «${payload.command}» no existe.`
+                    'Se recibió una respuesta en segundo plano desconocida.',
+                    `La respuesta «${reply}» no pudo ser manejada.`
                 );
-                break;
-            case 'jobCreated': { // Job was successfully created.
-                // Create the UI element for this job.
-                const newJobId = this.view.createJob();
-                this.jobs.set(newJobId, jobId);
-                this.jobs.set(jobId, newJobId);
-                this.view.setJobFileName(newJobId, payload);
-                this.processJob(jobId);
-                break;
-            }
-            case 'jobDeleted':  // Job was successfully deleted.
-                this.view.removeJob(this.jobs.get(jobId));
-                this.jobs.delete(this.jobs.get(jobId));
-                this.jobs.delete(jobId);
-                break;
-            case 'jobCancelled':  // Job was successfully cancelled.
-                jobId = this.jobs.get(jobId);
-                this.view.setJobStatus(jobId, 'Lectura cancelada.');
-                break;
-            case 'bytesLoaded':
-                jobId = this.jobs.get(jobId);
-                this.view.setJobStatus(jobId, `Leyendo el fichero (${payload}%).`);
-                break;
-            case 'fileReadOK': {  // Job was successfully processed.
-                // eslint-disable-next-line no-magic-numbers
-                let data = typeof payload === 'undefined' ? '××' : `0x${payload.toString(16).padStart(2, 0)}`;
-                data = `<span class="monospaced">[${data}]</span>`;
-                jobId = this.jobs.get(jobId);
-                this.view.setJobStatus(jobId, `El fichero se leyó correctamente. ${data}`);
-                this.view.setJobState(jobId, 'processed');
-                break;
-            }
-            case 'fileReadError': {
-                const error = payload;
-                const errorMessages = {
-                    'FileTooLargeError': 'el fichero es muy grande',
-                    'NotFoundError': 'el fichero no existe',
-                    'NotReadableError': 'el fichero no tiene permisos de lectura',
-                    'SecurityError': 'el fichero no se puede leer de forma segura'
-                };
-                jobId = this.jobs.get(jobId);
-                this.view.setJobState(jobId, 'error');
-                if (error.name in errorMessages) {
-                    let status = `ERROR: ${errorMessages[error.name]}`;
-                    status += ` <span class="monospaced">(${error.name})</span>.`;
-                    this.view.setJobStatus(jobId, status);
-                } else {
-                    // Unexpected error condition that should not happen in production.
-                    // So, it is notified differently, by using view.showError().
-                    this.view.showError(
-                        'Ocurrió un error inesperado leyendo un fichero.',
-                        `Ocurrió un error «${error.name}» leyendo el fichero «${error.fileName}».\n` +
-                        `${error.message}.`
-                    );
-                }
-                break;
-            }
             }
         });
-        /* eslint-disable max-statements */
-    }
-
-    // Handle events received from view.
-    handleEvent (event, payload) {
-        // This is a bit unorthodox, because a real event handling mechanism is
-        // not used, but for this application needs this is enough and it works.
-        // Right now, a full featured event handling system, like the one which
-        // EventTarget provides, would be overkill.
-        this[event](payload);
-    }
-
-    // Process a list of files.
-    processFiles (files) {
-        for (let i = 0; i < files.length; i++) {
-            // Create the job in the web worker.
-            this.asyncDo('createJob', files[i]);
-        }
     }
 
     // Do an operation (command) asynchronously, by sending it to the web worker.
@@ -348,7 +273,76 @@ class Presenter {
         this.asyncDo('processJob', jobId);
     }
 
-    // Process a list of files.
+    // Show an error when a command is not supported by the web worker.
+    handleCommandNotFound (_jobId, command) {
+        this.view.showError(
+            'Se solicitó un comando en segundo plano desconocido.',
+            `El comando «${command}» no existe.`
+        );
+    }
+
+    // A job was successfully created by the web worker, create the necessary UI
+    // elements so the user can interact with it, and process the job.
+    handleJobCreated (jobId, fileName) {
+        // Create the UI element for this job.
+        const newJobId = this.view.createJob();
+        this.jobs.set(newJobId, jobId);
+        this.jobs.set(jobId, newJobId);
+        this.view.setJobFileName(newJobId, fileName);
+        this.processJob(jobId);
+    }
+
+    // The web worker successfully deleted a job. Remove the associated UI elements.
+    handleJobDeleted (jobId) {
+        this.view.removeJob(this.jobs.get(jobId));
+        this.jobs.delete(this.jobs.get(jobId));
+        this.jobs.delete(jobId);
+    }
+
+    // The web worker successfully cancelled (paused) a job. Notify the user.
+    handleJobCancelled (jobId) {
+        this.view.setJobStatus(this.jobs.get(jobId), 'Lectura cancelada.');
+    }
+
+    // The web worker did successfully read a bunch of bytes. Notify the user.
+    handleBytesLoaded (jobId, percent) {
+        this.view.setJobStatus(this.jobs.get(jobId), `Leyendo el fichero (${percent}%).`);
+    }
+
+    // The web worker did successfully read the entire file. Notify the user.
+    handleFileReadOK (jobId, data) {
+        // eslint-disable-next-line no-magic-numbers
+        let marker = typeof data === 'undefined' ? '××' : `0x${data.toString(16).padStart(2, 0)}`;
+        marker = `<span class="monospaced">[${marker}]</span>`;
+        this.view.setJobStatus(this.jobs.get(jobId), `El fichero se leyó correctamente. ${marker}`);
+        this.view.setJobState(this.jobs.get(jobId), 'processed');
+    }
+
+    // The web worker had problems reading the file. Handle the situation.
+    handleFileReadError (jobId, error) {
+        const errorMessages = {
+            'FileTooLargeError': 'el fichero es muy grande',
+            'NotFoundError': 'el fichero no existe',
+            'NotReadableError': 'el fichero no tiene permisos de lectura',
+            'SecurityError': 'el fichero no se puede leer de forma segura'
+        };
+        this.view.setJobState(this.jobs.get(jobId), 'error');
+        if (error.name in errorMessages) {
+            let status = `ERROR: ${errorMessages[error.name]}`;
+            status += ` <span class="monospaced">(${error.name})</span>.`;
+            this.view.setJobStatus(this.jobs.get(jobId), status);
+        } else {
+            // Unexpected error condition that should not happen in production.
+            // So, it is notified differently, by using view.showError().
+            this.view.showError(
+                'Ocurrió un error inesperado leyendo un fichero.',
+                `Ocurrió un error «${error.name}» leyendo el fichero «${error.fileName}».\n` +
+                `${error.message}.`
+            );
+        }
+    }
+
+    // Create jobs for all files selected by the user.
     handleProcessFiles (files) {
         for (let i = 0; i < files.length; i++) {
             // Create the job in the web worker.
@@ -356,19 +350,19 @@ class Presenter {
         }
     }
 
-    // Dismiss a job.
+    // The user dismissed a job, tell the web worker to remove it.
     handleDismissJob (jobId) {
         this.asyncDo('deleteJob', this.jobs.get(jobId));
     }
 
-    // Cancel a job.
+    // The user cancelled a job, tell the web worker to stop it.
     handleCancelJob (jobId) {
         this.view.setJobStatus(jobId, 'Cancelando el fichero…');
         this.view.setJobState(jobId, 'cancelled');
         this.asyncDo('cancelJob', this.jobs.get(jobId));
     }
 
-    // Retry a job.
+    // The user retried a job, tell the web worker to process it again.
     handleRetryJob (jobId) {
         this.processJob(this.jobs.get(jobId));
     }

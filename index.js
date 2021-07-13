@@ -4,7 +4,7 @@
 
 // This class encapsulates the user interface.
 class UI {
-    /* eslint-disable max-lines-per-function, max-statements */
+    // eslint-disable-next-line max-lines-per-function, max-statements
     constructor () {
         // For the event publish/subscribe pattern.
         // The dictionary below contains the handlers for different events.
@@ -62,7 +62,6 @@ class UI {
         this.version = document.querySelector('#version');
         this.error = document.querySelector('#error');
     }
-    /* eslint-enable max-lines-per-function, max-statements */
 
     // Notify subscribers about an event.
     emit (event, payload) {
@@ -154,19 +153,19 @@ class UI {
     }
 
     // Set the file name for the specified job.
-    /* eslint-disable-next-line class-methods-use-this */
+    // eslint-disable-next-line class-methods-use-this
     setJobFileName (jobId, fileName) {
         jobId.querySelector('.job_filename').textContent = fileName;
     }
 
     // Set the status (HTML) for the specified job.
-    /* eslint-disable-next-line class-methods-use-this */
+    // eslint-disable-next-line class-methods-use-this
     setJobStatus (jobId, status) {
         jobId.querySelector('.job_status').innerHTML = status;
     }
 
     // Set the state for the specified job.
-    /* eslint-disable-next-line class-methods-use-this */
+    // eslint-disable-next-line class-methods-use-this
     setJobState (jobId, state) {
         switch (state) {
         case 'processing':
@@ -252,7 +251,7 @@ class Presenter {
         this.view.on('dismissJob', this.handleDismissJob.bind(this));
         this.view.on('cancelJob', this.handleCancelJob.bind(this));
         this.view.on('retryJob', this.handleRetryJob.bind(this));
-    };
+    }
 
     // Activate the service worker.
     async initServiceWorker (serviceWorker) {
@@ -280,7 +279,8 @@ class Presenter {
             if (!response.ok) {
                 this.view.showError(
                     'No se encontró la lista de formatos.',
-                    'El fichero conteniendo la lista de formatos no se encuentra disponible.');
+                    'El fichero conteniendo la lista de formatos no se encuentra disponible.'
+                );
             }
             const formats = await response.json();
             // Update job template with the list of formats.
@@ -305,7 +305,6 @@ class Presenter {
         // This handles responses from the web worker.
         this.worker.addEventListener('message', event => this.handleWebWorkerMessages(event.data));
     }
-    /* eslint-enable max-lines-per-function, max-statements */
 
     // Do an operation (command) asynchronously, by sending it to the web worker.
     asyncDo (command, args) {

@@ -193,10 +193,7 @@ class UI {
 
 // This class encapsulates the event handling and nearly all business logic.
 class Presenter {
-    /* eslint-disable max-lines-per-function */
-    constructor (view) {
-        this.view = view;
-
+    constructor () {
         // For keeping track of jobs.
         //
         // Since the Presenter has to keep a bijection map between job ids as
@@ -214,7 +211,64 @@ class Presenter {
     }
 
     // Run the Presenter.
+    /* eslint-disable max-lines-per-function, max-statements */
     run () {
+        this.view = new UI();  // Create the user interface.
+
+        // Show version number when service worker is ready.
+        navigator.serviceWorker.ready
+        .then(() => {
+            fetch('version')
+            .then(response => response.text())
+            .then(version => version && this.view.showVersion(version));
+        });
+
+        // Handle controlling service worker change.
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (refreshing) return;
+            refreshing = true;
+            window.location.reload();
+        });
+
+        // Handle PWA installation offers.
+        // For now, just prevent the default install handler to appear.
+        window.addEventListener('beforeinstallprompt', event => event.preventDefault());
+
+        navigator.serviceWorker.register('sw.js')  // Register service worker.
+        .catch(error => {
+            // Service workers are considered site data ('cookies'...), so cookies
+            // have to be enabled for the application to work. If cookies are not
+            // enabled, that's probably the reason why the service worker cannot be
+            // registered. If they are, in fact, enabled, the reason is different
+            // and a generic error message is displayed instead.
+            if (navigator.cookieEnabled) {
+                this.view.showError('Falló una parte esencial.', error);
+            } else {
+                this.view.showError('Las cookies están desactivadas.', error);
+            }
+            return Promise.reject(new Error('BreakPromiseChainError'));  // To break the Promise chain.
+        })
+        // Service worker successfully registered, proceed with setting up the app.
+        .then(() => fetch('formats.json'))
+        .then(response => response.json().catch(error => {
+            this.view.showError('No se pudo procesar la lista de formatos.', error);
+            return Promise.reject(new Error('BreakPromiseChainError'));  // To break the Promise chain.
+        }))
+        .then(formats => {  // Set up the core of the application and the UI.
+            // Update job template with the list of formats.
+            const formatListTemplate = document.querySelector('#job_template .job_formats_list');
+            for (const format in formats) {
+                const aParagraph = document.createElement('p');
+                aParagraph.innerText = format;
+                formatListTemplate.appendChild(aParagraph);
+            }
+        })
+        .catch(error => {  // For unhandled errors.
+            if (error === 'BreakPromiseChainError') return;
+            this.view.showError('Se produjo un error inesperado.', error);
+        });
+
         // Subscribe to UI events.
         this.view.on('processFiles', this.handleProcessFiles.bind(this));
         this.view.on('dismissJob', this.handleDismissJob.bind(this));
@@ -230,6 +284,7 @@ class Presenter {
         // This handles responses from the web worker.
         this.worker.addEventListener('message', event => this.handleWebWorkerMessages(event.data));
     }
+    /* eslint-enable max-lines-per-function, max-statements */
 
     // Do an operation (command) asynchronously, by sending it to the web worker.
     asyncDo (command, args) {
@@ -379,58 +434,7 @@ class Presenter {
 
 
 window.addEventListener('load', () => {
-    // First step is setting up the user interface.
-    const ui = new UI();
-    new Presenter(ui);  // Register as observer of the view (UI).
-
-    // Show version number.
-    navigator.serviceWorker.ready
-    .then(() => {
-        fetch('version')
-        .then(response => response.text())
-        .then(version => version && ui.showVersion(version));
-    });
-
-    // Handle controller change.
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (refreshing) return;
-        refreshing = true;
-        window.location.reload();
-    });
-
-    // Handle PWA installation offers.
-    // For now, just prevent the default install handler to appear.
-    window.addEventListener('beforeinstallprompt', event => event.preventDefault());
-
-    // Register service worker.
-    navigator.serviceWorker.register('sw.js')
-    .catch(error => {
-        // Service workers are considered site data ('cookies'...), so cookies
-        // have to be enabled for the application to work. If cookies are not
-        // enabled, that's probably the reason why the service worker cannot be
-        // registered. If they are, in fact, enabled, the reason is different
-        // and a generic error message is displayed instead.
-        ui.showError(navigator.cookieEnabled ? 'Falló una parte esencial.' : 'Las cookies están desactivadas.', error);
-        return Promise.reject(new Error('BreakPromiseChainError'));  // To break the Promise chain.
-    })
-    // Service worker successfully registered, proceed with setting up the app.
-    .then(() => fetch('formats.json'))
-    .then(response => response.json().catch(error => {
-        ui.showError('No se pudo procesar la lista de formatos.', error);
-        return Promise.reject(new Error('BreakPromiseChainError'));  // To break the Promise chain.
-    }))
-    .then(formats => {  // Set up the core of the application and the UI.
-        // Update job template with the list of formats.
-        const formatListTemplate = document.querySelector('#job_template .job_formats_list');
-        for (const format in formats) {
-            const aParagraph = document.createElement('p');
-            aParagraph.innerText = format;
-            formatListTemplate.appendChild(aParagraph);
-        }
-    })
-    .catch(error => {  // For unhandled errors.
-        if (error === 'BreakPromiseChainError') return;
-        ui.showError('Se produjo un error inesperado.', error);
-    });
+    // Create and run the Presenter.
+    const presenter = new Presenter();
+    presenter.run();
 });

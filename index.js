@@ -211,12 +211,15 @@ class Presenter {
         // will be a web worker job id, and viceversa, without the need to have
         // two different ways of getting one kind of id from the other.
         this.jobs = new Map();
+    }
 
+    // Run the Presenter.
+    run () {
         // Subscribe to UI events.
-        view.on('processFiles', this.handleProcessFiles.bind(this));
-        view.on('dismissJob', this.handleDismissJob.bind(this));
-        view.on('cancelJob', this.handleCancelJob.bind(this));
-        view.on('retryJob', this.handleRetryJob.bind(this));
+        this.view.on('processFiles', this.handleProcessFiles.bind(this));
+        this.view.on('dismissJob', this.handleDismissJob.bind(this));
+        this.view.on('cancelJob', this.handleCancelJob.bind(this));
+        this.view.on('retryJob', this.handleRetryJob.bind(this));
 
         // Set up web worker.
         this.worker = new Worker('ww.js');

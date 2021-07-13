@@ -211,10 +211,7 @@ class Presenter {
     }
 
     // Run the Presenter.
-    /* eslint-disable max-lines-per-function, max-statements */
-    run () {
-        this.view = new UI();  // Create the user interface.
-
+    async run () {
         // Show version number when service worker is ready.
         navigator.serviceWorker.ready
         .then(() => {
@@ -235,8 +232,33 @@ class Presenter {
         // For now, just prevent the default install handler to appear.
         window.addEventListener('beforeinstallprompt', event => event.preventDefault());
 
-        navigator.serviceWorker.register('sw.js')  // Register service worker.
-        .catch(error => {
+        try {
+            this.initView();
+            await this.initServiceWorker('sw.js');
+            await this.initFormats('formats.json');
+            this.initWebWorker('ww.js');
+        } catch (error) {  // For handling unexpected errors.
+            this.view.showError('Se produjo un error inesperado.', error);
+        }
+    }
+
+
+    // Initialize the user interface.
+    initView () {
+        this.view = new UI();  // Create the user interface.
+
+        // Subscribe to UI events.
+        this.view.on('processFiles', this.handleProcessFiles.bind(this));
+        this.view.on('dismissJob', this.handleDismissJob.bind(this));
+        this.view.on('cancelJob', this.handleCancelJob.bind(this));
+        this.view.on('retryJob', this.handleRetryJob.bind(this));
+    };
+
+    // Activate the service worker.
+    async initServiceWorker (serviceWorker) {
+        try {
+            await navigator.serviceWorker.register(serviceWorker);  // Register service worker.
+        } catch (error) {
             // Service workers are considered site data ('cookies'...), so cookies
             // have to be enabled for the application to work. If cookies are not
             // enabled, that's probably the reason why the service worker cannot be
@@ -247,36 +269,35 @@ class Presenter {
             } else {
                 this.view.showError('Las cookies están desactivadas.', error);
             }
-            return Promise.reject(new Error('BreakPromiseChainError'));  // To break the Promise chain.
-        })
-        // Service worker successfully registered, proceed with setting up the app.
-        .then(() => fetch('formats.json'))
-        .then(response => response.json().catch(error => {
-            this.view.showError('No se pudo procesar la lista de formatos.', error);
-            return Promise.reject(new Error('BreakPromiseChainError'));  // To break the Promise chain.
-        }))
-        .then(formats => {  // Set up the core of the application and the UI.
+        }
+    }
+
+    // Process the format list.
+    // eslint-disable-next-line max-statements
+    async initFormats (formatsFile) {
+        try {
+            const response = await fetch(formatsFile);
+            if (!response.ok) {
+                this.view.showError(
+                    'No se encontró la lista de formatos.',
+                    'El fichero conteniendo la lista de formatos no se encuentra disponible.');
+            }
+            const formats = await response.json();
             // Update job template with the list of formats.
             const formatListTemplate = document.querySelector('#job_template .job_formats_list');
             for (const format in formats) {
-                const aParagraph = document.createElement('p');
-                aParagraph.innerText = format;
-                formatListTemplate.appendChild(aParagraph);
+                const paragraph = document.createElement('p');
+                paragraph.innerText = format;
+                formatListTemplate.appendChild(paragraph);
             }
-        })
-        .catch(error => {  // For unhandled errors.
-            if (error === 'BreakPromiseChainError') return;
-            this.view.showError('Se produjo un error inesperado.', error);
-        });
+        } catch (error) {
+            this.view.showError('No se pudo procesar la lista de formatos.', error);
+        }
+    }
 
-        // Subscribe to UI events.
-        this.view.on('processFiles', this.handleProcessFiles.bind(this));
-        this.view.on('dismissJob', this.handleDismissJob.bind(this));
-        this.view.on('cancelJob', this.handleCancelJob.bind(this));
-        this.view.on('retryJob', this.handleRetryJob.bind(this));
-
-        // Set up web worker.
-        this.worker = new Worker('ww.js');
+    // Initialize web worker.
+    initWebWorker (webWorker) {
+        this.worker = new Worker(webWorker);
 
         // This error handler for the web worker only handles loading errors and syntax errors.
         this.worker.addEventListener('error', event => this.handleWebWorkerError(event));

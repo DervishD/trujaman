@@ -222,41 +222,10 @@ class Presenter {
         this.worker = new Worker('ww.js');
 
         // This error handler for the web worker only handles loading errors and syntax errors.
-        this.worker.addEventListener('error', event => {
-            if (event instanceof ErrorEvent) {
-                // For syntax errors, that should not happen in production,
-                // the event will be an ErrorEvent instance and will contain
-                // information pertaining to the error.
-                this.view.showError(
-                    'Error inesperado en el gestor de tareas en segundo plano.',
-                    `Error de sintaxis en línea ${event.lineno}\n(${event.message}).`
-                );
-            } else {
-                // For loading errors the event will be Event.
-                this.view.showError(
-                    'No se pueden ejecutar tareas en segundo plano.',
-                    'No se pudo iniciar el gestor de tareas en segundo plano.'
-                );
-            }
-            // Prevent further processing of the event.
-            event.preventDefault();
-        });
+        this.worker.addEventListener('error', event => this.handleWebWorkerError(event));
 
         // This handles responses from the web worker.
-        this.worker.addEventListener('message', event => {
-            const {reply, jobId, payload} = event.data;
-            console.log('Got async reply:', reply, jobId, payload);
-
-            const handler = `handle${reply[0].toUpperCase()}${reply.slice(1)}`;  // eslint-disable-line no-magic-numbers
-            if (handler in this) {
-                this[handler](jobId, payload);
-            } else {
-                this.view.showError(
-                    'Se recibió una respuesta en segundo plano desconocida.',
-                    `La respuesta «${reply}» no pudo ser manejada.`
-                );
-            }
-        });
+        this.worker.addEventListener('message', event => this.handleWebWorkerMessages(event.data));
     }
 
     // Do an operation (command) asynchronously, by sending it to the web worker.
@@ -271,6 +240,43 @@ class Presenter {
     processJob (jobId) {
         this.view.setJobState(this.jobs.get(jobId), 'processing');
         this.asyncDo('processJob', jobId);
+    }
+
+    // Handle loading and syntax errors from the web worker.
+    handleWebWorkerError (error) {
+        if (error instanceof ErrorEvent) {
+            // For syntax errors, that should not happen in production,
+            // the event will be an ErrorEvent instance and will contain
+            // information pertaining to the error.
+            this.view.showError(
+                'Error inesperado en el gestor de tareas en segundo plano.',
+                `Error de sintaxis en línea ${error.lineno}\n(${error.message}).`
+            );
+        } else {
+            // For loading errors the event will be Event.
+            this.view.showError(
+                'No se pueden ejecutar tareas en segundo plano.',
+                'No se pudo iniciar el gestor de tareas en segundo plano.'
+            );
+        }
+        // Prevent further processing of the event.
+        error.preventDefault();
+    }
+
+    handleWebWorkerMessages (message) {
+        const {reply, jobId, payload} = message;
+        console.log('Got async reply:', reply, jobId, payload);
+
+        // eslint-disable-next-line no-magic-numbers
+        const handler = `handle${reply[0].toUpperCase()}${reply.slice(1)}`;
+        if (handler in this) {
+            this[handler](jobId, payload);
+        } else {
+            this.view.showError(
+                'Se recibió una respuesta en segundo plano desconocida.',
+                `La respuesta «${reply}» no pudo ser manejada.`
+            );
+        }
     }
 
     // Show an error when a command is not supported by the web worker.

@@ -4,19 +4,55 @@
 
 // This class encapsulates the user interface.
 class UI {
-    // eslint-disable-next-line max-lines-per-function, max-statements
     constructor () {
         // For the event publish/subscribe pattern.
         // The dictionary below contains the handlers for different events.
         this.eventSubscribers = {};
 
-        // Set up the file picker.
+        // Store needed references to DOM elements for later use.
         this.filePicker = document.querySelector('#filepicker');
+        this.jobsContainer = document.querySelector('#jobs');
+        this.version = document.querySelector('#version');
+        this.error = document.querySelector('#error');
+        this.formatListTemplate = document.querySelector('#job_template .job_formats_list');
+    }
+
+    // Activate and render the user interface.
+    render () {
+        // Set up file picker.
         this.filePicker.hidden = false;
+
         this.filePicker.querySelector('button').addEventListener('click', () => {
             this.filePicker.querySelector('input').click();  // Propagate the click.
         });
 
+        // Create new file processor with the selected file.
+        this.filePicker.firstElementChild.addEventListener('change', event => {
+            this.emit('processFiles', event.target.files);
+            // Or the event won't be fired again if the user selects the same file...
+            event.target.value = null;
+        });
+
+        // Set up jobs container.
+        this.jobsContainer.hidden = false;
+
+        // Set up drag and drop support.
+        this.initDragAndDrop();
+
+    }
+
+    // Notify subscribers about an event.
+    emit (event, payload) {
+        this.eventSubscribers[event] && this.eventSubscribers[event](payload);
+    }
+
+    // Subscribe to an event (register a handler/callback).
+    on (event, handler) {
+        this.eventSubscribers[event] = handler;
+    }
+
+    // Initialize drag and drop support, if available.
+    initDragAndDrop () {
         // If the browser supports file drag and drop, enable it.
         //
         // This is entirely optional, and detection is performed by testing for
@@ -46,31 +82,15 @@ class UI {
                 event.preventDefault();  // Prevent the browser from opening the file.
             });
         }
-
-        // Create new file processor with the selected file.
-        this.filePicker.firstElementChild.addEventListener('change', event => {
-            this.emit('processFiles', event.target.files);
-            // Or the event won't be fired again if the user selects the same file...
-            event.target.value = null;
-        });
-
-        // Show jobs container.
-        this.jobsContainer = document.querySelector('#jobs');
-        this.jobsContainer.hidden = false;
-
-        // Store references to some DOM elements for later use.
-        this.version = document.querySelector('#version');
-        this.error = document.querySelector('#error');
     }
 
-    // Notify subscribers about an event.
-    emit (event, payload) {
-        this.eventSubscribers[event] && this.eventSubscribers[event](payload);
-    }
-
-    // Subscribe to an event (register a handler/callback).
-    on (event, handler) {
-        this.eventSubscribers[event] = handler;
+    // Initialize the list of formats for the dropdown menu.
+    initFormatList (formats) {
+        for (const format in formats) {
+            const paragraph = document.createElement('p');
+            paragraph.innerText = format;
+            this.formatListTemplate.appendChild(paragraph);
+        }
     }
 
     // Show version code on proper DOM element.
@@ -251,6 +271,8 @@ class Presenter {
         this.view.on('dismissJob', this.handleDismissJob.bind(this));
         this.view.on('cancelJob', this.handleCancelJob.bind(this));
         this.view.on('retryJob', this.handleRetryJob.bind(this));
+
+        this.view.render();  // Enable user interface.
     }
 
     // Activate the service worker.
@@ -272,23 +294,18 @@ class Presenter {
     }
 
     // Process the format list.
-    // eslint-disable-next-line max-statements
     async initFormats (formatsFile) {
         try {
             const response = await fetch(formatsFile);
-            if (!response.ok) {
+            if (response.ok) {
+                const formats = await response.json();
+                // Update job template with the list of formats.
+                this.view.initFormatList(formats);
+            } else {
                 this.view.showError(
                     'No se encontró la lista de formatos.',
                     'El fichero conteniendo la lista de formatos no se encuentra disponible.'
                 );
-            }
-            const formats = await response.json();
-            // Update job template with the list of formats.
-            const formatListTemplate = document.querySelector('#job_template .job_formats_list');
-            for (const format in formats) {
-                const paragraph = document.createElement('p');
-                paragraph.innerText = format;
-                formatListTemplate.appendChild(paragraph);
             }
         } catch (error) {
             this.view.showError('No se pudo procesar la lista de formatos.', error);

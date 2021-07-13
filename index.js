@@ -6,11 +6,9 @@
 class UI {
     /* eslint-disable max-lines-per-function, max-statements */
     constructor () {
-        // No observer wired right now.
-        this.observer = null;
-
-        // For keeping track of jobs. Indexed by job id.
-        this.jobs = new Map();
+        // For the event publish/subscribe pattern.
+        // The dictionary below contains the handlers for different events.
+        this.eventSubscribers = {};
 
         // Set up the file picker.
         this.filePicker = document.querySelector('#filepicker');
@@ -44,14 +42,14 @@ class UI {
 
             dropzone.addEventListener('drop', event => {
                 dropzone.dataset.state = 'dismissed';
-                this.sendEvent('processFiles', event.dataTransfer.files);
+                this.emit('processFiles', event.dataTransfer.files);
                 event.preventDefault();  // Prevent the browser from opening the file.
             });
         }
 
         // Create new file processor with the selected file.
         this.filePicker.firstElementChild.addEventListener('change', event => {
-            this.sendEvent('processFiles', event.target.files);
+            this.emit('processFiles', event.target.files);
             // Or the event won't be fired again if the user selects the same file...
             event.target.value = null;
         });
@@ -66,9 +64,14 @@ class UI {
     }
     /* eslint-enable max-lines-per-function, max-statements */
 
-    // Send event to observer, if any.
-    sendEvent (event, payload) {
-        this.observer && this.observer.handleEvent(event, payload);
+    // Notify subscribers about an event.
+    emit (event, payload) {
+        this.eventSubscribers[event] && this.eventSubscribers[event](payload);
+    }
+
+    // Subscribe to an event (register a handler/callback).
+    on (event, handler) {
+        this.eventSubscribers[event] = handler;
     }
 
     // Show version code on proper DOM element.
@@ -88,9 +91,13 @@ class UI {
         // Don't overwrite currently shown message.
         if (!this.error.hidden) return;
 
-        // First, clean and disable the user interface.
-        for (const jobId of this.jobs.keys()) this.sendEvent('dismissJob', jobId); // Dismiss (delete) all jobs.
-        this.filePicker.hidden = true;  // Hide the file picker, thus disabling the user interface.
+        // First, clean and disable the user interface, by dismissing (deleting)
+        // all jobs and then hiding the file picker, thus effectively disabling
+        // the user interface.
+        for (const job of this.jobsContainer.querySelectorAll('.job:not([hidden])')) {
+            job.querySelector('.job_dismiss_button').click();
+        }
+        this.filePicker.hidden = true;
 
         // Finally, show the error on the DOM element.
         this.error.hidden = false;
@@ -98,27 +105,32 @@ class UI {
         this.error.querySelector('#error_details').innerText = details;
     }
 
-    // Create a job user interface element with the specified job id.
-    createJob (jobId) {
+    // Create a job user interface element and returns a job id for it.
+    createJob () {
         // Create the UI elements for the job by copying the existing template.
         // That way, this code can be more agnostic about the particular layout of the UI elements.
         const element = document.querySelector('#job_template').cloneNode(true);
         element.hidden = false;
         element.removeAttribute('id');
 
+        // In the future, a job id may be another type entirely.
+        // For now this is enough and works perfectly.
+        // This variable is not strictly needed, but improves readability.
+        const jobId = element;
+
         // A dismiss button, to delete the current job.
         element.querySelector('.job_dismiss_button').addEventListener('click', () => {
-            this.sendEvent('dismissJob', jobId);
+            this.emit('dismissJob', jobId);
         }, {'once': true});
 
         // A cancel button, to cancel the current job.
         element.querySelector('.job_cancel_button').addEventListener('click', () => {
-            this.sendEvent('cancelJob', jobId);
+            this.emit('cancelJob', jobId);
         });
 
         // A retry button, to retry the current job.
         element.querySelector('.job_retry_button').addEventListener('click', () => {
-            this.sendEvent('retryJob', jobId);
+            this.emit('retryJob', jobId);
         });
 
         // A dropdown control, to choose the download format from a list.
@@ -133,48 +145,46 @@ class UI {
         // });
 
         this.jobsContainer.appendChild(element);
-        this.jobs.set(jobId, element);
+        return jobId;
     }
 
-    // Remove the job user interface element with the specified job id.
+    // Remove the specified job user interface element.
     removeJob (jobId) {
-        this.jobsContainer.removeChild(this.jobs.get(jobId));
-        this.jobs.delete(jobId);
+        this.jobsContainer.removeChild(jobId);
     }
 
-    // Set the file name for the specified job id.
+    // Set the file name for the specified job.
+    /* eslint-disable-next-line class-methods-use-this */
     setJobFileName (jobId, fileName) {
-        const job = this.jobs.get(jobId);
-        job.querySelector('.job_filename').textContent = fileName;
+        jobId.querySelector('.job_filename').textContent = fileName;
     }
 
-    // Set the status (HTML) for the specified job id.
+    // Set the status (HTML) for the specified job.
+    /* eslint-disable-next-line class-methods-use-this */
     setJobStatus (jobId, status) {
-        const job = this.jobs.get(jobId);
-        job.querySelector('.job_status').innerHTML = status;
+        jobId.querySelector('.job_status').innerHTML = status;
     }
 
-    // Set the state for the specified job id.
-    // A job can be in the following states:
+    // Set the state for the specified job.
+    /* eslint-disable-next-line class-methods-use-this */
     setJobState (jobId, state) {
-        const job = this.jobs.get(jobId);
         switch (state) {
         case 'processing':
-            job.querySelector('.job_retry_button').hidden = true;
-            job.querySelector('.job_cancel_button').hidden = false;
+            jobId.querySelector('.job_retry_button').hidden = true;
+            jobId.querySelector('.job_cancel_button').hidden = false;
             break;
         case 'processed':
-            job.querySelector('.job_cancel_button').hidden = true;
-            job.querySelector('.job_download_dropdown').hidden = false;
+            jobId.querySelector('.job_cancel_button').hidden = true;
+            jobId.querySelector('.job_download_dropdown').hidden = false;
             break;
         case 'cancelled':
-            job.querySelector('.job_cancel_button').hidden = true;
-            job.querySelector('.job_retry_button').hidden = false;
+            jobId.querySelector('.job_cancel_button').hidden = true;
+            jobId.querySelector('.job_retry_button').hidden = false;
             break;
         case 'error':
-            job.querySelector('.job_cancel_button').hidden = true;
-            job.querySelector('.job_retry_button').hidden = true;
-            job.querySelector('.job_download_dropdown').hidden = true;
+            jobId.querySelector('.job_cancel_button').hidden = true;
+            jobId.querySelector('.job_retry_button').hidden = true;
+            jobId.querySelector('.job_download_dropdown').hidden = true;
             break;
         }
     }
@@ -186,6 +196,27 @@ class Presenter {
     /* eslint-disable max-lines-per-function */
     constructor (view) {
         this.view = view;
+
+        // For keeping track of jobs.
+        //
+        // Since the Presenter has to keep a bijection map between job ids as
+        // returned by the View and job ids as returned by the web worker, to
+        // convert between them as needed, it would be necessary to keep two
+        // different maps. BUT, since it's impossible that a View job id will
+        // collide with a web worker job id, BOTH of them can be added to the
+        // same Map() and that way it will work as a bijection.
+        //
+        // This has an additional advantage: since all ids will be in the same
+        // Map(), when getting a value, if the key is a View job id the value
+        // will be a web worker job id, and viceversa, without the need to have
+        // two different ways of getting one kind of id from the other.
+        this.jobs = new Map();
+
+        // Subscribe to UI events.
+        view.on('processFiles', this.handleProcessFiles.bind(this));
+        view.on('dismissJob', this.handleDismissJob.bind(this));
+        view.on('cancelJob', this.handleCancelJob.bind(this));
+        view.on('retryJob', this.handleRetryJob.bind(this));
 
         // Set up web worker.
         this.worker = new Worker('ww.js');
@@ -214,7 +245,8 @@ class Presenter {
         // This handles responses from the web worker.
         /* eslint-disable max-statements */
         this.worker.addEventListener('message', event => {
-            const {reply, jobId, payload} = event.data;
+            let {jobId} = event.data;
+            const {reply, payload} = event.data;
             console.log('Got async reply:', reply, jobId, payload);
 
             switch (reply) {
@@ -224,25 +256,33 @@ class Presenter {
                     `El comando «${payload.command}» no existe.`
                 );
                 break;
-            case 'jobCreated':  // Job was successfully created.
+            case 'jobCreated': { // Job was successfully created.
                 // Create the UI element for this job.
-                this.view.createJob(jobId);
-                this.view.setJobFileName(jobId, payload);
+                const newJobId = this.view.createJob();
+                this.jobs.set(newJobId, jobId);
+                this.jobs.set(jobId, newJobId);
+                this.view.setJobFileName(newJobId, payload);
                 this.processJob(jobId);
                 break;
+            }
             case 'jobDeleted':  // Job was successfully deleted.
-                this.view.removeJob(jobId);
+                this.view.removeJob(this.jobs.get(jobId));
+                this.jobs.delete(this.jobs.get(jobId));
+                this.jobs.delete(jobId);
                 break;
             case 'jobCancelled':  // Job was successfully cancelled.
+                jobId = this.jobs.get(jobId);
                 this.view.setJobStatus(jobId, 'Lectura cancelada.');
                 break;
             case 'bytesLoaded':
+                jobId = this.jobs.get(jobId);
                 this.view.setJobStatus(jobId, `Leyendo el fichero (${payload}%).`);
                 break;
             case 'fileReadOK': {  // Job was successfully processed.
                 // eslint-disable-next-line no-magic-numbers
                 let data = typeof payload === 'undefined' ? '××' : `0x${payload.toString(16).padStart(2, 0)}`;
                 data = `<span class="monospaced">[${data}]</span>`;
+                jobId = this.jobs.get(jobId);
                 this.view.setJobStatus(jobId, `El fichero se leyó correctamente. ${data}`);
                 this.view.setJobState(jobId, 'processed');
                 break;
@@ -255,6 +295,7 @@ class Presenter {
                     'NotReadableError': 'el fichero no tiene permisos de lectura',
                     'SecurityError': 'el fichero no se puede leer de forma segura'
                 };
+                jobId = this.jobs.get(jobId);
                 this.view.setJobState(jobId, 'error');
                 if (error.name in errorMessages) {
                     let status = `ERROR: ${errorMessages[error.name]}`;
@@ -303,25 +344,33 @@ class Presenter {
 
     // Process a job.
     processJob (jobId) {
-        this.view.setJobState(jobId, 'processing');
+        this.view.setJobState(this.jobs.get(jobId), 'processing');
         this.asyncDo('processJob', jobId);
     }
 
-    // Cancel a job.
-    cancelJob (jobId) {
-        this.view.setJobStatus(jobId, 'Cancelando el fichero…');
-        this.view.setJobState(jobId, 'cancelled');
-        this.asyncDo('cancelJob', jobId);
-    }
-
-    // Retry a job.
-    retryJob (jobId) {
-        this.processJob(jobId);
+    // Process a list of files.
+    handleProcessFiles (files) {
+        for (let i = 0; i < files.length; i++) {
+            // Create the job in the web worker.
+            this.asyncDo('createJob', files[i]);
+        }
     }
 
     // Dismiss a job.
-    dismissJob (jobId) {
-        this.asyncDo('deleteJob', jobId);
+    handleDismissJob (jobId) {
+        this.asyncDo('deleteJob', this.jobs.get(jobId));
+    }
+
+    // Cancel a job.
+    handleCancelJob (jobId) {
+        this.view.setJobStatus(jobId, 'Cancelando el fichero…');
+        this.view.setJobState(jobId, 'cancelled');
+        this.asyncDo('cancelJob', this.jobs.get(jobId));
+    }
+
+    // Retry a job.
+    handleRetryJob (jobId) {
+        this.processJob(this.jobs.get(jobId));
     }
 }
 
@@ -329,7 +378,7 @@ class Presenter {
 window.addEventListener('load', () => {
     // First step is setting up the user interface.
     const ui = new UI();
-    ui.observer = new Presenter(ui);  // Register as observer of the view (UI).
+    new Presenter(ui);  // Register as observer of the view (UI).
 
     // Show version number.
     navigator.serviceWorker.ready

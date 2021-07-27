@@ -8,6 +8,7 @@
         "ecmaVersion": 2020
     },
     "rules": {
+        "array-bracket-newline": ["error", "consistent"],
         "array-element-newline": ["error", "consistent"],
         "arrow-parens": ["error", "as-needed"],
         "brace-style": ["error", "1tbs", { "allowSingleLine": true }],

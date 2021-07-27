@@ -297,7 +297,7 @@ button:active {
     filter: brightness(111%);
 }
 
-#error, noscript > div {
+.error, noscript > div {
     font-size: clamp(0.5em, 5vw, 1em);
     margin: 2rem auto 0;
     padding: 1em;
@@ -305,21 +305,21 @@ button:active {
     background-color: var(--fg);
 }
 
-#error div, noscript > div {
+.error div, noscript > div {
     text-align: center;
 }
 
-#error_header {
+.error_header {
     font-size: 1.5em;
     font-weight: 700;
 }
 
-#error_message {
+.error_message {
     font-size: 1.25em;
     margin: 1em 0;
 }
 
-#error_details {
+.error_details {
     font-size: 0.8em;
     margin: 0.5em 0;
 }

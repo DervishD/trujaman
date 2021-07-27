@@ -17,7 +17,8 @@ class UI {
         this.filePicker = document.querySelector('#filepicker');
         this.jobsContainer = document.querySelector('#jobs');
         this.version = document.querySelector('#version');
-        this.error = document.querySelector('#error');
+        this.errorTemplate = document.querySelector('#error_template');
+        this.lastError = null;
         this.formatListTemplate = document.querySelector('#job_template .job_formats_list');
     }
 
@@ -42,7 +43,6 @@ class UI {
 
         // Set up drag and drop support.
         this.initDragAndDrop();
-
     }
 
     // Notify subscribers about an event.
@@ -103,29 +103,39 @@ class UI {
         this.version.textContent += `v${version}`;
     }
 
-    // Show HTML error message on proper DOM element.
+    // Show a detailed error message.
     //
     // The function accepts two parameters. The first one is the error message,
     // preferably a one-liner explaining (tersely) the main cause of the error.
     // The second one can be more verbose and contains the details of the error,
     // and will be rendered differently. Usually it's the stringified version of
     // the error as returned by the interpreter.
+    //
+    // New DOM elements showing errors are created for each call to this function.
     showError (message, details) {
-        // Don't overwrite currently shown message.
-        if (!this.error.hidden) return;
-
-        // First, clean and disable the user interface, by dismissing (deleting)
-        // all jobs and then hiding the file picker, thus effectively disabling
-        // the user interface.
-        for (const job of this.jobsContainer.querySelectorAll('.job:not([hidden])')) {
-            job.querySelector('.job_dismiss_button').click();
+        // If no error is currently shown, dismiss (delete) all jobs and then
+        // hide the file picker, thus effectively disabling the user interface.
+        if (!this.lastError) {
+            // Dismiss the existing jobs.
+            for (const job of this.jobsContainer.querySelectorAll('.job:not([hidden])')) {
+                job.querySelector('.job_dismiss_button').click();
+            }
+            // Disable the file picker.
+            this.filePicker.hidden = true;
+            // Use the hidden template as insertion point.
+            this.lastError = this.errorTemplate;
         }
-        this.filePicker.hidden = true;
+
+        // Create a new error DOM element.
+        const error = this.errorTemplate.cloneNode(true);
+        error.querySelector('.error_message').innerText = message;
+        error.querySelector('.error_details').innerText = details;
 
         // Finally, show the error on the DOM element.
-        this.error.hidden = false;
-        this.error.querySelector('#error_message').innerText = message;
-        this.error.querySelector('#error_details').innerText = details;
+        // Error are shown in a first-happenned, first-shown manner.
+        this.lastError.parentNode.insertBefore(error, this.lastError.nextSibling);
+        error.hidden = false;
+        this.lastError = error;
     }
 
     // Create a job user interface element and returns a job id for it.

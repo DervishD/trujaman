@@ -62,8 +62,8 @@ self.handleCreateJob = function handleCreateJob (file) {
     // Store a reference for future use.
     job.reader = new FileReader();
 
-    // Right now, mainly for testing purposes, to slow down the reading process
-    // so the UI can be examined.
+    // Right now, mainly for testing purposes.
+    // Slows down the reading process so the UI can be examined.
     job.reader.onprogress = event => {
         const DELAY = 500;
         const start = Date.now(); while (Date.now() - start < DELAY);  // Delay each reading operation.

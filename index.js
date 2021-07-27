@@ -466,9 +466,9 @@ class Presenter {
 
     // Create jobs for all files selected by the user.
     handleProcessFiles (files) {
-        for (let i = 0; i < files.length; i++) {
+        for (const file of files) {
             // Create the job in the web worker.
-            this.asyncDo('createJob', files[i]);
+            this.asyncDo('createJob', file);
         }
     }
 

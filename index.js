@@ -1,7 +1,5 @@
 'use strict';
 
-/* eslint max-classes-per-file: ["error", 2] */
-
 // This class encapsulates the user interface.
 class UI {
     constructor () {
@@ -139,7 +137,6 @@ class UI {
     }
 
     // Create a job user interface element and returns a job id for it.
-    // eslint-disable-next-line max-statements, max-lines-per-function
     createJob () {
         // Create the UI elements for the job by copying the existing template.
         // That way, this code can be more agnostic about the particular layout of the UI elements.

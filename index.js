@@ -9,6 +9,10 @@ class UI {
         // The dictionary below contains the handlers for different events.
         this.eventSubscribers = {};
 
+        // For tracking the event listeners registered to each job button, so
+        // they can be removed later, when the job is destroyed.
+        this.jobEventListeners = new Map();
+
         // Store needed references to DOM elements for later use.
         this.filePicker = document.querySelector('#filepicker');
         this.jobsContainer = document.querySelector('#jobs');
@@ -125,6 +129,7 @@ class UI {
     }
 
     // Create a job user interface element and returns a job id for it.
+    // eslint-disable-next-line max-statements, max-lines-per-function
     createJob () {
         // Create the UI elements for the job by copying the existing template.
         // That way, this code can be more agnostic about the particular layout of the UI elements.
@@ -138,25 +143,35 @@ class UI {
         const jobId = element;
 
         // A dismiss button, to delete the current job.
-        element.querySelector('.job_dismiss_button').addEventListener('click', () => {
-            this.emit('dismissJob', jobId);
-        }, {'once': true});
+        const handleDismissClicked = function handleDismissClicked () { this.emit('dismissJob', jobId); }.bind(this);
+        const dismissButton = element.querySelector('.job_dismiss_button');
+        dismissButton.addEventListener('click', handleDismissClicked, {'once': true});
 
         // A cancel button, to cancel the current job.
-        element.querySelector('.job_cancel_button').addEventListener('click', () => {
-            this.emit('cancelJob', jobId);
-        });
+        const handleCancelClicked = function handleCancelClicked () { this.emit('cancelJob', jobId); }.bind(this);
+        const cancelButton = element.querySelector('.job_cancel_button');
+        cancelButton.addEventListener('click', handleCancelClicked);
 
         // A retry button, to retry the current job.
-        element.querySelector('.job_retry_button').addEventListener('click', () => {
-            this.emit('retryJob', jobId);
-        });
+        const handleRetryClicked = function handleRetryClicked () { this.emit('retryJob', jobId); }.bind(this);
+        const retryButton = element.querySelector('.job_retry_button');
+        retryButton.addEventListener('click', handleRetryClicked);
 
         // A dropdown control, to choose the download format from a list.
-        element.querySelector('.job_download_dropdown').addEventListener('click', () => {
+        const handleDownloadClicked = function handleDownloadClicked () {
             const formatsList = element.querySelector('.job_formats_list');
             formatsList.hidden = !formatsList.hidden;
-        });
+        };
+        const downloadButton = element.querySelector('.job_download_dropdown');
+        downloadButton.addEventListener('click', handleDownloadClicked);
+
+        // Store event listeners so they can be removed when the job is destroyed.
+        this.jobEventListeners.set(element, [
+            [dismissButton, handleDismissClicked],
+            [cancelButton, handleCancelClicked],
+            [retryButton, handleRetryClicked],
+            [downloadButton, handleDownloadClicked]
+        ]);
 
         // // For testing purposes.
         // element.querySelector('.job_filename').addEventListener('click', () => {
@@ -169,6 +184,12 @@ class UI {
 
     // Remove the specified job user interface element.
     removeJob (jobId) {
+        // Remove event listeners first.
+        // Not really needed, apparently, but it's the Tao.
+        for (const [element, eventListener] of this.jobEventListeners.get(jobId)) {
+            element.removeEventListener('click', eventListener);
+        }
+        // Then remove the DOM element.
         this.jobsContainer.removeChild(jobId);
     }
 

@@ -32,28 +32,6 @@
     src: url('index_mono_r_400.woff2') format('woff2');
 }
 
-@media (prefers-color-scheme: light) {
-    :root {
-        --fg:     var(--base00);
-        --fg_lo:  var(--base1);
-        --bg:     var(--base3);
-        --bg_hi:  var(--base2);
-        --em:     var(--base01);
-        --accent: var(--blue);
-    }
-}
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        --fg:     var(--base0);
-        --fg_lo:  var(--base01);
-        --bg:     var(--base03);
-        --bg_hi:  var(--base02);
-        --em:     var(--base1);
-        --accent: var(--violet);
-    }
-}
-
 :root {
     font-family: "Noto Sans", sans-serif;
     font-size : clamp(1em, 1vw + 1vh + .5vmin, 3em);  /* A good starting point... */
@@ -63,22 +41,47 @@
     font-size: calc((.4em + 1vmin) + (.4em + 1vmax));
     */
     /* Solarized palette https://ethanschoonover.com/solarized/ */
-    --base03:  #002B36; /* base03  */
-    --base02:  #073642; /* base02  */
-    --base01:  #586E75; /* base01  */
-    --base00:  #657B83; /* base00  */
-    --base0:   #839496; /* base0   */
-    --base1:   #93A1A1; /* base1   */
-    --base2:   #EEE8D5; /* base2   */
-    --base3:   #FDF6E3; /* base3   */
-    --yellow:  #B58900; /* yellow  */
-    --orange:  #CB4B16; /* orange  */
-    --red:     #DC322F; /* red     */
-    --magenta: #D33682; /* magenta */
-    --violet:  #6C71C4; /* violet  */
-    --blue:    #268BD2; /* blue    */
-    --cyan:    #2AA198; /* cyan    */
-    --green:   #859900; /* green   */
+    --base03:  #002B36;
+    --base02:  #073642;
+    --base01:  #586E75;
+    --base00:  #657B83;
+    --base0:   #839496;
+    --base1:   #93A1A1;
+    --base2:   #EEE8D5;
+    --base3:   #FDF6E3;
+    --yellow:  #B58900;
+    --orange:  #CB4B16;
+    --red:     #DC322F;
+    --magenta: #D33682;
+    --violet:  #6C71C4;
+    --blue:    #268BD2;
+    --cyan:    #2AA198;
+    --green:   #859900;
+
+    /*
+    Default color scheme (light).
+    Applies to all color schemes in the specification, current and future.
+    This is intended to be overwritten in media queries as needed, and for
+    specific color schemes only (like dark, for example).
+    */
+    --fg:     var(--base00);
+    --fg_lo:  var(--base1);
+    --bg:     var(--base3);
+    --bg_hi:  var(--base2);
+    --em:     var(--base01);
+    --accent: var(--blue);
+}
+
+/* Dark color scheme. */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --fg:     var(--base0);
+        --fg_lo:  var(--base01);
+        --bg:     var(--base03);
+        --bg_hi:  var(--base02);
+        --em:     var(--base1);
+        --accent: var(--violet);
+    }
 }
 
 [hidden] {

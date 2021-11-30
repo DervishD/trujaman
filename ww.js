@@ -15,7 +15,6 @@ self.addEventListener('message', event => {
     const handler = `handle${command[0].toUpperCase()}${command.slice(1)}`;  // eslint-disable-line no-magic-numbers
 
     if (handler in self) {
-        console.log('Got async command:', command, args);
         // Run the appropriate command.
         self[handler](args);
     } else {

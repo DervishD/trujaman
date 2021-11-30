@@ -384,7 +384,6 @@ class Presenter {
 
     handleWebWorkerMessages (message) {
         const {reply, jobId, payload} = message;
-        console.log('Got async reply:', reply, jobId, payload);
 
         // eslint-disable-next-line no-magic-numbers
         const handler = `handle${reply[0].toUpperCase()}${reply.slice(1)}`;

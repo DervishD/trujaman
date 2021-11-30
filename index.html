@@ -73,8 +73,10 @@
         <button type="button">Escoger ficheros</button>
     </div>
 
-    <div hidden id="jobs">
-        <div hidden id="job_template" class="job">
+    <div id="jobs"></div>
+
+    <template id="job_template">
+        <div class="job">
             <div class="job_header">
                 <p class="job_filename"></p>
                 <button type="button" class="job_dismiss_button">×</button>
@@ -89,7 +91,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </template>
 </body>
 
 </html>

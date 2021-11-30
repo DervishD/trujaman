@@ -30,6 +30,7 @@
         "max-statements-per-line": "off",
         "multiline-comment-style": ["error", "separate-lines"],
         "multiline-ternary": ["error", "always-multiline"],
+        "newline-per-chained-call": "off",
         "no-extra-parens": ["error", "all", { "conditionalAssign": false }],
         "no-inline-comments": "off",
         "no-magic-numbers": ["error", { "ignoreArrayIndexes": true }],

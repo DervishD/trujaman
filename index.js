@@ -16,6 +16,7 @@ class UI {
         this.jobsContainer = document.querySelector('#jobs');
         this.version = document.querySelector('#version');
         this.errorTemplate = document.querySelector('#error_template');
+        this.formatsDropdown = document.querySelector('#job_template').content.querySelector('.job_formats_list');
         this.lastError = null;
     }
 
@@ -87,8 +88,12 @@ class UI {
 
     // Store the list of formats for the download dropdown menu.
     setFormatsList (formats) {
-        // Convert the JSON object containing the list of formats into usable HTML.
-        this.formats = Object.keys(formats).map(item => `<p>${item}</p>`).join('');
+        // Populate the dropdown element with the formats from the JSON.
+        for (const format in formats) {
+            const paragraph = document.createElement('p');
+            paragraph.innerText = format;
+            this.formatsDropdown.appendChild(paragraph);
+        }
     }
 
     // Show version code on proper DOM element.
@@ -164,8 +169,6 @@ class UI {
             formatsList.hidden = !formatsList.hidden;
         };
         const downloadButton = element.querySelector('.job_download_dropdown');
-        // Add the formats list to the download dropdown.
-        downloadButton.querySelector('.job_formats_list').innerHTML = this.formats;
         downloadButton.addEventListener('click', handleDownloadClicked);
 
         // Store event listeners so they can be removed when the job is destroyed.

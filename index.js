@@ -92,7 +92,7 @@ class UI {
         for (const format in formats) {
             const paragraph = document.createElement('p');
             paragraph.innerText = format;
-            this.formatsDropdown.appendChild(paragraph);
+            this.formatsDropdown.append(paragraph);
         }
     }
 
@@ -132,7 +132,7 @@ class UI {
 
         // Finally, show the error on the DOM element.
         // Error are shown in a first-happenned, first-shown manner.
-        this.lastError.parentNode.insertBefore(error, this.lastError.nextSibling);
+        this.lastError.nextSibling.before(error);
         error.hidden = false;
         this.lastError = error;
     }
@@ -184,7 +184,7 @@ class UI {
         //     this.sendEvent('processJob', jobId);
         // });
 
-        this.jobsContainer.appendChild(element);
+        this.jobsContainer.append(element);
         return jobId;
     }
 
@@ -196,7 +196,7 @@ class UI {
             element.removeEventListener('click', eventListener);
         }
         // Then remove the DOM element.
-        this.jobsContainer.removeChild(jobId);
+        jobId.remove();
     }
 
     // Set the file name for the specified job.

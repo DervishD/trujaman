@@ -381,8 +381,6 @@ class Presenter {
                 'No se pudo iniciar el gestor de tareas en segundo plano.'
             );
         }
-        // Prevent further processing of the event.
-        error.preventDefault();
     }
 
     handleWebWorkerMessages (message) {

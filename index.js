@@ -13,6 +13,8 @@ class UI {
 
         // Store needed references to DOM elements for later use.
         this.filePicker = document.querySelector('#filepicker');
+        this.filePickerInput = this.filePicker.querySelector('input')
+        this.filePickerButton = this.filePicker.querySelector('button')
         this.jobsContainer = document.querySelector('#jobs');
         this.version = document.querySelector('#version');
         this.errorTemplate = document.querySelector('#error_template');
@@ -25,12 +27,12 @@ class UI {
         // Set up file picker.
         this.filePicker.hidden = false;
 
-        this.filePicker.querySelector('button').addEventListener('click', () => {
-            this.filePicker.querySelector('input').click();  // Propagate the click.
+        this.filePickerButton.addEventListener('click', () => {
+            this.filePickerInput.click();  // Propagate the click.
         });
 
         // Create new file processor with the selected file.
-        this.filePicker.firstElementChild.addEventListener('change', event => {
+        this.filePickerInput.addEventListener('change', event => {
             this.emit('processFiles', event.target.files);
             // Or the event won't be fired again if the user selects the same file...
             event.target.value = null;

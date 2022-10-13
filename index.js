@@ -26,6 +26,7 @@ class UI {
     render () {
         // Set up file picker.
         this.filePicker.hidden = false;
+        this.filePickerButton.focus();
 
         this.filePickerButton.addEventListener('click', () => {
             this.filePickerInput.click();  // Propagate the click.

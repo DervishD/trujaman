@@ -60,7 +60,7 @@ class UI {
         // This is entirely optional, and detection is performed by testing for
         // the existence of the drag and drop events used. This is not orthodox
         // but works for the needs of the application.
-        if (['dragenter', 'dragover', 'dragleave', 'drop'].every(event => `on${event}` in window)) {
+        if (['dragenter', 'dragover', 'dragleave', 'drop'].every(event => `on${event}` in globalThis)) {
             const dropzone = document.querySelector('#dropzone');
 
             // Yes, this makes sense. The first statement enables the drop zone,
@@ -70,7 +70,7 @@ class UI {
             dropzone.dataset.state = 'hidden';
 
             // This is needed because the drag and drop overlay is HIDDEN, so it wouldn't get the event.
-            window.addEventListener('dragenter', () => { dropzone.dataset.state = 'visible'; });
+            globalThis.addEventListener('dragenter', () => { dropzone.dataset.state = 'visible'; });
 
             // Prevent the browser from opening the file.
             dropzone.addEventListener('dragover', event => { event.preventDefault(); });
@@ -271,12 +271,12 @@ class Presenter {
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             if (refreshing) return;
             refreshing = true;
-            window.location.reload();
+            globalThis.location.reload();
         });
 
         // Handle PWA installation offers.
         // For now, just prevent the default install handler to appear.
-        window.addEventListener('beforeinstallprompt', event => event.preventDefault());
+        globalThis.addEventListener('beforeinstallprompt', event => event.preventDefault());
 
         try {
             this.initView();
@@ -494,7 +494,7 @@ class Presenter {
 }
 
 
-window.addEventListener('load', () => {
+globalThis.addEventListener('load', () => {
     // Create and run the Presenter.
     const presenter = new Presenter();
     presenter.run();

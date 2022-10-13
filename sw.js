@@ -2,9 +2,9 @@
 
 const serviceworkerVersion = '20211130α';
 
-const landingPage = '.';  // Maybe: "new URL(self.registration.scope).pathname"???
+const landingPage = '.';  // Maybe: "new URL(globalThis.registration.scope).pathname"???
 
-const cachePrefix = `trujaman@${self.registration.scope}`;
+const cachePrefix = `trujaman@${globalThis.registration.scope}`;
 
 const coreCacheName = `${cachePrefix} v${serviceworkerVersion}`;
 
@@ -24,17 +24,17 @@ const coreAssets = [
 
 
 // Precache assets and take control (for now)
-self.addEventListener('install', event => {
+globalThis.addEventListener('install', event => {
     event.waitUntil(
         caches.open(coreCacheName)
         .then(cache => cache.addAll(coreAssets))
-        .then(self.skipWaiting())  // Brutal, but effective for now.
+        .then(globalThis.skipWaiting())  // Brutal, but effective for now.
     );
 });
 
 
 // Delete old caches and take control of uncontrolled pages.
-self.addEventListener('activate', event => {
+globalThis.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys()
         .then(keys => Promise.all(
@@ -43,20 +43,20 @@ self.addEventListener('activate', event => {
             .filter(key => key !== coreCacheName)  // Only old caches from this PWA are deleted. Check the prefix!
             .map(key => caches.delete(key))
         ))
-        .then(self.clients.claim())  // Brutal, but effective for now.
+        .then(globalThis.clients.claim())  // Brutal, but effective for now.
     );
 });
 
 
 // A 'cache-only' caching strategy is used for now.
 // This makes sure the PWA fully works when offline, and it's perfect for the core assets.
-self.addEventListener('fetch', event => {
+globalThis.addEventListener('fetch', event => {
     if (event.request.method !== 'GET') {
         // eslint-disable-next-line no-console
         console.error('Fetch with non-GET method!');  // Should NEVER happen in production.
         return;
     }
-    if (!event.request.url.startsWith(self.location.origin)) {
+    if (!event.request.url.startsWith(globalThis.location.origin)) {
         // eslint-disable-next-line no-console
         console.error('Cross-origin fetch!');  // Should NEVER happen in production.
         return;

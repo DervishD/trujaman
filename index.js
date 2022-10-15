@@ -13,8 +13,8 @@ class UI {
 
         // Store needed references to DOM elements for later use.
         this.filePicker = document.querySelector('#filepicker');
-        this.filePickerInput = this.filePicker.querySelector('input')
-        this.filePickerButton = this.filePicker.querySelector('button')
+        this.filePickerInput = this.filePicker.querySelector('input');
+        this.filePickerButton = this.filePicker.querySelector('button');
         this.jobsContainer = document.querySelector('#jobs');
         this.version = document.querySelector('#version');
         this.errorTemplate = document.querySelector('#error_template');

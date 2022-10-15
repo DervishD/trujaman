@@ -179,7 +179,7 @@ button:active {
 }
 
 #dropzone {
-    margin: 0;  /* Avoids duplicate window.dragenter events. */
+    margin: 0;  /* Avoids duplicate globalThis.dragenter events. */
     padding: 1rem;
     font-size: 3rem;
     font-weight: 700;

@@ -1,5 +1,78 @@
 'use strict';
 
+// Default error header.
+const errorHeader = '¡ERROR, la aplicación no puede funcionar!';
+
+// Very crude default function for showing errors to the end user.
+//
+// Works even if the page is not fully loaded, so it is a last resort.
+globalThis.showError = function showError (reason, details) {
+    // Stop further loading of resources as soon as posible.
+    // globalThis.stop();
+
+    alert(`${errorHeader}\n${reason}\n${details}`);  // eslint-disable-line no-alert
+};
+
+
+// Default handler for unhandled errors which should not happen in production.
+globalThis.unexpectedErrorHandler = function unexpectedErrorHandler (event) {  // eslint-disable-line max-statements
+    // Prevent further processing of the event.
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    // Get the location of the error, if at all possible.
+    let location = '';
+    if (event.filename) {
+        try {
+            // Sometimes the location is not an URL.
+            location = new URL(event.filename).pathname.substring(1);  // eslint-disable-line no-magic-numbers
+        } catch (exc) {
+            if (exc instanceof TypeError) {
+                location = event.filename;
+            } else throw exc;
+        }
+        location = `En ${location}, línea ${event.lineno}, columna ${event.colno}.`;
+    }
+
+    // PromiseRejectionEvent is a bit different from ErrorEvent.
+    let reason = '';
+    let error = '';
+    if (event instanceof PromiseRejectionEvent) {
+        // For PromiseRejectionEvent events.
+        error = event.reason;
+        reason = 'PromiseRejectionEvent';
+    } else {
+        // For ErrorEvent events.
+        ({error} = event);
+        reason = 'ErrorEvent';
+    }
+
+    // The reason for the error is that the error it is, well, unhandled!
+    reason += `${error && error.name ? `(${error.name})` : ''} sin gestionar.`;
+
+    // Use available information, if any, for the error details.
+    let details = '';
+    if (error) {
+        details += `[${error}]`;
+        details += location ? `\n${location}` : '';
+        // Since event.error.stack is non-standard, it may be undefined.
+        if (error.stack) {
+            details += '\nInformación de depurado:\n';
+            for (const line of error.stack.trim().split('\n')) {
+                details += `    ${line.trim()}\n`;
+            }
+        }
+    }
+
+    // Show the error to the end user.
+    globalThis.showError(reason, details);
+};
+
+// Set up the unexpected error handlers.
+globalThis.addEventListener('error', globalThis.unexpectedErrorHandler);
+globalThis.addEventListener('unhandledrejection', globalThis.unexpectedErrorHandler);
+
 // This class encapsulates the user interface.
 class UI {
     constructor () {
@@ -107,37 +180,42 @@ class UI {
 
     // Show a detailed error message.
     //
-    // The function accepts two parameters. The first one is the error message,
+    // The function accepts two parameters. The first one is the error reason,
     // preferably a one-liner explaining (tersely) the main cause of the error.
-    // The second one can be more verbose and contains the details of the error,
-    // and will be rendered differently. Usually it's the stringified version of
-    // the error as returned by the interpreter.
     //
-    // New DOM elements showing errors are created for each call to this function.
-    showError (message, details) {
-        // If no error is currently shown, dismiss (delete) all jobs and then
-        // hide the file picker, thus effectively disabling the user interface.
-        if (!this.lastError) {
+    // The second one can be more verbose and contains the details of the error.
+    //
+    // New DOM elements are created for each call to this function.
+    showError (reason, details) {
+        if (!this.lastError) {  // No error is currently shown.
             // Dismiss the existing jobs.
             for (const job of this.jobsContainer.querySelectorAll('.job:not([hidden])')) {
                 job.querySelector('.job_dismiss_button').click();
             }
-            // Disable the file picker.
-            this.filePicker.hidden = true;
+
+            // Disable UI interaction by removing the file picker.
+            this.filePicker.remove();
+            delete this.filePicker;
+
+            // At this point no further interaction with the page is possible so the
+            // application is effectively stopped, even though it is still running…
+
             // Use the hidden template as insertion point.
             this.lastError = this.errorTemplate;
         }
 
         // Create a new error DOM element.
-        const error = this.errorTemplate.cloneNode(true);
-        error.querySelector('.error_message').innerText = message;
-        error.querySelector('.error_details').innerText = details;
+        const errorElement = this.errorTemplate.cloneNode(true);
+
+        errorElement.querySelector('.error_header').innerText = errorHeader;
+        errorElement.querySelector('.error_reason').innerText = reason;
+        errorElement.querySelector('.error_details').innerText = details;
 
         // Finally, show the error on the DOM element.
         // Error are shown in a first-happenned, first-shown manner.
-        this.lastError.nextSibling.before(error);
-        error.hidden = false;
-        this.lastError = error;
+        this.lastError.nextSibling.before(errorElement);
+        errorElement.hidden = false;
+        this.lastError = errorElement;
     }
 
     // Create a job user interface element and returns a job id for it.
@@ -281,14 +359,21 @@ class Presenter {
         // For now, just prevent the default install handler to appear.
         globalThis.addEventListener('beforeinstallprompt', event => event.preventDefault());
 
-        try {
-            this.initView();
-            await this.initServiceWorker('sw.js');
-            await this.initFormats('formats.json');
-            this.initWebWorker('ww.js');
-        } catch (error) {  // For handling unexpected errors.
-            this.view.showError('Se produjo un error inesperado.', error);
-        }
+        // Set up UI.
+        this.initView();
+
+        // Now that the UI is up and running, a new error printing function
+        // which shows the errors on the main web page can be set.
+        globalThis.showError = this.view.showError.bind(this.view);
+
+        // Launch Service Worker.
+        await this.initServiceWorker('sw.js');
+
+        // Load file format specifications.
+        await this.initFormats('formats.json');
+
+        // Load WebWorker.
+        this.initWebWorker('ww.js');
     }
 
 
@@ -463,7 +548,7 @@ class Presenter {
             // Unexpected error condition that should not happen in production.
             // So, it is notified differently, by using view.showError().
             this.view.showError(
-                'Ocurrió un error inesperado leyendo un fichero.',
+                'Error inesperado leyendo un fichero.',
                 `Ocurrió un error «${error.name}» leyendo el fichero «${error.fileName}».\n` +
                 `${error.message}.`
             );

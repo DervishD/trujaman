@@ -15,35 +15,6 @@
     <link rel="manifest" href="manifest.webmanifest">
 
     <link rel="stylesheet" href="index.css">
-    <script>
-        // The purpose of the following code is having a basic way of trapping
-        // unexpected errors, specially syntax errors, and reporting them to the
-        // end user as good as possible. Ideally, the error report should appear
-        // within the text of the web page, but unfortunately some errors may
-        // occur well before the page is even displayed.
-        window.addEventListener('error', function (event) {
-            // Stop further loading of resources as soon as posible.
-            window.stop();
-
-            // Dump the error event object to the console, just in case.
-            console.dir(event);
-
-            // Show a modal alert.
-            alert(
-                'Se produjo un error inesperado (' + event.error.name + ')\n' +
-                'en «' + event.filename + '», línea ' + event.lineno + ', columna ' + event.colno + '.\n' +
-                '\n' +
-                '(' + event.message + ')\n' +
-                '\n' +
-                '¡LA APLICACIÓN PODRÍA NO FUNCIONAR ADECUADAMENTE!'
-            );
-
-            // Prevent further processing of the event.
-            event.preventDefault();
-            event.stopPropagation();
-            event.stopImmediatePropagation();
-        });
-    </script>
     <script defer src="index.js"></script>
 
     <title>trujamán</title>
@@ -58,14 +29,12 @@
     </header>
 
     <div hidden id="error_template" class="error">
-        <div class="error_header">• ERROR •</div>
-        <div>¡La aplicación no puede funcionar!</div>
-        <div class="error_message"></div>
-        <div>Detalles del error:</div>
-        <div class="error_details monospaced"></div>
+        <div class="error_header"></div>
+        <div class="error_reason"></div>
+        <pre class="error_details"></pre>
     </div>
     <noscript>
-        <div>• ERROR •<br>¡La aplicación no puede funcionar!<br>Este navegador no permite el uso de JavaScript.</div>
+        <div>¡Este navegador no permite el uso de JavaScript por lo que la aplicación no podrá funcionar!</div>
     </noscript>
 
     <div hidden id="filepicker">

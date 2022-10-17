@@ -111,7 +111,7 @@ body {
     overflow-x: hidden;
 }
 
-p {
+p, pre {
     text-align: left;
     text-indent: 0;
     margin: 0;
@@ -147,7 +147,7 @@ button:active {
     filter: brightness(99%);
 }
 
-.monospaced {
+.monospaced, pre {
     font-family: "JetBrains Mono";
 }
 
@@ -306,23 +306,23 @@ button:active {
     padding: 1em;
     color: var(--bg);
     background-color: var(--fg);
+    max-width: fit-content;
 }
 
-.error div, noscript > div {
+.error, .error p, noscript > div {
     text-align: center;
 }
 
-.error_header {
-    font-size: 1.5em;
+.error_header, noscript > div {
     font-weight: 700;
 }
 
-.error_message {
-    font-size: 1.25em;
+.error_reason {
     margin: 1em 0;
 }
 
 .error_details {
-    font-size: 0.8em;
+    font-size: 0.7em;
     margin: 0.5em 0;
+    display: inline-block;
 }

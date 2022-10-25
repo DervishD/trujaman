@@ -222,38 +222,33 @@ class UI {
     createJob () {
         // Create the UI elements for the job by copying the existing template.
         // That way, this code can be more agnostic about the particular layout of the UI elements.
-        const element = document.getElementById('job_template').content.firstElementChild.cloneNode(true);
-
-        // In the future, a job id may be another type entirely.
-        // For now this is enough and works perfectly.
-        // This variable is not strictly needed, but improves readability.
-        const jobId = element;
+        const newJob = document.getElementById('job_template').content.firstElementChild.cloneNode(true);
 
         // A dismiss button, to delete the current job.
-        const handleDismissClicked = function handleDismissClicked () { this.emit('dismissJob', jobId); }.bind(this);
-        const dismissButton = element.querySelector('.job_dismiss_button');
+        const handleDismissClicked = function handleDismissClicked () { this.emit('dismissJob', newJob); }.bind(this);
+        const dismissButton = newJob.querySelector('.job_dismiss_button');
         dismissButton.addEventListener('click', handleDismissClicked, {'once': true});
 
         // A cancel button, to cancel the current job.
-        const handleCancelClicked = function handleCancelClicked () { this.emit('cancelJob', jobId); }.bind(this);
-        const cancelButton = element.querySelector('.job_cancel_button');
+        const handleCancelClicked = function handleCancelClicked () { this.emit('cancelJob', newJob); }.bind(this);
+        const cancelButton = newJob.querySelector('.job_cancel_button');
         cancelButton.addEventListener('click', handleCancelClicked);
 
         // A retry button, to retry the current job.
-        const handleRetryClicked = function handleRetryClicked () { this.emit('retryJob', jobId); }.bind(this);
-        const retryButton = element.querySelector('.job_retry_button');
+        const handleRetryClicked = function handleRetryClicked () { this.emit('retryJob', newJob); }.bind(this);
+        const retryButton = newJob.querySelector('.job_retry_button');
         retryButton.addEventListener('click', handleRetryClicked);
 
         // A dropdown control, to choose the download format from a list.
         const handleDownloadClicked = function handleDownloadClicked () {
-            const formatsList = element.querySelector('.job_formats_list');
+            const formatsList = newJob.querySelector('.job_formats_list');
             formatsList.hidden = !formatsList.hidden;
         };
-        const downloadButton = element.querySelector('.job_download_dropdown');
+        const downloadButton = newJob.querySelector('.job_download_dropdown');
         downloadButton.addEventListener('click', handleDownloadClicked);
 
         // Store event listeners so they can be removed when the job is destroyed.
-        this.jobEventListeners.set(element, [
+        this.jobEventListeners.set(newJob, [
             [dismissButton, handleDismissClicked],
             [cancelButton, handleCancelClicked],
             [retryButton, handleRetryClicked],
@@ -265,53 +260,53 @@ class UI {
         //     this.sendEvent('processJob', jobId);
         // });
 
-        this.jobsContainer.append(element);
-        return jobId;
+        this.jobsContainer.append(newJob);
+        return newJob;
     }
 
     // Remove the specified job user interface element.
-    removeJob (jobId) {
+    removeJob (job) {
         // Remove event listeners first.
         // Not really needed, apparently, but it's the Tao.
-        for (const [element, eventListener] of this.jobEventListeners.get(jobId)) {
+        for (const [element, eventListener] of this.jobEventListeners.get(job)) {
             element.removeEventListener('click', eventListener);
         }
         // Then remove the DOM element.
-        jobId.remove();
+        job.remove();
     }
 
     // Set the file name for the specified job.
     // eslint-disable-next-line class-methods-use-this
-    setJobFileName (jobId, fileName) {
-        jobId.querySelector('.job_filename').textContent = fileName;
+    setJobFileName (job, fileName) {
+        job.querySelector('.job_filename').textContent = fileName;
     }
 
     // Set the status (HTML) for the specified job.
     // eslint-disable-next-line class-methods-use-this
-    setJobStatus (jobId, status) {
-        jobId.querySelector('.job_status').innerHTML = status;
+    setJobStatus (job, status) {
+        job.querySelector('.job_status').innerHTML = status;
     }
 
     // Set the state for the specified job.
     // eslint-disable-next-line class-methods-use-this
-    setJobState (jobId, state) {
+    setJobState (job, state) {
         switch (state) {
         case 'processing':
-            jobId.querySelector('.job_retry_button').hidden = true;
-            jobId.querySelector('.job_cancel_button').hidden = false;
+            job.querySelector('.job_retry_button').hidden = true;
+            job.querySelector('.job_cancel_button').hidden = false;
             break;
         case 'processed':
-            jobId.querySelector('.job_cancel_button').hidden = true;
-            jobId.querySelector('.job_download_dropdown').hidden = false;
+            job.querySelector('.job_cancel_button').hidden = true;
+            job.querySelector('.job_download_dropdown').hidden = false;
             break;
         case 'cancelled':
-            jobId.querySelector('.job_cancel_button').hidden = true;
-            jobId.querySelector('.job_retry_button').hidden = false;
+            job.querySelector('.job_cancel_button').hidden = true;
+            job.querySelector('.job_retry_button').hidden = false;
             break;
         case 'error':
-            jobId.querySelector('.job_cancel_button').hidden = true;
-            jobId.querySelector('.job_retry_button').hidden = true;
-            jobId.querySelector('.job_download_dropdown').hidden = true;
+            job.querySelector('.job_cancel_button').hidden = true;
+            job.querySelector('.job_retry_button').hidden = true;
+            job.querySelector('.job_download_dropdown').hidden = true;
             break;
         }
     }
@@ -323,17 +318,17 @@ class Presenter {
     constructor () {
         // For keeping track of jobs.
         //
-        // Since the Presenter has to keep a bijection map between job ids as
-        // returned by the View and job ids as returned by the web worker, to
-        // convert between them as needed, it would be necessary to keep two
-        // different maps. BUT, since it's impossible that a View job id will
-        // collide with a web worker job id, BOTH of them can be added to the
-        // same Map() and that way it will work as a bijection.
+        // Since the Presenter has to keep a bijection map between job objects
+        // as returned by the View and job ids as returned by the web worker,
+        // for converting between them as needed, it would be necessary to keep
+        // two different maps. BUT, since it's impossible that a View object
+        // will collide with a web worker job id, BOTH of them can be added to
+        // the same Map() and that way it will work as a bijection.
         //
-        // This has an additional advantage: since all ids will be in the same
-        // Map(), when getting a value, if the key is a View job id the value
-        // will be a web worker job id, and viceversa, without the need to have
-        // two different ways of getting one kind of id from the other.
+        // This has an additional advantage: since all values will be in the
+        // same Map(), when getting a value, if the key is a View object the
+        // value will be a web worker job id, and viceversa, no need to have
+        // different maps for this.
         this.jobs = new Map();
     }
 
@@ -487,7 +482,7 @@ class Presenter {
     }
 
     // Show an error when a command is not supported by the web worker.
-    handleCommandNotFound (_jobId, command) {
+    handleCommandNotFound (__, command) {
         this.view.showError(
             'Se solicitó un comando en segundo plano desconocido.',
             `El comando «${command}» no existe.`
@@ -498,10 +493,10 @@ class Presenter {
     // elements so the user can interact with it, and process the job.
     handleJobCreated (jobId, fileName) {
         // Create the UI element for this job.
-        const newJobId = this.view.createJob();
-        this.jobs.set(newJobId, jobId);
-        this.jobs.set(jobId, newJobId);
-        this.view.setJobFileName(newJobId, fileName);
+        const newJob = this.view.createJob();
+        this.jobs.set(newJob, jobId);
+        this.jobs.set(jobId, newJob);
+        this.view.setJobFileName(newJob, fileName);
         this.processJob(jobId);
     }
 

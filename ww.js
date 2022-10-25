@@ -1,6 +1,6 @@
 'use strict';
 
-// To keep track of FileReaders.
+// For keeping track of active jobs (really, FileReaders).
 globalThis.jobs = {};
 
 // Absolutely arbitrary maximum file size.
@@ -36,18 +36,19 @@ globalThis.postReply = function postReply (reply, jobId, payload) {
 /* eslint-disable max-lines-per-function, max-statements */
 globalThis.handleCreateJob = function handleCreateJob (file) {
     // There's a problem with File objects: they don't have paths, only names.
-    // So, there's no way of telling if two user-selected files are the same or not,
-    // because they may have the same name but come from different directories.
+    // So, there's no way of telling if two user-selected files are the same or
+    // not, because they may have the same name but come from different dirs.
     //
-    // Best effort here is to create a kind of hash from the file name, the file size
-    // and the last modification time. This is not bulletproof, as the user may have
-    // and select to different files from different directores whose names are equal,
-    // their sizes and modification times too, but still have different contents.
+    // Best effort here is to create a kind of hash from the file name, the file
+    // size and the last modification time. This is not bulletproof, as the user
+    // may have and select two different files from different directores whose
+    // names are equal, their sizes and modification times too, but still have
+    // different contents.
     //
-    // Still, this minimizes the possibility of leaving the user unable to add a file
-    // just because it has the same name than one previously selected, if they come
-    // from different folders. The chances of both files having the exact same size
-    // and modification time are quite reduced. Hopefully.
+    // Still, this minimizes the possibility of leaving the user unable to add a
+    // file just because it has the same name than one previously selected, if
+    // they come from different folders. The chances of both files having the
+    // exact same size and modification time are quite reduced. Hopefully.
     const job = {
         'id': `${file.name}_${file.size}_${file.lastModified}`,
         file,

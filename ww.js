@@ -41,7 +41,7 @@ globalThis.handleCreateJob = function handleCreateJob (file) {
     //
     // Best effort here is to create a kind of hash from the file name, the file
     // size and the last modification time. This is not bulletproof, as the user
-    // may have and select two different files from different directores whose
+    // may have and select two different files from different directories whose
     // names are equal, their sizes and modification times too, but still have
     // different contents.
     //

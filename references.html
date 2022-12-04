@@ -16,7 +16,11 @@
     <title>Reference material for trujamán</title>
     <style>
         :root {
-            font-size: 1.5em;
+            font-size: 1.2em;
+        }
+
+        body {
+            width: fit-content;
         }
 
         a {
@@ -30,29 +34,49 @@
 
         h1 {
             font-size: 3em;
-            margin: 0 auto .5em auto;
+            margin: 1rem;
         }
 
         ul {
-            margin: 0 0 1em 0.5em;
+            margin: 1rem;
             padding: 0;
             list-style: "⁕" inside none;
         }
 
+        li {
+            line-height: 1.5em;
+        }
+
+        li > a {
+            padding-left: 0.5rem;
+        }
+
+        details {
+            margin: 0.5rem 1rem;
+        }
+
         details > ul {
-            margin: 0 0 0 1.5em;
+            margin: 0 0 0 1.5rem;
         }
 
         summary {
             cursor: pointer;
-            font-size: 1.2em;
             font-weight: 700;
         }
+
+        hr {
+            height: 1px;
+            border: none;
+            margin-left: 0;
+            background-image: linear-gradient(to right, var(--fg) 50%, var(--bg));
+        }
+
     </style>
 </head>
 
 <body>
     <h1>References</h1>
+    <hr>
     <ul>
         <li>
             <a href="https://dervishd.github.io/trujaman-preview/">
@@ -75,6 +99,7 @@
             </a>
         </li>
     </ul>
+    <hr>
     <details>
         <summary>Misc</summary>
         <ul>

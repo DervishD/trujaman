@@ -37,7 +37,7 @@
 
 :root {
     font-family: "Noto Sans", sans-serif;
-    font-size : clamp(1em, 1vw + 1vh + .5vmin, 3em);  /* A good starting point... */
+    font-size: clamp(1em, 1vw + 1vh + .5vmin, 3em);  /* A good starting point... */
     /* And some other alternatives... */
     /*
     font-size: calc(1vw + 1vh + .5vmin);

@@ -309,7 +309,6 @@ button:active {
     padding: 1em;
     color: var(--bg);
     background-color: var(--fg);
-    max-width: fit-content;
 }
 
 .error, .error p, noscript > div {

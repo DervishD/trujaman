@@ -1,4 +1,5 @@
 .eslintrc.json
+.htmlvalidate.json
 node_modules
 package.json
 package-lock.json

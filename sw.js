@@ -6,9 +6,9 @@ const landingPage = '.';  // Maybe: "new URL(globalThis.registration.scope).path
 
 const cachePrefix = `trujaman@${globalThis.registration.scope}`;
 
-const coreCacheName = `${cachePrefix} v${serviceworkerVersion}`;
+const cacheName = `${cachePrefix} v${version}`;
 
-const coreAssets = [
+const assets = [
     landingPage,
     'index.css',
     'index_sans_r_400.woff2',
@@ -26,8 +26,8 @@ const coreAssets = [
 // Precache assets and take control (for now)
 globalThis.addEventListener('install', event => {
     event.waitUntil(
-        caches.open(coreCacheName)
-        .then(cache => cache.addAll(coreAssets))
+        caches.open(cacheName)
+        .then(cache => cache.addAll(assets))
         .then(globalThis.skipWaiting())  // Brutal, but effective for now.
     );
 });
@@ -40,7 +40,7 @@ globalThis.addEventListener('activate', event => {
         .then(keys => Promise.all(
             keys
             .filter(key => key.startsWith(cachePrefix))
-            .filter(key => key !== coreCacheName)  // Only old caches from this PWA are deleted. Check the prefix!
+            .filter(key => key !== cacheName)  // Only old caches from this PWA are deleted. Check the prefix!
             .map(key => caches.delete(key))
         ))
         .then(globalThis.clients.claim())  // Brutal, but effective for now.
@@ -64,12 +64,12 @@ globalThis.addEventListener('fetch', event => {
     // eslint-disable-next-line no-console
     console.debug('Fetching', event.request.url);
     event.respondWith((() => {
-        if (event.request.url.endsWith('version')) return new Response(serviceworkerVersion);
+        if (event.request.url.endsWith('version')) return new Response(version);
 
         // This is TEMPORARY!
         // This is needed to be able to test changes fast and at the same time having offline functionality.
         return fetch(event.request).catch(async () => {
-            const cache = await caches.open(coreCacheName);
+            const cache = await caches.open(cacheName);
             const response = await cache.match(event.request);
             return response || cache.match(landingPage);
         });

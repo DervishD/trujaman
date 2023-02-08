@@ -11,9 +11,9 @@ const cacheName = `${cachePrefix} v${version}`;
 const assets = [
     landingPage,
     'index.css',
-    'index_sans_r_400.woff2',
-    'index_sans_r_700.woff2',
-    'index_mono_r_400.woff2',
+    'font_sans_r_400.woff2',
+    'font_sans_r_700.woff2',
+    'font_mono_r_400.woff2',
     'index.js',
     'formats.json',
     'ww.js',

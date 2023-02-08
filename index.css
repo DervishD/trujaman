@@ -11,7 +11,7 @@
     font-display: swap;
     font-style: normal;
     font-weight: 400;
-    src: url('index_sans_r_400.woff2') format('woff2');
+    src: url('font_sans_r_400.woff2') format('woff2');
 }
 
 @font-face {
@@ -19,7 +19,7 @@
     font-display: swap;
     font-style: normal;
     font-weight: 700;
-    src: url('index_sans_r_700.woff2') format('woff2');
+    src: url('font_sans_r_700.woff2') format('woff2');
 }
 
 /*
@@ -32,7 +32,7 @@
     font-display: swap;
     font-style: normal;
     font-weight: 400;
-    src: url('index_mono_r_400.woff2') format('woff2');
+    src: url('font_mono_r_400.woff2') format('woff2');
 }
 
 :root {

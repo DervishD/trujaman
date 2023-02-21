@@ -1,6 +1,7 @@
 'use strict';
 
-const version = '0.1.0-alpha+20230204';
+// Import version number.
+importScripts('version.js');  /* global version */
 
 const landingPage = '.';  // Maybe: "new URL(globalThis.registration.scope).pathname"???
 

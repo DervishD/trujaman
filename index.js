@@ -1,11 +1,10 @@
 'use strict';
 
-// Default error header.
-const errorHeader = '¡ERROR, la aplicación no puede funcionar!';
 
 // Very crude default function for showing errors to the end user.
 //
 // Works even if the page is not fully loaded, so it is a last resort.
+const errorHeader = '¡ERROR, la aplicación no puede funcionar!';  // Default error header.
 globalThis.showError = function showError (reason, details) {
     // Stop further loading of resources as soon as posible.
     // globalThis.stop();
@@ -69,9 +68,11 @@ globalThis.unexpectedErrorHandler = function unexpectedErrorHandler (event) {  /
     globalThis.showError(reason, details);
 };
 
+
 // Set up the unexpected error handlers.
 globalThis.addEventListener('error', globalThis.unexpectedErrorHandler);
 globalThis.addEventListener('unhandledrejection', globalThis.unexpectedErrorHandler);
+
 
 // This class encapsulates the user interface.
 class UI {

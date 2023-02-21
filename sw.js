@@ -5,12 +5,10 @@ console.info('Service worker loaded');
 // Import version number.
 importScripts('version.js');  /* global version */
 
+
 const landingPage = '.';  // Maybe: "new URL(globalThis.registration.scope).pathname"???
-
 const cachePrefix = `trujaman@${globalThis.registration.scope}`;
-
 const cacheName = `${cachePrefix} v${version}`;
-
 const assets = [
     landingPage,
     'index.css',

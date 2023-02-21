@@ -1,4 +1,6 @@
 'use strict';
+console.info('Service worker loaded');
+
 
 // Import version number.
 importScripts('version.js');  /* global version */
@@ -26,6 +28,7 @@ const assets = [
 
 // Precache assets and take control (for now)
 globalThis.addEventListener('install', event => {
+    console.debug(`Installing service worker v${version}`);
     event.waitUntil(
         caches.open(cacheName)
         .then(cache => cache.addAll(assets))
@@ -36,6 +39,7 @@ globalThis.addEventListener('install', event => {
 
 // Delete old caches and take control of uncontrolled pages.
 globalThis.addEventListener('activate', event => {
+    console.debug(`Activating service worker v${version}`);
     event.waitUntil(
         caches.keys()
         .then(keys => Promise.all(
@@ -52,18 +56,19 @@ globalThis.addEventListener('activate', event => {
 // A 'cache-only' caching strategy is used for now.
 // This makes sure the PWA fully works when offline, and it's perfect for the core assets.
 globalThis.addEventListener('fetch', event => {
+    console.debug(`Fetch request for ${event.request.url}`);
+    // Non-GET fetches should not happen, but if they do, log the fact and let the browser handle it.
     if (event.request.method !== 'GET') {
-        // eslint-disable-next-line no-console
-        console.error('Fetch with non-GET method!');  // Should NEVER happen in production.
+        console.error(`Fetch request with non-GET method '${event.request.method}'`);
         return;
     }
+
+    // Cross-origin fetches should not happen, but if they do, log the fact and let the browser handle it.
     if (!event.request.url.startsWith(globalThis.location.origin)) {
-        // eslint-disable-next-line no-console
-        console.error('Cross-origin fetch!');  // Should NEVER happen in production.
+        console.error(`Cross-origin fetch request for '${event.request.url}'`);
         return;
     }
-    // eslint-disable-next-line no-console
-    console.debug('Fetching', event.request.url);
+
     event.respondWith((() => {
         if (event.request.url.endsWith('version')) return new Response(version);
 

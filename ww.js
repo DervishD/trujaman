@@ -1,5 +1,8 @@
 'use strict';
 
+// Import version number and debug flag.
+importScripts('version.js');  /* global DEBUG */
+
 // For keeping track of active jobs (really, FileReaders).
 globalThis.jobs = {};
 
@@ -62,11 +65,12 @@ globalThis.handleCreateJob = function handleCreateJob (file) {
     // Store a reference for future use.
     job.reader = new FileReader();
 
-    // Right now, mainly for testing purposes.
-    // Slows down the reading process so the UI can be examined.
+    // Progress indicator.
     job.reader.onprogress = event => {
-        const DELAY = 500;
-        const start = Date.now(); while (Date.now() - start < DELAY);  // Delay each reading operation.
+        if (DEBUG) {  // Delay each reading operation in debug mode so the UI can be examined.
+            const DELAY_MILLISECONDS = 500;
+            const start = Date.now(); while (Date.now() - start < DELAY_MILLISECONDS);
+        }
         // eslint-disable-next-line no-magic-numbers
         const percent = event.total ? Math.floor(100 * event.loaded / event.total) : 100;
         globalThis.postReply('bytesLoaded', job.id, percent);

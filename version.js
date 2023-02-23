@@ -17,5 +17,5 @@ const version = {
 };
 
 // Flag to indicate whether debug mode is enabled.
-// The mode is enabled when the version code includes a prerelease identifier.
-const DEBUG = Boolean(version.prerelease);
+// The mode is enabled when the version code includes a prerelease identifier but NOT for release candidates.
+const DEBUG = Boolean(version.prerelease && !version.prerelease.startsWith('rc'));

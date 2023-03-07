@@ -11,8 +11,7 @@ const version = {
     'prerelease': 'alpha',
     'build': new Date().toISOString().split('T')[0].replaceAll('-', ''),
     toString () {
-        return `${this.major}.${this.minor}.${this.patch}` +
-               `${this.prerelease && `-${this.prerelease}`}${this.build && `+${this.build}`}`;
+        return `${this.major}.${this.minor}.${this.patch}${this.prerelease && `-${this.prerelease}+${this.build}`}`;
     }
 };
 

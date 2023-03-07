@@ -2,14 +2,14 @@
 
 /* exported version DEBUG */
 
-// Version of the PWA. Follows Semantic Versioning 2.0.0 (https://semver.org/spec/v2.0.0.html).
-// const version = '0.1.0-alpha+20230220';
+// Version of the PWA.
+// Follows Semantic Versioning 2.0.0 (https://semver.org/spec/v2.0.0.html).
 const version = {
     'major': '0',
     'minor': '1',
     'patch': '0',
     'prerelease': 'alpha',
-    'build': '20230221',
+    'build': new Date().toISOString().split('T')[0].replaceAll('-', ''),
     toString () {
         return `${this.major}.${this.minor}.${this.patch}` +
                `${this.prerelease && `-${this.prerelease}`}${this.build && `+${this.build}`}`;

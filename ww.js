@@ -42,14 +42,14 @@ globalThis.handleCreateJob = function handleCreateJob (file) {
     // So, there's no way of telling if two user-selected files are the same or
     // not, because they may have the same name but come from different dirs.
     //
-    // Best effort here is to create a kind of hash from the file name, the file
-    // size and the last modification time. This is not bulletproof, as the user
-    // may have and select two different files from different directories whose
-    // names are equal, their sizes and modification times too, but still have
-    // different contents.
+    // Best effort here is to create a kind of hash from the file name, size and
+    // the last modification time. This is not bulletproof, as the user may own
+    // and select for upload different files from different directories whose
+    // names, sizes and modification times are equal, but STILL have different
+    // contents.
     //
-    // Still, this minimizes the possibility of leaving the user unable to add a
-    // file just because it has the same name than one previously selected, if
+    // Anyway, this minimizes the possibility of leaving the user unable to add
+    // a file just because it has the same name than one previously selected, if
     // they come from different folders. The chances of both files having the
     // exact same size and modification time are quite reduced. Hopefully.
     const job = {

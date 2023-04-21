@@ -4,27 +4,22 @@
 // Very crude default function for showing errors to the end user.
 //
 // Works even if the page is not fully loaded, so it is a last resort.
-const errorHeader = '¡ERROR, la aplicación no puede funcionar!';  // Default error header.
+const errorHeader = '¡ERROR, la aplicación no puede funcionar!';
 globalThis.showError = function showError (reason, details) {
-    // Stop further loading of resources as soon as posible.
-    // globalThis.stop();
-
+    globalThis.stop();
     alert(`${errorHeader}\n${reason}\n${details}`);  // eslint-disable-line no-alert
 };
 
 
 // Default handler for unhandled errors which should not happen in production.
 globalThis.unexpectedErrorHandler = function unexpectedErrorHandler (event) {  // eslint-disable-line max-statements
-    // Prevent further processing of the event.
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation();
 
-    // Get the location of the error, if at all possible.
     let location = '';
     if (event.filename) {
         try {
-            // Sometimes the location is not an URL.
             location = new URL(event.filename).pathname.substring(1);  // eslint-disable-line no-magic-numbers
         } catch (exc) {
             if (exc instanceof TypeError) {
@@ -34,28 +29,22 @@ globalThis.unexpectedErrorHandler = function unexpectedErrorHandler (event) {  /
         location = `En ${location}, línea ${event.lineno}, columna ${event.colno}.`;
     }
 
-    // PromiseRejectionEvent is a bit different from ErrorEvent.
     let reason = '';
     let error = '';
     if (event instanceof PromiseRejectionEvent) {
-        // For PromiseRejectionEvent events.
         error = event.reason;
         reason = 'PromiseRejectionEvent';
-    } else {
-        // For ErrorEvent events.
+    } else {  // For ErrorEvent events.
         ({error} = event);
         reason = 'ErrorEvent';
     }
 
-    // The reason for the error is that the error it is, well, unhandled!
     reason += `${error && error.name ? `(${error.name})` : ''} sin gestionar.`;
 
-    // Use available information, if any, for the error details.
     let details = '';
     if (error) {
         details += `[${error}]`;
         details += location ? `\n${location}` : '';
-        // Since event.error.stack is non-standard, it may be undefined.
         if (error.stack) {
             details += '\nInformación de depurado:\n';
             for (const line of error.stack.trim().split('\n')) {
@@ -64,12 +53,10 @@ globalThis.unexpectedErrorHandler = function unexpectedErrorHandler (event) {  /
         }
     }
 
-    // Show the error to the end user.
     globalThis.showError(reason, details);
 };
 
 
-// Set up the unexpected error handlers.
 globalThis.addEventListener('error', globalThis.unexpectedErrorHandler);
 globalThis.addEventListener('unhandledrejection', globalThis.unexpectedErrorHandler);
 
@@ -77,15 +64,8 @@ globalThis.addEventListener('unhandledrejection', globalThis.unexpectedErrorHand
 // This class encapsulates the user interface.
 class UI {
     constructor () {
-        // For the event publish/subscribe pattern.
-        // The dictionary below contains the handlers for different events.
         this.eventSubscribers = {};
-
-        // For tracking the event listeners registered to each job button, so
-        // they can be removed later, when the job is destroyed.
         this.jobEventListeners = new Map();
-
-        // Store needed references to DOM elements for later use.
         this.filePicker = document.querySelector('#filepicker');
         this.filePickerInput = this.filePicker.querySelector('input');
         this.filePickerButton = this.filePicker.querySelector('button');
@@ -96,64 +76,50 @@ class UI {
         this.lastError = null;
     }
 
-    // Activate and render the user interface.
+    // Activates and renders the user interface.
     render () {
-        // Set up file picker.
         this.filePicker.hidden = false;
         this.filePickerButton.focus();
-
         this.filePickerButton.addEventListener('click', () => {
-            this.filePickerInput.click();  // Propagate the click.
+            this.filePickerInput.click();
         });
-
-        // Create new file processor with the selected file.
         this.filePickerInput.addEventListener('change', event => {
             this.emit('processFiles', event.target.files);
-            // Or the event won't be fired again if the user selects the same file...
-            event.target.value = null;
+            event.target.value = null;  // Otherwise the event won't be fired again if the user selects the same file…
         });
 
-        // Set up jobs container.
         this.jobsContainer.hidden = false;
 
-        // Set up drag and drop support.
         this.initDragAndDrop();
     }
 
-    // Notify subscribers about an event.
+    // Notifies subscribers about an event.
     emit (event, payload) {
         this.eventSubscribers[event] && this.eventSubscribers[event](payload);
     }
 
-    // Subscribe to an event (register a handler/callback).
+    // Subscribes to an event (registers a handler/callback).
     on (event, handler) {
         this.eventSubscribers[event] = handler;
     }
 
-    // Initialize drag and drop support, if available.
+    // Initializes drag and drop support, if available.
     initDragAndDrop () {
-        // If the browser supports file drag and drop, enable it.
-        //
-        // This is entirely optional, and detection is performed by testing for
-        // the existence of the drag and drop events used. This is not orthodox
-        // but works for the needs of the application.
+        // This feature is entirely optional.
+        // Detection is performed by testing for the existence of the drag and
+        // drop events used. This is not orthodox but works well enough.
         if (['dragenter', 'dragover', 'dragleave', 'drop'].every(event => `on${event}` in globalThis)) {
             const dropzone = document.querySelector('#dropzone');
 
-            // Yes, this makes sense. The first statement enables the drop zone,
-            // so it can work. The second sets the initial state as not visible.
-            // That is, the drop zone ends up being active but not visible.
             dropzone.hidden = false;
             dropzone.dataset.state = 'hidden';
 
-            // This is needed because the drag and drop overlay is HIDDEN, so it wouldn't get the event.
             globalThis.addEventListener('dragenter', () => { dropzone.dataset.state = 'visible'; });
-
-            // Prevent the browser from opening the file.
-            dropzone.addEventListener('dragover', event => { event.preventDefault(); });
-
-            // Hide the drag and drop overlay if the user didn't drop the file.
             dropzone.addEventListener('dragleave', () => { dropzone.dataset.state = 'hidden'; });
+
+            // This is needed because otherwise the page is NOT a valid drop target,
+            // and when the file is dropped the default action is performed by the browser.
+            dropzone.addEventListener('dragover', event => { event.preventDefault(); });
 
             dropzone.addEventListener('drop', event => {
                 dropzone.dataset.state = 'dismissed';
@@ -163,9 +129,8 @@ class UI {
         }
     }
 
-    // Store the list of formats for the download dropdown menu.
+    // Stores the list of formats for the download dropdown menu.
     setFormatsList (formats) {
-        // Populate the dropdown element with the formats from the JSON.
         for (const format in formats) {
             const paragraph = document.createElement('p');
             paragraph.innerText = format;
@@ -173,23 +138,19 @@ class UI {
         }
     }
 
-    // Show version code on proper DOM element.
+    // Shows version code on proper DOM element.
     showVersion (version) {
         this.version.hidden = false;
         this.version.textContent += `v${version}`;
     }
 
-    // Show a detailed error message.
+    // Shows a detailed error message.
     //
-    // The function accepts two parameters. The first one is the error reason,
-    // preferably a one-liner explaining (tersely) the main cause of the error.
-    //
-    // The second one can be more verbose and contains the details of the error.
-    //
-    // New DOM elements are created for each call to this function.
+    // The function accepts two parameters:
+    //  1: The error reason, preferably a one-liner explaining (tersely) the main cause of the error.
+    //  2: The details of the error, verbosely explaining the information about the error.
     showError (reason, details) {
-        if (!this.lastError) {  // No error is currently shown.
-            // Dismiss the existing jobs.
+        if (!this.lastError) {
             for (const job of this.jobsContainer.querySelectorAll('.job:not([hidden])')) {
                 job.querySelector('.job_dismiss_button').click();
             }
@@ -205,42 +166,34 @@ class UI {
             this.lastError = this.errorTemplate;
         }
 
-        // Create a new error DOM element.
         const errorElement = this.errorTemplate.cloneNode(true);
 
         errorElement.querySelector('.error_header').innerText = errorHeader;
         errorElement.querySelector('.error_reason').innerText = reason;
         errorElement.querySelector('.error_details').innerText = details;
 
-        // Finally, show the error on the DOM element.
-        // Error are shown in a first-happenned, first-shown manner.
+        // Errors are shown in a first-happenned, first-shown manner.
         this.lastError.nextSibling.before(errorElement);
         errorElement.hidden = false;
         this.lastError = errorElement;
     }
 
-    // Create a job user interface element and returns a job id for it.
+    // Creates a job user interface element and returns a job id for it.
     createJob () {
-        // Create the UI elements for the job by copying the existing template.
-        // That way, this code can be more agnostic about the particular layout of the UI elements.
         const newJob = document.getElementById('job_template').content.firstElementChild.cloneNode(true);
 
-        // A dismiss button, to delete the current job.
         const handleDismissClicked = function handleDismissClicked () { this.emit('dismissJob', newJob); }.bind(this);
         const dismissButton = newJob.querySelector('.job_dismiss_button');
         dismissButton.addEventListener('click', handleDismissClicked, {'once': true});
 
-        // A cancel button, to cancel the current job.
         const handleCancelClicked = function handleCancelClicked () { this.emit('cancelJob', newJob); }.bind(this);
         const cancelButton = newJob.querySelector('.job_cancel_button');
         cancelButton.addEventListener('click', handleCancelClicked);
 
-        // A retry button, to retry the current job.
         const handleRetryClicked = function handleRetryClicked () { this.emit('retryJob', newJob); }.bind(this);
         const retryButton = newJob.querySelector('.job_retry_button');
         retryButton.addEventListener('click', handleRetryClicked);
 
-        // A dropdown control, to choose the download format from a list.
         const handleDownloadClicked = function handleDownloadClicked () {
             const formatsList = newJob.querySelector('.job_formats_list');
             formatsList.hidden = !formatsList.hidden;
@@ -248,7 +201,6 @@ class UI {
         const downloadButton = newJob.querySelector('.job_download_dropdown');
         downloadButton.addEventListener('click', handleDownloadClicked);
 
-        // Store event listeners so they can be removed when the job is destroyed.
         this.jobEventListeners.set(newJob, [
             [dismissButton, handleDismissClicked],
             [cancelButton, handleCancelClicked],
@@ -265,30 +217,29 @@ class UI {
         return newJob;
     }
 
-    // Remove the specified job user interface element.
+    // Removes the specified job user interface element.
     removeJob (job) {
         // Remove event listeners first.
         // Not really needed, apparently, but it's the Tao.
         for (const [element, eventListener] of this.jobEventListeners.get(job)) {
             element.removeEventListener('click', eventListener);
         }
-        // Then remove the DOM element.
         job.remove();
     }
 
-    // Set the file name for the specified job.
+    // Sets the file name for the specified job.
     // eslint-disable-next-line class-methods-use-this
     setJobFileName (job, fileName) {
         job.querySelector('.job_filename').textContent = fileName;
     }
 
-    // Set the status (HTML) for the specified job.
+    // Sets the status for the specified job.
     // eslint-disable-next-line class-methods-use-this
     setJobStatus (job, status) {
         job.querySelector('.job_status').innerHTML = status;
     }
 
-    // Set the state for the specified job.
+    // Sets the state for the specified job.
     // eslint-disable-next-line class-methods-use-this
     setJobState (job, state) {
         switch (state) {
@@ -325,17 +276,11 @@ class Presenter {
         // two different maps. BUT, since it's impossible that a View object
         // will collide with a web worker job id, BOTH of them can be added to
         // the same Map() and that way it will work as a bijection.
-        //
-        // This has an additional advantage: since all values will be in the
-        // same Map(), when getting a value, if the key is a View object the
-        // value will be a web worker job id, and viceversa, no need to have
-        // different maps for this.
         this.jobs = new Map();
     }
 
-    // Run the Presenter.
+    // Runs the Presenter.
     async run () {
-        // Show version number when service worker is ready.
         navigator.serviceWorker.ready
         .then(() => {
             fetch('version')
@@ -343,7 +288,6 @@ class Presenter {
             .then(version => version && this.view.showVersion(version));
         });
 
-        // Handle controlling service worker change.
         let refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             if (refreshing) return;
@@ -351,51 +295,40 @@ class Presenter {
             globalThis.location.reload();
         });
 
-        // Handle PWA installation offers.
         // For now, just prevent the default install handler to appear.
         globalThis.addEventListener('beforeinstallprompt', event => event.preventDefault());
 
-        // Set up UI.
         this.initView();
 
         // Now that the UI is up and running, a new error printing function
         // which shows the errors on the main web page can be set.
         globalThis.showError = this.view.showError.bind(this.view);
 
-        // Launch Service Worker.
         await this.initServiceWorker('sw.js');
-
-        // Load file format specifications.
-        await this.initFormats('formats.json');
-
-        // Load WebWorker.
+        await this.loadFormats('formats.json');
         this.initWebWorker('ww.js');
     }
 
 
-    // Initialize the user interface.
+    // Initializes the user interface.
     initView () {
-        this.view = new UI();  // Create the user interface.
+        this.view = new UI();
 
-        // Subscribe to UI events.
         this.view.on('processFiles', this.handleProcessFiles.bind(this));
         this.view.on('dismissJob', this.handleDismissJob.bind(this));
         this.view.on('cancelJob', this.handleCancelJob.bind(this));
         this.view.on('retryJob', this.handleRetryJob.bind(this));
 
-        this.view.render();  // Enable user interface.
+        this.view.render();
     }
 
-    // Activate the service worker.
+    // Activates the service worker.
     async initServiceWorker (serviceWorker) {
         try {
-            await navigator.serviceWorker.register(serviceWorker);  // Register service worker.
+            await navigator.serviceWorker.register(serviceWorker);
         } catch (error) {
-            // Service workers are considered site data ('cookies'...), so cookies
-            // have to be enabled for the application to work. If cookies are not
-            // enabled, that's probably the reason why the service worker cannot be
-            // registered. If they are, in fact, enabled, the reason is different
-            // and a generic error message is displayed instead.
+            // Service workers are considered site data, so cookies have to be
+            // enabled for the application to work.
             if (navigator.cookieEnabled) {
                 this.view.showError('Falló una parte esencial.', error);
             } else {
@@ -404,8 +337,8 @@ class Presenter {
         }
     }
 
-    // Process the format list.
-    async initFormats (formatsFile) {
+    // Loads and processes the format list.
+    async loadFormats (formatsFile) {
         try {
             const response = await fetch(formatsFile);
             if (response.ok) {
@@ -423,18 +356,14 @@ class Presenter {
         }
     }
 
-    // Initialize web worker.
+    // Initializes web worker.
     initWebWorker (webWorker) {
         this.worker = new Worker(webWorker);
-
-        // This error handler for the web worker only handles loading errors and syntax errors.
         this.worker.addEventListener('error', event => this.handleWebWorkerError(event));
-
-        // This handles responses from the web worker.
         this.worker.addEventListener('message', event => this.handleWebWorkerMessages(event.data));
     }
 
-    // Do an operation (command) asynchronously, by sending it to the web worker.
+    // Carries an operation (command) asynchronously, by sending it to the web worker.
     asyncDo (command, args) {
         this.worker.postMessage({
             command,
@@ -442,13 +371,13 @@ class Presenter {
         });
     }
 
-    // Process a job.
+    // Processes a job.
     processJob (jobId) {
         this.view.setJobState(this.jobs.get(jobId), 'processing');
         this.asyncDo('processJob', jobId);
     }
 
-    // Handle loading and syntax errors from the web worker.
+    // Handles loading and syntax errors from the web worker.
     handleWebWorkerError (error) {
         if (error instanceof ErrorEvent) {
             // For syntax errors, that should not happen in production,
@@ -467,6 +396,7 @@ class Presenter {
         }
     }
 
+    // Handles messages coming from the web worker.
     handleWebWorkerMessages (message) {
         const {reply, jobId, payload} = message;
 
@@ -482,7 +412,7 @@ class Presenter {
         }
     }
 
-    // Show an error when a command is not supported by the web worker.
+    // Shows an error when a command is not supported by the web worker.
     handleCommandNotFound (__, command) {
         this.view.showError(
             'Se solicitó un comando en segundo plano desconocido.',
@@ -490,10 +420,8 @@ class Presenter {
         );
     }
 
-    // A job was successfully created by the web worker, create the necessary UI
-    // elements so the user can interact with it, and process the job.
+    // Handles successful creation of a job by the web worker.
     handleJobCreated (jobId, fileName) {
-        // Create the UI element for this job.
         const newJob = this.view.createJob();
         this.jobs.set(newJob, jobId);
         this.jobs.set(jobId, newJob);
@@ -501,24 +429,24 @@ class Presenter {
         this.processJob(jobId);
     }
 
-    // The web worker successfully deleted a job. Remove the associated UI elements.
+    // Handles successful removal of a job by the web worker.
     handleJobDeleted (jobId) {
         this.view.removeJob(this.jobs.get(jobId));
         this.jobs.delete(this.jobs.get(jobId));
         this.jobs.delete(jobId);
     }
 
-    // The web worker successfully cancelled (paused) a job. Notify the user.
+    // Handless successful cancellation of a job by the web worker.
     handleJobCancelled (jobId) {
         this.view.setJobStatus(this.jobs.get(jobId), 'Lectura cancelada.');
     }
 
-    // The web worker did successfully read a bunch of bytes. Notify the user.
-    handleBytesLoaded (jobId, percent) {
+    // Handles successful file reads by the web worker.
+    handleBytesRead (jobId, percent) {
         this.view.setJobStatus(this.jobs.get(jobId), `Leyendo el fichero (${percent}%).`);
     }
 
-    // The web worker did successfully read the entire file. Notify the user.
+    // Handles a successful COMPLETE file read by the web worker.
     handleFileReadOK (jobId, data) {
         // eslint-disable-next-line no-magic-numbers
         let marker = typeof data === 'undefined' ? '××' : `0x${data.toString(16).padStart(2, 0)}`;
@@ -527,7 +455,7 @@ class Presenter {
         this.view.setJobState(this.jobs.get(jobId), 'processed');
     }
 
-    // The web worker had problems reading the file. Handle the situation.
+    // Handles web worker file reading errors.
     handleFileReadError (jobId, error) {
         const errorMessages = {
             'FileTooLargeError': 'el fichero es muy grande',
@@ -551,7 +479,7 @@ class Presenter {
         }
     }
 
-    // Create jobs for all files selected by the user.
+    // Handles job creation for files selected by the user.
     handleProcessFiles (files) {
         for (const file of files) {
             // Create the job in the web worker.
@@ -559,19 +487,19 @@ class Presenter {
         }
     }
 
-    // The user dismissed a job, tell the web worker to remove it.
+    // Handles job dismissions by the user.
     handleDismissJob (jobId) {
         this.asyncDo('deleteJob', this.jobs.get(jobId));
     }
 
-    // The user cancelled a job, tell the web worker to stop it.
+    // Handles job cancellations by the user.
     handleCancelJob (jobId) {
         this.view.setJobStatus(jobId, 'Cancelando el fichero…');
         this.view.setJobState(jobId, 'cancelled');
         this.asyncDo('cancelJob', this.jobs.get(jobId));
     }
 
-    // The user retried a job, tell the web worker to process it again.
+    // Handles job retries.
     handleRetryJob (jobId) {
         this.processJob(this.jobs.get(jobId));
     }
@@ -579,7 +507,6 @@ class Presenter {
 
 
 globalThis.addEventListener('load', () => {
-    // Create and run the Presenter.
     const presenter = new Presenter();
     presenter.run();
 });

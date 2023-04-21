@@ -73,7 +73,7 @@ globalThis.handleCreateJob = function handleCreateJob (file) {
         }
         // eslint-disable-next-line no-magic-numbers
         const percent = event.total ? Math.floor(100 * event.loaded / event.total) : 100;
-        globalThis.postReply('bytesLoaded', job.id, percent);
+        globalThis.postReply('bytesRead', job.id, percent);
     };
 
     // Handle file reading errors.

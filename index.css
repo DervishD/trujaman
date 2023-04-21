@@ -3,9 +3,6 @@
  * available under SIL Open Font License, and to Monotype for creating it.
  */
 
- /* cspell: ignore Philipp Nurullin */
- /* cspell: ignore Konstantin Bulenkov */
-
 @font-face {
     font-family: 'Noto Sans';
     font-display: swap;
@@ -26,6 +23,8 @@
  * Thanks to JetBrains for making this font available under SIL Open Font
  * License, and to Philipp Nurullin <philipp.nurullin@jetbrains.com> and
  * Konstantin Bulenkov <kb@jetbrains.com>, the font creators.
+
+ cspell: ignore Philipp Nurullin Konstantin Bulenkov
  */
 @font-face {
     font-family: 'JetBrains Mono';
@@ -37,11 +36,12 @@
 
 :root {
     font-family: "Noto Sans", sans-serif;
-    font-size: clamp(1em, 1vw + 1vh + .5vmin, 3em);  /* A good starting point... */
-    /* And some other alternatives... */
+    font-size: clamp(1em, 1vw + 1vh + .5vmin, 3em);
     /*
-    font-size: calc(1vw + 1vh + .5vmin);
-    font-size: calc((.4em + 1vmin) + (.4em + 1vmax));
+        Some other alternatives for a dynamic font size:
+
+        font-size: calc(1vw + 1vh + .5vmin);
+        font-size: calc((.4em + 1vmin) + (.4em + 1vmax));
     */
     /* Solarized palette https://ethanschoonover.com/solarized/ */
     --base03:  #002B36;
@@ -61,12 +61,7 @@
     --cyan:    #2AA198;
     --green:   #859900;
 
-    /*
-    Default color scheme (light).
-    Applies to all color schemes in the specification, current and future.
-    This is intended to be overwritten in media queries as needed, and for
-    specific color schemes only (like dark, for example).
-    */
+    /* Default color scheme is light. */
     --fg:     var(--base00);
     --fg_lo:  var(--base1);
     --bg:     var(--base3);
@@ -177,8 +172,7 @@ button:active {
     height: 0px;
     margin: 0;
     padding: 0;
-    display: block;  /* So surrounding whitespace is not a problem. */
-    display: none;  /* So it skips tabbing. */
+    display: none;  /* So it skips tabbing and surrounding whitespace is not a problem. */
 }
 
 #dropzone {

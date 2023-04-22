@@ -2,13 +2,12 @@
 console.info('Service worker loaded');
 
 
-// Import version number.
 importScripts('version.js');  /* global version */
 
 
 const landingPage = '.';  // Maybe: "new URL(globalThis.registration.scope).pathname"???
 const cachePrefix = `trujaman@${globalThis.registration.scope}`;
-const cacheName = `${cachePrefix} v${version}`;
+const currentCacheName = `${cachePrefix} v${version}`;
 const assets = [
     landingPage,
     'index.css',
@@ -24,18 +23,16 @@ const assets = [
 ];
 
 
-// Precache assets and take control (for now)
 globalThis.addEventListener('install', event => {
     console.debug(`Installing service worker v${version}`);
     event.waitUntil(
-        caches.open(cacheName)
+        caches.open(currentCacheName)
         .then(cache => cache.addAll(assets))
         .then(globalThis.skipWaiting())  // Brutal, but effective for now.
     );
 });
 
 
-// Delete old caches and take control of uncontrolled pages.
 globalThis.addEventListener('activate', event => {
     console.debug(`Activating service worker v${version}`);
     event.waitUntil(
@@ -43,7 +40,7 @@ globalThis.addEventListener('activate', event => {
         .then(keys => Promise.all(
             keys
             .filter(key => key.startsWith(cachePrefix))
-            .filter(key => key !== cacheName)  // Only old caches from this PWA are deleted. Check the prefix!
+            .filter(key => key !== currentCacheName)
             .map(key => caches.delete(key))
         ))
         .then(globalThis.clients.claim())  // Brutal, but effective for now.
@@ -52,16 +49,15 @@ globalThis.addEventListener('activate', event => {
 
 
 // A 'cache-only' caching strategy is used for now.
-// This makes sure the PWA fully works when offline, and it's perfect for the core assets.
+// This makes sure the PWA fully works when offline,
+// and it's perfect for the core assets.
 globalThis.addEventListener('fetch', event => {
     console.debug(`Fetch request for ${event.request.url}`);
-    // Non-GET fetches should not happen, but if they do, log the fact and let the browser handle it.
     if (event.request.method !== 'GET') {
         console.error(`Fetch request with non-GET method '${event.request.method}'`);
         return;
     }
 
-    // Cross-origin fetches should not happen, but if they do, log the fact and let the browser handle it.
     if (!event.request.url.startsWith(globalThis.location.origin)) {
         console.error(`Cross-origin fetch request for '${event.request.url}'`);
         return;
@@ -73,7 +69,7 @@ globalThis.addEventListener('fetch', event => {
         // This is TEMPORARY!
         // This is needed to be able to test changes fast and at the same time having offline functionality.
         return fetch(event.request).catch(async () => {
-            const cache = await caches.open(cacheName);
+            const cache = await caches.open(currentCacheName);
             const response = await cache.match(event.request);
             return response || cache.match(landingPage);
         });

@@ -406,8 +406,8 @@ class Presenter {
             this[handler](jobId, payload);
         } else {
             this.view.showError(
-                'Se recibió una respuesta en segundo plano desconocida.',
-                `La respuesta «${reply}» no pudo ser manejada.`
+                'Se recibió un mensaje desconocido del web worker.',
+                `El mensaje «${reply}» no pudo ser gestionado.`
             );
         }
     }
@@ -415,7 +415,7 @@ class Presenter {
     // Shows an error when a command is not supported by the web worker.
     handleCommandNotFound (__, command) {
         this.view.showError(
-            'Se solicitó un comando en segundo plano desconocido.',
+            'Se envió un comando desconocido al web worker.',
             `El comando «${command}» no existe.`
         );
     }
@@ -460,7 +460,7 @@ class Presenter {
         const errorMessages = {
             'FileTooLargeError': 'el fichero es muy grande',
             'NotFoundError': 'el fichero no existe',
-            'NotReadableError': 'el fichero no tiene permisos de lectura',
+            'NotReadableError': 'el fichero no se puede leer',
             'SecurityError': 'el fichero no se puede leer de forma segura'
         };
         this.view.setJobState(this.jobs.get(jobId), 'error');

@@ -1,43 +1,37 @@
 'use strict';
 
-// Import version number and debug flag.
+
 importScripts('version.js');  /* global DEBUG */
 
-// For keeping track of active jobs (really, FileReaders).
+
 globalThis.jobs = {};
 
-// Absolutely arbitrary maximum file size.
-globalThis.MAX_FILE_SIZE = 9999 * 1024 * 1024;  // eslint-disable-line no-magic-numbers
+// eslint-disable-next-line no-magic-numbers
+globalThis.MAX_FILE_SIZE_BYTES = 9999 * 1024 * 1024;
 
-// Main entry point for web worker, a simple command dispatcher.
-// Commands are responsible for replying with postmessage themselves because some of them are asynchronous.
-// So, they don't return a value to this dispatcher that can be used to reply to main thread.
-// The only exception are internal errors, of course.
+// For delaying for file reading operations so the UI can be tested better.
+// Only used in debug mode, set to 0 to disable any delay EVEN in debug mode.
+globalThis.FILE_READING_DELAY_MILLISECONDS = 500;
+
+
 globalThis.addEventListener('message', event => {
     const {command, args} = event.data;
-    const handler = `handle${command[0].toUpperCase()}${command.slice(1)}`;  // eslint-disable-line no-magic-numbers
 
-    if (handler in globalThis) {
-        // Run the appropriate command.
-        globalThis[handler](args);
+    if (command in globalThis) {
+        globalThis[command](args);
     } else {
-        // Notify the internal error. Should not happen on production.
         globalThis.postReply('commandNotFound', '', command);
     }
 });
 
 
 // Helper for building the object needed in calls to postMessage().
-// This way calling code is a bit cleaner and simpler.
 globalThis.postReply = function postReply (reply, jobId, payload) {
     globalThis.postMessage({reply, jobId, payload});
 };
 
 
-// This command creates a new file processing job, with the specified jobId, for
-// the specified File object, assigning the necessary resources.
-/* eslint-disable max-lines-per-function, max-statements */
-globalThis.handleCreateJob = function handleCreateJob (file) {
+globalThis.createJob = function createJob (file) {
     // There's a problem with File objects: they don't have paths, only names.
     // So, there's no way of telling if two user-selected files are the same or
     // not, because they may have the same name but come from different dirs.
@@ -58,25 +52,21 @@ globalThis.handleCreateJob = function handleCreateJob (file) {
         'reader': null
     };
 
-    // Do not add duplicate jobs.
     if (job.id in globalThis.jobs) return;
     globalThis.jobs[job.id] = job;
 
-    // Store a reference for future use.
     job.reader = new FileReader();
 
-    // Progress indicator.
     job.reader.onprogress = event => {
-        if (DEBUG) {  // Delay each reading operation in debug mode so the UI can be examined.
-            const DELAY_MILLISECONDS = 500;
-            const start = Date.now(); while (Date.now() - start < DELAY_MILLISECONDS);
+        if (DEBUG && globalThis.FILE_READING_DELAY_MILLISECONDS) {
+            // Delay each reading operation in debug mode so the UI can be examined.
+            const start = Date.now(); while (Date.now() - start < globalThis.FILE_READING_DELAY_MILLISECONDS);
         }
         // eslint-disable-next-line no-magic-numbers
         const percent = event.total ? Math.floor(100 * event.loaded / event.total) : 100;
         globalThis.postReply('bytesRead', job.id, percent);
     };
 
-    // Handle file reading errors.
     job.reader.onerror = event => {
         const error = {
             'name': event.target.error.name,
@@ -85,47 +75,31 @@ globalThis.handleCreateJob = function handleCreateJob (file) {
         };
         globalThis.postReply('fileReadError', job.id, error);
     };
-
-    // Handle successful reads.
     job.reader.onload = event => globalThis.postReply('fileReadOK', job.id, new Uint8Array(event.target.result)[0]);
-
-    // Handle cancellation of reading process.
     job.reader.onabort = () => globalThis.postReply('jobCancelled', job.id);
 
-    // Notify the operation was successful.
     globalThis.postReply('jobCreated', job.id, job.file.name);
 };
-/* eslint-enable max-lines-per-function, max-statements */
 
 
-// This command frees the resources associated with the job with the given
-// jobId, so everything can be garbage collected at a later time.
-globalThis.handleDeleteJob = function handleDeleteJob (jobId) {
+globalThis.deleteJob = function deleteJob (jobId) {
     const job = globalThis.jobs[jobId];
 
-    // Cancel the job first.
     globalThis.handleCancelJob(jobId);
 
-    // Free resources.
     job.onload = null;
     job.onerror = null;
     job.onabort = null;
     delete globalThis.jobs[jobId];
 
-    // Notify the operation was successful.
     globalThis.postReply('jobDeleted', jobId);
 };
 
 
-// This command processes the job with the specified jobId, reading the file and
-// performing any other needed operation on that file or its contents.
-//
-// The file is read using the HTML5 File API.
-globalThis.handleProcessJob = function handleProcessJob (jobId) {
+globalThis.processJob = function processJob (jobId) {
     const job = globalThis.jobs[jobId];
 
-    // Refuse to process very large files.
-    if (job.file.size > globalThis.MAX_FILE_SIZE) {
+    if (job.file.size > globalThis.MAX_FILE_SIZE_BYTES) {
         const error = {
             'name': 'FileTooLargeError',
             'message': 'El fichero es demasiado grande para ser procesado',
@@ -133,19 +107,13 @@ globalThis.handleProcessJob = function handleProcessJob (jobId) {
         };
         globalThis.postReply('fileReadError', job.id, error);
     } else {
+        // The file is read using the HTML5 File API.
         // Read the file as ArrayBuffer.
         job.reader.readAsArrayBuffer(job.file);
     }
 };
 
 
-// This command cancels an in-progress job processing operation for the
-// specified job. It is a nop if no job processing operation is currently
-// happening.
-//
-// This is usually a successful operation, because the user actually requested
-// the cancellation of the current job processing operation, so when it's
-// aborted it actually IS a successful response to the request.
-globalThis.handleCancelJob = function handleCancelJob (jobId) {
+globalThis.cancelJob = function cancelJob (jobId) {
     globalThis.jobs[jobId].reader.abort();
 };

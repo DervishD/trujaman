@@ -98,7 +98,7 @@ class UI {
         this.eventSubscribers[event] && this.eventSubscribers[event](payload);
     }
 
-    // Subscribes to an event (registers a handler/callback).
+    // Registers a handler for an event.
     on (event, handler) {
         this.eventSubscribers[event] = handler;
     }

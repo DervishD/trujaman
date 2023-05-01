@@ -7,7 +7,7 @@ importScripts('version.js');  /* global DEBUG */
 globalThis.jobs = {};
 
 // eslint-disable-next-line no-magic-numbers
-globalThis.MAX_FILE_SIZE_BYTES = 9999 * 1024 * 1024;
+globalThis.MAX_FILE_SIZE_BYTES = 99 * 1024 * 1024;
 
 // For delaying for file reading operations so the UI can be tested better.
 // Only used in debug mode, set to 0 to disable any delay EVEN in debug mode.

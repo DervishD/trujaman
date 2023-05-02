@@ -364,7 +364,7 @@ class Presenter {
     }
 
     // Carries an operation (command) asynchronously, by sending it to the web worker.
-    asyncDo (command, args) {
+    dispatchAsyncCommand (command, args) {
         this.worker.postMessage({
             command,
             args
@@ -374,7 +374,7 @@ class Presenter {
     // Processes a job.
     processJob (jobId) {
         this.view.setJobState(this.jobs.get(jobId), 'processing');
-        this.asyncDo('processJob', jobId);
+        this.dispatchAsyncCommand('processJob', jobId);
     }
 
     // Handles loading and syntax errors from the web worker.
@@ -483,20 +483,20 @@ class Presenter {
     handleProcessFiles (files) {
         for (const file of files) {
             // Create the job in the web worker.
-            this.asyncDo('createJob', file);
+            this.dispatchAsyncCommand('createJob', file);
         }
     }
 
     // Handles job dismissions by the user.
     handleDismissJob (jobId) {
-        this.asyncDo('deleteJob', this.jobs.get(jobId));
+        this.dispatchAsyncCommand('deleteJob', this.jobs.get(jobId));
     }
 
     // Handles job cancellations by the user.
     handleCancelJob (jobId) {
         this.view.setJobStatus(jobId, 'Cancelando el fichero…');
         this.view.setJobState(jobId, 'cancelled');
-        this.asyncDo('cancelJob', this.jobs.get(jobId));
+        this.dispatchAsyncCommand('cancelJob', this.jobs.get(jobId));
     }
 
     // Handles job retries.

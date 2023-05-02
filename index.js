@@ -277,6 +277,7 @@ class Presenter {
         // will collide with a web worker job id, BOTH of them can be added to
         // the same Map() and that way it will work as a bijection.
         this.jobs = new Map();
+        this.developmentMode = false;
     }
 
     // Runs the Presenter.
@@ -285,7 +286,15 @@ class Presenter {
         .then(() => {
             fetch('version')
             .then(response => response.text())
-            .then(version => version && this.view.showVersion(version));
+            .then(version => {
+                if (version) {
+                    this.view.showVersion(version);
+                    // Enable development mode ONLY for prereleases which are NOT release candidates.
+                    if (version.includes('-') && !version.includes('-rc')) {
+                        this.developmentMode = true;
+                    }
+                }
+            });
         });
 
         let refreshing = false;

@@ -85,7 +85,7 @@ globalThis.createJob = function createJob (file) {
 globalThis.deleteJob = function deleteJob (jobId) {
     const job = globalThis.jobs[jobId];
 
-    globalThis.handleCancelJob(jobId);
+    globalThis.cancelJob(jobId);
 
     job.onload = null;
     job.onerror = null;

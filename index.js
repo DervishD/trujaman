@@ -71,6 +71,7 @@ class UI {
         this.filePickerButton = this.filePicker.querySelector('button');
         this.jobsContainer = document.querySelector('#jobs');
         this.version = document.querySelector('#version');
+        this.slowMode = document.querySelector('#slow_mode');
         this.errorTemplate = document.querySelector('#error_template');
         this.formatsDropdown = document.querySelector('#job_template').content.querySelector('.job_formats_list');
         this.lastError = null;
@@ -78,6 +79,10 @@ class UI {
 
     // Activates and renders the user interface.
     render () {
+        this.slowMode.addEventListener('click', () => {
+            this.emit('slowModeToggle');
+        });
+
         this.filePicker.hidden = false;
         this.filePickerButton.focus();
         this.filePickerButton.addEventListener('click', () => {
@@ -142,6 +147,11 @@ class UI {
     showVersion (version) {
         this.version.hidden = false;
         this.version.textContent += `v${version}`;
+    }
+
+    showSlowModeStatus (status) {
+        this.slowMode.hidden = false;
+        this.slowMode.textContent = status ? '⊖' : '⊕';
     }
 
     // Shows a detailed error message.
@@ -316,6 +326,10 @@ class Presenter {
         await this.initServiceWorker('sw.js');
         await this.loadFormats('formats.json');
         this.initWebWorker('ww.js');
+
+        if (this.developmentMode) {
+            this.dispatchAsyncCommand('slowModeToggle');
+        }
     }
 
 
@@ -327,6 +341,7 @@ class Presenter {
         this.view.on('dismissJob', this.handleDismissJob.bind(this));
         this.view.on('cancelJob', this.handleCancelJob.bind(this));
         this.view.on('retryJob', this.handleRetryJob.bind(this));
+        this.view.on('slowModeToggle', this.handleSlowModeToggle.bind(this));
 
         this.view.render();
     }
@@ -488,6 +503,10 @@ class Presenter {
         }
     }
 
+    handleSlowModeStatus (status) {
+        this.view.showSlowModeStatus(status);
+    }
+
     // Handles job creation for files selected by the user.
     handleProcessFiles (files) {
         for (const file of files) {
@@ -511,6 +530,10 @@ class Presenter {
     // Handles job retries.
     handleRetryJob (jobId) {
         this.processJob(this.jobs.get(jobId));
+    }
+
+    handleSlowModeToggle () {
+        this.dispatchAsyncCommand('slowModeToggle');
     }
 }
 

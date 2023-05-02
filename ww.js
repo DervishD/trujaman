@@ -1,18 +1,14 @@
 'use strict';
 
 
-importScripts('version.js');  /* global DEBUG */
-
-
 globalThis.jobs = {};
 
 // eslint-disable-next-line no-magic-numbers
 globalThis.MAX_FILE_SIZE_BYTES = 99 * 1024 * 1024;
 
-// For delaying for file reading operations so the UI can be tested better.
-// Only used in debug mode, set to 0 to disable any delay EVEN in debug mode.
+// For delaying for file reading operations so the UI can be tested better, in "slow mode";
 globalThis.FILE_READING_DELAY_MILLISECONDS = 500;
-
+globalThis.slowModeEnabled = false;
 
 globalThis.addEventListener('message', event => {
     const {command, args} = event.data;
@@ -58,7 +54,7 @@ globalThis.createJob = function createJob (file) {
     job.reader = new FileReader();
 
     job.reader.onprogress = event => {
-        if (DEBUG && globalThis.FILE_READING_DELAY_MILLISECONDS) {
+        if (globalThis.slowModeEnabled && globalThis.FILE_READING_DELAY_MILLISECONDS) {
             // Delay each reading operation in debug mode so the UI can be examined.
             const start = Date.now(); while (Date.now() - start < globalThis.FILE_READING_DELAY_MILLISECONDS);
         }
@@ -116,4 +112,10 @@ globalThis.processJob = function processJob (jobId) {
 
 globalThis.cancelJob = function cancelJob (jobId) {
     globalThis.jobs[jobId].reader.abort();
+};
+
+
+globalThis.slowModeToggle = function slowModeToggle () {
+    globalThis.slowModeEnabled = !globalThis.slowModeEnabled;
+    globalThis.postReply('slowModeStatus', globalThis.slowModeEnabled);
 };

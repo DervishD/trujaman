@@ -3,10 +3,9 @@
 
 globalThis.jobs = {};
 
-// eslint-disable-next-line no-magic-numbers
 globalThis.MAX_FILE_SIZE_BYTES = 99 * 1024 * 1024;
 
-// For delaying for file reading operations so the UI can be tested better, in "slow mode";
+// For delaying for file reading operations so the UI can be tested better, in "slow mode".
 globalThis.FILE_READING_DELAY_MILLISECONDS = 500;
 globalThis.slowModeEnabled = false;
 
@@ -21,7 +20,6 @@ globalThis.addEventListener('message', event => {
 });
 
 
-// Helper for building the object needed in calls to postMessage().
 globalThis.postReply = function postReply (reply, jobId, payload) {
     globalThis.postMessage({reply, jobId, payload});
 };
@@ -55,10 +53,8 @@ globalThis.createJob = function createJob (file) {
 
     job.reader.onprogress = event => {
         if (globalThis.slowModeEnabled && globalThis.FILE_READING_DELAY_MILLISECONDS) {
-            // Delay each reading operation in debug mode so the UI can be examined.
             const start = Date.now(); while (Date.now() - start < globalThis.FILE_READING_DELAY_MILLISECONDS);
         }
-        // eslint-disable-next-line no-magic-numbers
         const percent = event.total ? Math.floor(100 * event.loaded / event.total) : 100;
         globalThis.postReply('bytesRead', job.id, percent);
     };

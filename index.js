@@ -20,7 +20,7 @@ globalThis.unexpectedErrorHandler = function unexpectedErrorHandler (event) {  /
     let location = '';
     if (event.filename) {
         try {
-            location = new URL(event.filename).pathname.substring(1);  // eslint-disable-line no-magic-numbers
+            location = new URL(event.filename).pathname.substring(1);
         } catch (exc) {
             if (exc instanceof TypeError) {
                 location = event.filename;
@@ -415,7 +415,6 @@ class Presenter {
     handleWebWorkerMessages (message) {
         const {reply, jobId, payload} = message;
 
-        // eslint-disable-next-line no-magic-numbers
         const handler = `handleWebWorkerReply${reply[0].toUpperCase()}${reply.slice(1)}`;
         if (handler in this) {
             this[handler](jobId, payload);
@@ -457,7 +456,6 @@ class Presenter {
     }
 
     handleWebWorkerReplyFileReadOK (jobId, data) {
-        // eslint-disable-next-line no-magic-numbers
         let marker = typeof data === 'undefined' ? '××' : `0x${data.toString(16).padStart(2, 0)}`;
         marker = `<span class="monospaced">[${marker}]</span>`;
         this.view.setJobStatus(this.jobs.get(jobId), `El fichero se leyó correctamente. ${marker}`);

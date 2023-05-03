@@ -1,8 +1,7 @@
 'use strict';
+
+
 console.info('Service worker loaded');
-
-
-importScripts('version.js');  /* global version */
 
 // Follows Semantic Versioning 2.0.0 (https://semver.org/spec/v2.0.0.html).
 const version = {

@@ -1,6 +1,8 @@
 'use strict';
 
 
+console.info('Web worker loaded');
+
 globalThis.jobs = {};
 
 globalThis.MAX_FILE_SIZE_BYTES = 99 * 1024 * 1024;

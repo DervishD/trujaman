@@ -61,7 +61,6 @@ globalThis.addEventListener('error', globalThis.unexpectedErrorHandler);
 globalThis.addEventListener('unhandledrejection', globalThis.unexpectedErrorHandler);
 
 
-// This class encapsulates the user interface.
 class UI {
     constructor () {
         this.eventSubscribers = {};
@@ -77,7 +76,6 @@ class UI {
         this.lastError = null;
     }
 
-    // Activates and renders the user interface.
     render () {
         this.slowMode.addEventListener('click', () => {
             this.emit('slowModeToggle');
@@ -98,17 +96,14 @@ class UI {
         this.initDragAndDrop();
     }
 
-    // Notifies subscribers about an event.
     emit (event, payload) {
         this.eventSubscribers[event] && this.eventSubscribers[event](payload);
     }
 
-    // Registers a handler for an event.
     on (event, handler) {
         this.eventSubscribers[event] = handler;
     }
 
-    // Initializes drag and drop support, if available.
     initDragAndDrop () {
         // This feature is entirely optional.
         // Detection is performed by testing for the existence of the drag and
@@ -134,8 +129,7 @@ class UI {
         }
     }
 
-    // Stores the list of formats for the download dropdown menu.
-    setFormatsList (formats) {
+    populateFormatsDropdown (formats) {
         for (const format in formats) {
             const paragraph = document.createElement('p');
             paragraph.innerText = format;
@@ -143,7 +137,6 @@ class UI {
         }
     }
 
-    // Shows version code on proper DOM element.
     showVersion (version) {
         this.version.hidden = false;
         this.version.textContent += `v${version}`;
@@ -188,7 +181,6 @@ class UI {
         this.lastError = errorElement;
     }
 
-    // Creates a job user interface element and returns a job id for it.
     createJob () {
         const newJob = document.getElementById('job_template').content.firstElementChild.cloneNode(true);
 
@@ -218,16 +210,10 @@ class UI {
             [downloadButton, handleDownloadClicked]
         ]);
 
-        // // For testing purposes.
-        // element.querySelector('.job_filename').addEventListener('click', () => {
-        //     this.sendEvent('processJob', jobId);
-        // });
-
         this.jobsContainer.append(newJob);
         return newJob;
     }
 
-    // Removes the specified job user interface element.
     removeJob (job) {
         // Remove event listeners first.
         // Not really needed, apparently, but it's the Tao.
@@ -237,21 +223,15 @@ class UI {
         job.remove();
     }
 
-    // Sets the file name for the specified job.
-    // eslint-disable-next-line class-methods-use-this
-    setJobFileName (job, fileName) {
+    setJobFileName (job, fileName) {  // eslint-disable-line class-methods-use-this
         job.querySelector('.job_filename').textContent = fileName;
     }
 
-    // Sets the status for the specified job.
-    // eslint-disable-next-line class-methods-use-this
-    setJobStatus (job, status) {
+    setJobStatus (job, status) {  // eslint-disable-line class-methods-use-this
         job.querySelector('.job_status').innerHTML = status;
     }
 
-    // Sets the state for the specified job.
-    // eslint-disable-next-line class-methods-use-this
-    setJobState (job, state) {
+    setJobControls (job, state) {  // eslint-disable-line class-methods-use-this
         switch (state) {
         case 'processing':
             job.querySelector('.job_retry_button').hidden = true;
@@ -275,7 +255,6 @@ class UI {
 }
 
 
-// This class encapsulates the event handling and nearly all business logic.
 class Presenter {
     constructor () {
         // For keeping track of jobs.
@@ -290,7 +269,6 @@ class Presenter {
         this.developmentMode = false;
     }
 
-    // Runs the Presenter.
     async run () {
         navigator.serviceWorker.ready
         .then(() => {
@@ -328,31 +306,56 @@ class Presenter {
         this.initWebWorker('ww.js');
 
         if (this.developmentMode) {
-            this.dispatchAsyncCommand('slowModeToggle');
+            this.webWorkerDo('slowModeToggle');
         }
     }
 
+    processJob (jobId) {
+        this.view.setJobControls(this.jobs.get(jobId), 'processing');
+        this.webWorkerDo('processJob', jobId);
+    }
 
-    // Initializes the user interface.
     initView () {
         this.view = new UI();
 
-        this.view.on('processFiles', this.handleProcessFiles.bind(this));
-        this.view.on('dismissJob', this.handleDismissJob.bind(this));
-        this.view.on('cancelJob', this.handleCancelJob.bind(this));
-        this.view.on('retryJob', this.handleRetryJob.bind(this));
-        this.view.on('slowModeToggle', this.handleSlowModeToggle.bind(this));
+        this.view.on('processFiles', this.handleViewEventProcessFiles.bind(this));
+        this.view.on('dismissJob', this.handleViewEventDismissJob.bind(this));
+        this.view.on('cancelJob', this.handleViewEventCancelJob.bind(this));
+        this.view.on('retryJob', this.handleViewEventRetryJob.bind(this));
+        this.view.on('slowModeToggle', this.handleViewEventSlowModeToggle.bind(this));
 
         this.view.render();
     }
 
-    // Activates the service worker.
+    handleViewEventProcessFiles (files) {
+        for (const file of files) {
+            this.webWorkerDo('createJob', file);
+        }
+    }
+
+    handleViewEventDismissJob (jobId) {
+        this.webWorkerDo('deleteJob', this.jobs.get(jobId));
+    }
+
+    handleViewEventCancelJob (jobId) {
+        this.view.setJobStatus(jobId, 'Cancelando el fichero…');
+        this.view.setJobControls(jobId, 'cancelled');
+        this.webWorkerDo('cancelJob', this.jobs.get(jobId));
+    }
+
+    handleViewEventRetryJob (jobId) {
+        this.processJob(this.jobs.get(jobId));
+    }
+
+    handleViewEventSlowModeToggle () {
+        this.webWorkerDo('slowModeToggle');
+    }
+
     async initServiceWorker (serviceWorker) {
         try {
             await navigator.serviceWorker.register(serviceWorker);
         } catch (error) {
-            // Service workers are considered site data, so cookies have to be
-            // enabled for the application to work.
+            // Service workers are considered site data, so cookies have to be enabled for the application to work.
             if (navigator.cookieEnabled) {
                 this.view.showError('Falló una parte esencial.', error);
             } else {
@@ -361,14 +364,12 @@ class Presenter {
         }
     }
 
-    // Loads and processes the format list.
     async loadFormats (formatsFile) {
         try {
             const response = await fetch(formatsFile);
             if (response.ok) {
                 const formats = await response.json();
-                // Update job template with the list of formats.
-                this.view.setFormatsList(formats);
+                this.view.populateFormatsDropdown(formats);
             } else {
                 this.view.showError(
                     'No se encontró la lista de formatos.',
@@ -380,28 +381,19 @@ class Presenter {
         }
     }
 
-    // Initializes web worker.
     initWebWorker (webWorker) {
         this.worker = new Worker(webWorker);
         this.worker.addEventListener('error', event => this.handleWebWorkerError(event));
         this.worker.addEventListener('message', event => this.handleWebWorkerMessages(event.data));
     }
 
-    // Carries an operation (command) asynchronously, by sending it to the web worker.
-    dispatchAsyncCommand (command, args) {
+    webWorkerDo (command, args) {
         this.worker.postMessage({
             command,
             args
         });
     }
 
-    // Processes a job.
-    processJob (jobId) {
-        this.view.setJobState(this.jobs.get(jobId), 'processing');
-        this.dispatchAsyncCommand('processJob', jobId);
-    }
-
-    // Handles loading and syntax errors from the web worker.
     handleWebWorkerError (error) {
         if (error instanceof ErrorEvent) {
             // For syntax errors, that should not happen in production,
@@ -420,12 +412,11 @@ class Presenter {
         }
     }
 
-    // Handles messages coming from the web worker.
     handleWebWorkerMessages (message) {
         const {reply, jobId, payload} = message;
 
         // eslint-disable-next-line no-magic-numbers
-        const handler = `handle${reply[0].toUpperCase()}${reply.slice(1)}`;
+        const handler = `handleWebWorkerReply${reply[0].toUpperCase()}${reply.slice(1)}`;
         if (handler in this) {
             this[handler](jobId, payload);
         } else {
@@ -436,16 +427,14 @@ class Presenter {
         }
     }
 
-    // Shows an error when a command is not supported by the web worker.
-    handleCommandNotFound (__, command) {
+    handleWebWorkerReplyCommandNotFound (__, command) {
         this.view.showError(
             'Se envió un comando desconocido al web worker.',
             `El comando «${command}» no existe.`
         );
     }
 
-    // Handles successful creation of a job by the web worker.
-    handleJobCreated (jobId, fileName) {
+    handleWebWorkerReplyJobCreated (jobId, fileName) {
         const newJob = this.view.createJob();
         this.jobs.set(newJob, jobId);
         this.jobs.set(jobId, newJob);
@@ -453,41 +442,36 @@ class Presenter {
         this.processJob(jobId);
     }
 
-    // Handles successful removal of a job by the web worker.
-    handleJobDeleted (jobId) {
+    handleWebWorkerReplyJobDeleted (jobId) {
         this.view.removeJob(this.jobs.get(jobId));
         this.jobs.delete(this.jobs.get(jobId));
         this.jobs.delete(jobId);
     }
 
-    // Handless successful cancellation of a job by the web worker.
-    handleJobCancelled (jobId) {
+    handleWebWorkerReplyJobCancelled (jobId) {
         this.view.setJobStatus(this.jobs.get(jobId), 'Lectura cancelada.');
     }
 
-    // Handles successful file reads by the web worker.
-    handleBytesRead (jobId, percent) {
+    handleWebWorkerReplyBytesRead (jobId, percent) {
         this.view.setJobStatus(this.jobs.get(jobId), `Leyendo el fichero (${percent}%).`);
     }
 
-    // Handles a successful COMPLETE file read by the web worker.
-    handleFileReadOK (jobId, data) {
+    handleWebWorkerReplyFileReadOK (jobId, data) {
         // eslint-disable-next-line no-magic-numbers
         let marker = typeof data === 'undefined' ? '××' : `0x${data.toString(16).padStart(2, 0)}`;
         marker = `<span class="monospaced">[${marker}]</span>`;
         this.view.setJobStatus(this.jobs.get(jobId), `El fichero se leyó correctamente. ${marker}`);
-        this.view.setJobState(this.jobs.get(jobId), 'processed');
+        this.view.setJobControls(this.jobs.get(jobId), 'processed');
     }
 
-    // Handles web worker file reading errors.
-    handleFileReadError (jobId, error) {
+    handleWebWorkerReplyFileReadError (jobId, error) {
         const errorMessages = {
             'FileTooLargeError': 'el fichero es muy grande',
             'NotFoundError': 'el fichero no existe',
             'NotReadableError': 'el fichero no se puede leer',
             'SecurityError': 'el fichero no se puede leer de forma segura'
         };
-        this.view.setJobState(this.jobs.get(jobId), 'error');
+        this.view.setJobControls(this.jobs.get(jobId), 'error');
         if (error.name in errorMessages) {
             let status = `ERROR: ${errorMessages[error.name]}`;
             status += ` <span class="monospaced">(${error.name})</span>.`;
@@ -503,37 +487,8 @@ class Presenter {
         }
     }
 
-    handleSlowModeStatus (status) {
+    handleWebWorkerReplySlowModeStatus (status) {
         this.view.showSlowModeStatus(status);
-    }
-
-    // Handles job creation for files selected by the user.
-    handleProcessFiles (files) {
-        for (const file of files) {
-            // Create the job in the web worker.
-            this.dispatchAsyncCommand('createJob', file);
-        }
-    }
-
-    // Handles job dismissions by the user.
-    handleDismissJob (jobId) {
-        this.dispatchAsyncCommand('deleteJob', this.jobs.get(jobId));
-    }
-
-    // Handles job cancellations by the user.
-    handleCancelJob (jobId) {
-        this.view.setJobStatus(jobId, 'Cancelando el fichero…');
-        this.view.setJobState(jobId, 'cancelled');
-        this.dispatchAsyncCommand('cancelJob', this.jobs.get(jobId));
-    }
-
-    // Handles job retries.
-    handleRetryJob (jobId) {
-        this.processJob(this.jobs.get(jobId));
-    }
-
-    handleSlowModeToggle () {
-        this.dispatchAsyncCommand('slowModeToggle');
     }
 }
 

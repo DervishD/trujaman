@@ -380,7 +380,7 @@ class Presenter {
     initWebWorker (webWorker) {
         this.worker = new Worker(webWorker);
         this.worker.addEventListener('error', event => this.handleWebWorkerError(event));
-        this.worker.addEventListener('message', event => this.handleWebWorkerMessages(event.data));
+        this.worker.addEventListener('message', event => this.handleWebWorkerMessage(event.data));
     }
 
     webWorkerDo (command, args) {
@@ -408,81 +408,76 @@ class Presenter {
         }
     }
 
-    handleWebWorkerMessages (message) {
+    handleWebWorkerMessage (message) {
         const {reply, jobId, payload} = message;
 
-        const handler = `handleWebWorkerReply${reply[0].toUpperCase()}${reply.slice(1)}`;
-        if (handler in this) {
-            this[handler](jobId, payload);
-        } else {
-            this.view.showError(
-                'Se recibió un mensaje desconocido del web worker.',
-                `El mensaje «${reply}» no pudo ser gestionado.`
-            );
+        switch (reply) {
+            case 'slowModeStatus':
+                const status = payload;
+                this.view.showSlowModeStatus(status);
+                break;
+            case 'jobCreated':
+                const newJob = this.view.createJob();
+                const fileName = payload;
+                this.jobs.set(newJob, jobId);
+                this.jobs.set(jobId, newJob);
+                this.view.setJobFileName(newJob, fileName);
+                this.processJob(jobId);
+                break;
+            case 'jobDeleted':
+                this.view.removeJob(this.jobs.get(jobId));
+                this.jobs.delete(this.jobs.get(jobId));
+                this.jobs.delete(jobId);
+                break;
+            case 'jobCancelled':
+                this.view.setJobStatus(this.jobs.get(jobId), 'Lectura cancelada.');
+                break;
+            case 'bytesRead':
+                const percent = payload;
+                this.view.setJobStatus(this.jobs.get(jobId), `Leyendo el fichero (${percent}%).`);
+                break;
+            case 'fileReadOK':
+                console.log('Got file read OK');
+                let marker = payload === 'undefined' ? '××' : `0x${payload.toString(16).padStart(2, 0)}`;
+                marker = `<span class="monospaced">[${marker}]</span>`;
+                this.view.setJobStatus(this.jobs.get(jobId), `El fichero se leyó correctamente. ${marker}`);
+                this.view.setJobControls(this.jobs.get(jobId), 'processed');
+                break;
+            case 'fileReadError':
+                const error = payload;
+                const errorMessages = {
+                    'FileTooLargeError': 'el fichero es muy grande',
+                    'NotFoundError': 'el fichero no existe',
+                    'NotReadableError': 'el fichero no se puede leer',
+                    'SecurityError': 'el fichero no se puede leer de forma segura'
+                };
+                this.view.setJobControls(this.jobs.get(jobId), 'error');
+                if (error.name in errorMessages) {
+                    let status = `ERROR: ${errorMessages[error.name]}`;
+                    status += ` <span class="monospaced">(${error.name})</span>.`;
+                    this.view.setJobStatus(this.jobs.get(jobId), status);
+                } else {
+                    // Unexpected error condition that should not happen in production.
+                    // So, it is notified differently, by using view.showError().
+                    this.view.showError(
+                        'Error inesperado leyendo un fichero.',
+                        `Ocurrió un error «${error.name}» leyendo el fichero «${error.fileName}».\n` +
+                        `${error.message}.`
+                    );
+                }
+                break;
+            case 'commandNotFound':
+                this.view.showError(
+                    'Se envió un comando desconocido al web worker.',
+                    `El comando «${command}» no existe.`
+                );
+                break;
+            default:
+                this.view.showError(
+                    'Se recibió un mensaje desconocido del web worker.',
+                    `El mensaje «${message.reply}» no pudo ser gestionado.`
+                );
         }
-    }
-
-    handleWebWorkerReplyCommandNotFound (__, command) {
-        this.view.showError(
-            'Se envió un comando desconocido al web worker.',
-            `El comando «${command}» no existe.`
-        );
-    }
-
-    handleWebWorkerReplyJobCreated (jobId, fileName) {
-        const newJob = this.view.createJob();
-        this.jobs.set(newJob, jobId);
-        this.jobs.set(jobId, newJob);
-        this.view.setJobFileName(newJob, fileName);
-        this.processJob(jobId);
-    }
-
-    handleWebWorkerReplyJobDeleted (jobId) {
-        this.view.removeJob(this.jobs.get(jobId));
-        this.jobs.delete(this.jobs.get(jobId));
-        this.jobs.delete(jobId);
-    }
-
-    handleWebWorkerReplyJobCancelled (jobId) {
-        this.view.setJobStatus(this.jobs.get(jobId), 'Lectura cancelada.');
-    }
-
-    handleWebWorkerReplyBytesRead (jobId, percent) {
-        this.view.setJobStatus(this.jobs.get(jobId), `Leyendo el fichero (${percent}%).`);
-    }
-
-    handleWebWorkerReplyFileReadOK (jobId, data) {
-        let marker = typeof data === 'undefined' ? '××' : `0x${data.toString(16).padStart(2, 0)}`;
-        marker = `<span class="monospaced">[${marker}]</span>`;
-        this.view.setJobStatus(this.jobs.get(jobId), `El fichero se leyó correctamente. ${marker}`);
-        this.view.setJobControls(this.jobs.get(jobId), 'processed');
-    }
-
-    handleWebWorkerReplyFileReadError (jobId, error) {
-        const errorMessages = {
-            'FileTooLargeError': 'el fichero es muy grande',
-            'NotFoundError': 'el fichero no existe',
-            'NotReadableError': 'el fichero no se puede leer',
-            'SecurityError': 'el fichero no se puede leer de forma segura'
-        };
-        this.view.setJobControls(this.jobs.get(jobId), 'error');
-        if (error.name in errorMessages) {
-            let status = `ERROR: ${errorMessages[error.name]}`;
-            status += ` <span class="monospaced">(${error.name})</span>.`;
-            this.view.setJobStatus(this.jobs.get(jobId), status);
-        } else {
-            // Unexpected error condition that should not happen in production.
-            // So, it is notified differently, by using view.showError().
-            this.view.showError(
-                'Error inesperado leyendo un fichero.',
-                `Ocurrió un error «${error.name}» leyendo el fichero «${error.fileName}».\n` +
-                `${error.message}.`
-            );
-        }
-    }
-
-    handleWebWorkerReplySlowModeStatus (status) {
-        this.view.showSlowModeStatus(status);
     }
 }
 

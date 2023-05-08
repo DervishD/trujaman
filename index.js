@@ -430,6 +430,7 @@ class Presenter {
                 this.jobs.delete(jobId);
                 break;
             case 'jobCancelled':
+                this.view.setJobControls(this.jobs.get(jobId), 'cancelled');
                 this.view.setJobStatus(this.jobs.get(jobId), 'Lectura cancelada.');
                 break;
             case 'bytesRead':

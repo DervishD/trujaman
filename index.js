@@ -379,7 +379,7 @@ class Presenter {
     initWebWorker (webWorker) {
         this.worker = new Worker(webWorker);
         this.worker.addEventListener('error', event => this.handleWebWorkerError(event));
-        this.worker.addEventListener('message', event => this.handleWebWorkerMessage(event.data));
+        this.worker.addEventListener('message', event => this.handleWebWorkerMessage(event));
     }
 
     webWorkerDo (command, args) {
@@ -408,18 +408,20 @@ class Presenter {
     }
 
     handleWebWorkerMessage (message) {  // eslint-disable-line max-lines-per-function, max-statements
-        const {reply, jobId, payload} = message;
-        const job = this.jobs.get(jobId);
+        const {reply, args} = message.data;
+        const [jobId] = args;  // Needed for most of the replies, so…
+        const job = this.jobs.get(jobId);  // Idem…
 
         switch (reply) {
         case 'slowModeStatus':
-            this.view.showSlowModeStatus(payload);
+            this.view.showSlowModeStatus(args[0]);
             break;
         case 'jobCreated': {
             const newJob = this.view.createJob();
+            const [, fileName] = args;
             this.jobs.set(newJob, jobId);
             this.jobs.set(jobId, newJob);
-            this.view.setJobFileName(newJob, payload);
+            this.view.setJobFileName(newJob, fileName);
             this.processJob(jobId);
             break;
         }
@@ -433,17 +435,17 @@ class Presenter {
             this.view.setJobStatus(job, 'Lectura cancelada.');
             break;
         case 'bytesRead':
-            this.view.setJobStatus(job, `Leyendo el fichero (${payload}%).`);
+            this.view.setJobStatus(job, `Leyendo el fichero (${args[1]}%).`);
             break;
         case 'fileReadOK': {
-            let marker = payload === 'undefined' ? '××' : `0x${payload.toString(16).padStart(2, 0)}`;
+            let marker = args[1] === 'undefined' ? '××' : `0x${args[1].toString(16).padStart(2, 0)}`;
             marker = `<span class="monospaced">[${marker}]</span>`;
             this.view.setJobControls(job, 'processed');
             this.view.setJobStatus(job, `El fichero se leyó correctamente. ${marker}`);
             break;
         }
         case 'fileReadError': {
-            const error = payload;
+            const [, error] = args;
             const errorMessages = {
                 'FileTooLargeError': 'el fichero es muy grande',
                 'NotFoundError': 'el fichero no existe',
@@ -469,13 +471,13 @@ class Presenter {
         case 'commandNotFound':
             this.view.showError(
                 'Se envió un comando desconocido al web worker.',
-                `El comando «${payload}» no existe.`
+                `El comando «${args[0]}» no existe.`
             );
             break;
         default:
             this.view.showError(
                 'Se recibió un mensaje desconocido del web worker.',
-                `El mensaje «${message.reply}» no pudo ser gestionado.`
+                `El mensaje «${reply}» no pudo ser gestionado.`
             );
         }
     }

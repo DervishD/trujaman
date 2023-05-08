@@ -335,7 +335,6 @@ class Presenter {
         eventTarget.addEventListener('canceljob', event => {
             const jobId = event.detail;
             this.view.setJobStatus(jobId, 'Cancelando el fichero…');
-            this.view.setJobControls(jobId, 'cancelled');
             this.webWorkerDo('cancelJob', this.jobs.get(jobId));
         });
         eventTarget.addEventListener('retryjob', event => {
@@ -410,75 +409,75 @@ class Presenter {
 
     handleWebWorkerMessage (message) {
         const {reply, jobId, payload} = message;
+        const job = this.jobs.get(jobId);
 
         switch (reply) {
-            case 'slowModeStatus':
-                const status = payload;
-                this.view.showSlowModeStatus(status);
-                break;
-            case 'jobCreated':
-                const newJob = this.view.createJob();
-                const fileName = payload;
-                this.jobs.set(newJob, jobId);
-                this.jobs.set(jobId, newJob);
-                this.view.setJobFileName(newJob, fileName);
-                this.processJob(jobId);
-                break;
-            case 'jobDeleted':
-                this.view.removeJob(this.jobs.get(jobId));
-                this.jobs.delete(this.jobs.get(jobId));
-                this.jobs.delete(jobId);
-                break;
-            case 'jobCancelled':
-                this.view.setJobControls(this.jobs.get(jobId), 'cancelled');
-                this.view.setJobStatus(this.jobs.get(jobId), 'Lectura cancelada.');
-                break;
-            case 'bytesRead':
-                const percent = payload;
-                this.view.setJobStatus(this.jobs.get(jobId), `Leyendo el fichero (${percent}%).`);
-                break;
-            case 'fileReadOK':
-                console.log('Got file read OK');
-                let marker = payload === 'undefined' ? '××' : `0x${payload.toString(16).padStart(2, 0)}`;
-                marker = `<span class="monospaced">[${marker}]</span>`;
-                this.view.setJobStatus(this.jobs.get(jobId), `El fichero se leyó correctamente. ${marker}`);
-                this.view.setJobControls(this.jobs.get(jobId), 'processed');
-                break;
-            case 'fileReadError':
-                const error = payload;
-                const errorMessages = {
-                    'FileTooLargeError': 'el fichero es muy grande',
-                    'NotFoundError': 'el fichero no existe',
-                    'NotReadableError': 'el fichero no se puede leer',
-                    'SecurityError': 'el fichero no se puede leer de forma segura'
-                };
-                this.view.setJobControls(this.jobs.get(jobId), 'error');
-                if (error.name in errorMessages) {
-                    let status = `ERROR: ${errorMessages[error.name]}`;
-                    status += ` <span class="monospaced">(${error.name})</span>.`;
-                    this.view.setJobStatus(this.jobs.get(jobId), status);
-                } else {
-                    // Unexpected error condition that should not happen in production.
-                    // So, it is notified differently, by using view.showError().
-                    this.view.showError(
-                        'Error inesperado leyendo un fichero.',
-                        `Ocurrió un error «${error.name}» leyendo el fichero «${error.fileName}».\n` +
-                        `${error.message}.`
-                    );
-                }
-                break;
-            case 'commandNotFound':
+        case 'slowModeStatus':
+            const status = payload;
+            this.view.showSlowModeStatus(status);
+            break;
+        case 'jobCreated':
+            const newJob = this.view.createJob();
+            const fileName = payload;
+            this.jobs.set(newJob, jobId);
+            this.jobs.set(jobId, newJob);
+            this.view.setJobFileName(newJob, fileName);
+            this.processJob(jobId);
+            break;
+        case 'jobDeleted':
+            this.view.removeJob(job);
+            this.jobs.delete(job);
+            this.jobs.delete(jobId);
+            break;
+        case 'jobCancelled':
+            this.view.setJobControls(job, 'cancelled');
+            this.view.setJobStatus(job, 'Lectura cancelada.');
+            break;
+        case 'bytesRead':
+            const percent = payload;
+            this.view.setJobStatus(job, `Leyendo el fichero (${percent}%).`);
+            break;
+        case 'fileReadOK':
+            let marker = payload === 'undefined' ? '××' : `0x${payload.toString(16).padStart(2, 0)}`;
+            marker = `<span class="monospaced">[${marker}]</span>`;
+            this.view.setJobControls(job, 'processed');
+            this.view.setJobStatus(job, `El fichero se leyó correctamente. ${marker}`);
+            break;
+        case 'fileReadError':
+            const error = payload;
+            const errorMessages = {
+                'FileTooLargeError': 'el fichero es muy grande',
+                'NotFoundError': 'el fichero no existe',
+                'NotReadableError': 'el fichero no se puede leer',
+                'SecurityError': 'el fichero no se puede leer de forma segura'
+            };
+            this.view.setJobControls(job, 'error');
+            if (error.name in errorMessages) {
+                let status = `ERROR: ${errorMessages[error.name]}`;
+                status += ` <span class="monospaced">(${error.name})</span>.`;
+                this.view.setJobStatus(job, status);
+            } else {
+                // Unexpected error condition that should not happen in production.
+                // So, it is notified differently, by using view.showError().
                 this.view.showError(
-                    'Se envió un comando desconocido al web worker.',
-                    `El comando «${command}» no existe.`
+                    'Error inesperado leyendo un fichero.',
+                    `Ocurrió un error «${error.name}» leyendo el fichero «${error.fileName}».\n` +
+                    `${error.message}.`
                 );
-                break;
-            default:
-                this.view.showError(
-                    'Se recibió un mensaje desconocido del web worker.',
-                    `El mensaje «${message.reply}» no pudo ser gestionado.`
-                );
-        }
+            }
+            break;
+        case 'commandNotFound':
+            this.view.showError(
+                'Se envió un comando desconocido al web worker.',
+                `El comando «${command}» no existe.`
+            );
+            break;
+        default:
+            this.view.showError(
+                'Se recibió un mensaje desconocido del web worker.',
+                `El mensaje «${message.reply}» no pudo ser gestionado.`
+            );
+    }
     }
 }
 

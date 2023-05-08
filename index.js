@@ -101,7 +101,7 @@ class UI {
     }
 
     emit (event, payload) {
-        this.eventTarget && this.eventTarget.dispatchEvent(new CustomEvent(event, {detail: payload}));
+        this.eventTarget && this.eventTarget.dispatchEvent(new CustomEvent(event, {'detail': payload}));
     }
 
     initDragAndDrop () {
@@ -407,23 +407,22 @@ class Presenter {
         }
     }
 
-    handleWebWorkerMessage (message) {
+    handleWebWorkerMessage (message) {  // eslint-disable-line max-lines-per-function, max-statements
         const {reply, jobId, payload} = message;
         const job = this.jobs.get(jobId);
 
         switch (reply) {
         case 'slowModeStatus':
-            const status = payload;
-            this.view.showSlowModeStatus(status);
+            this.view.showSlowModeStatus(payload);
             break;
-        case 'jobCreated':
+        case 'jobCreated': {
             const newJob = this.view.createJob();
-            const fileName = payload;
             this.jobs.set(newJob, jobId);
             this.jobs.set(jobId, newJob);
-            this.view.setJobFileName(newJob, fileName);
+            this.view.setJobFileName(newJob, payload);
             this.processJob(jobId);
             break;
+        }
         case 'jobDeleted':
             this.view.removeJob(job);
             this.jobs.delete(job);
@@ -434,16 +433,16 @@ class Presenter {
             this.view.setJobStatus(job, 'Lectura cancelada.');
             break;
         case 'bytesRead':
-            const percent = payload;
-            this.view.setJobStatus(job, `Leyendo el fichero (${percent}%).`);
+            this.view.setJobStatus(job, `Leyendo el fichero (${payload}%).`);
             break;
-        case 'fileReadOK':
+        case 'fileReadOK': {
             let marker = payload === 'undefined' ? '××' : `0x${payload.toString(16).padStart(2, 0)}`;
             marker = `<span class="monospaced">[${marker}]</span>`;
             this.view.setJobControls(job, 'processed');
             this.view.setJobStatus(job, `El fichero se leyó correctamente. ${marker}`);
             break;
-        case 'fileReadError':
+        }
+        case 'fileReadError': {
             const error = payload;
             const errorMessages = {
                 'FileTooLargeError': 'el fichero es muy grande',
@@ -466,11 +465,11 @@ class Presenter {
                 );
             }
             break;
+        }
         case 'commandNotFound':
-            const command = message.payload;
             this.view.showError(
                 'Se envió un comando desconocido al web worker.',
-                `El comando «${command}» no existe.`
+                `El comando «${payload}» no existe.`
             );
             break;
         default:
@@ -478,7 +477,7 @@ class Presenter {
                 'Se recibió un mensaje desconocido del web worker.',
                 `El mensaje «${message.reply}» no pudo ser gestionado.`
             );
-    }
+        }
     }
 }
 

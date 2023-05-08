@@ -132,7 +132,7 @@ class UI {
     populateFormatsDropdown (formats) {
         for (const format in formats) {
             const paragraph = document.createElement('p');
-            paragraph.innerText = format;
+            paragraph.textContent = format;
             this.formatsDropdown.append(paragraph);
         }
     }
@@ -171,9 +171,9 @@ class UI {
 
         const errorElement = this.errorTemplate.cloneNode(true);
 
-        errorElement.querySelector('.error_header').innerText = errorHeader;
-        errorElement.querySelector('.error_reason').innerText = reason;
-        errorElement.querySelector('.error_details').innerText = details;
+        errorElement.querySelector('.error_header').textContent = errorHeader;
+        errorElement.querySelector('.error_reason').textContent = reason;
+        errorElement.querySelector('.error_details').textContent = details;
 
         // Errors are shown in a first-happenned, first-shown manner.
         this.lastError.nextSibling.before(errorElement);

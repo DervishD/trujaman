@@ -96,7 +96,6 @@ globalThis.processJob = function processJob (jobId) {
     if (job.file.size > globalThis.MAX_FILE_SIZE_BYTES) {
         const error = {
             'name': 'FileTooLargeError',
-            'message': 'El fichero es demasiado grande para ser procesado',
             'fileName': job.file.name
         };
         globalThis.postReply('fileReadError', job.id, error);

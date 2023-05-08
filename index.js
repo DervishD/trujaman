@@ -467,6 +467,7 @@ class Presenter {
             }
             break;
         case 'commandNotFound':
+            const command = message.payload;
             this.view.showError(
                 'Se envió un comando desconocido al web worker.',
                 `El comando «${command}» no existe.`

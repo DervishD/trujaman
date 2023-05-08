@@ -63,7 +63,7 @@ globalThis.addEventListener('unhandledrejection', globalThis.unexpectedErrorHand
 
 class UI {
     constructor () {
-        this.eventSubscribers = {};
+        this.eventTarget = null;
         this.jobEventListeners = new Map();
         this.filePicker = document.querySelector('#filepicker');
         this.filePickerInput = this.filePicker.querySelector('input');
@@ -78,7 +78,7 @@ class UI {
 
     render () {
         this.slowMode.addEventListener('click', () => {
-            this.emit('slowModeToggle');
+            this.emit('slowmodetoggle');
         });
 
         this.filePicker.hidden = false;
@@ -87,7 +87,7 @@ class UI {
             this.filePickerInput.click();
         });
         this.filePickerInput.addEventListener('change', event => {
-            this.emit('processFiles', event.target.files);
+            this.emit('processfiles', event.target.files);
             event.target.value = null;  // Otherwise the event won't be fired again if the user selects the same file…
         });
 
@@ -96,12 +96,12 @@ class UI {
         this.initDragAndDrop();
     }
 
-    emit (event, payload) {
-        this.eventSubscribers[event] && this.eventSubscribers[event](payload);
+    subscribe (eventTarget) {
+        this.eventTarget = eventTarget;
     }
 
-    on (event, handler) {
-        this.eventSubscribers[event] = handler;
+    emit (event, payload) {
+        this.eventTarget && this.eventTarget.dispatchEvent(new CustomEvent(event, {detail: payload}));
     }
 
     initDragAndDrop () {
@@ -123,7 +123,7 @@ class UI {
 
             dropzone.addEventListener('drop', event => {
                 dropzone.dataset.state = 'dismissed';
-                this.emit('processFiles', event.dataTransfer.files);
+                this.emit('processfiles', event.dataTransfer.files);
                 event.preventDefault();  // Prevent the browser from opening the file.
             });
         }
@@ -184,15 +184,15 @@ class UI {
     createJob () {
         const newJob = document.getElementById('job_template').content.firstElementChild.cloneNode(true);
 
-        const handleDismissClicked = function handleDismissClicked () { this.emit('dismissJob', newJob); }.bind(this);
+        const handleDismissClicked = function handleDismissClicked () { this.emit('dismissjob', newJob); }.bind(this);
         const dismissButton = newJob.querySelector('.job_dismiss_button');
         dismissButton.addEventListener('click', handleDismissClicked, {'once': true});
 
-        const handleCancelClicked = function handleCancelClicked () { this.emit('cancelJob', newJob); }.bind(this);
+        const handleCancelClicked = function handleCancelClicked () { this.emit('canceljob', newJob); }.bind(this);
         const cancelButton = newJob.querySelector('.job_cancel_button');
         cancelButton.addEventListener('click', handleCancelClicked);
 
-        const handleRetryClicked = function handleRetryClicked () { this.emit('retryJob', newJob); }.bind(this);
+        const handleRetryClicked = function handleRetryClicked () { this.emit('retryjob', newJob); }.bind(this);
         const retryButton = newJob.querySelector('.job_retry_button');
         retryButton.addEventListener('click', handleRetryClicked);
 
@@ -317,38 +317,34 @@ class Presenter {
 
     initView () {
         this.view = new UI();
+        const eventTarget = new EventTarget();
 
-        this.view.on('processFiles', this.handleViewEventProcessFiles.bind(this));
-        this.view.on('dismissJob', this.handleViewEventDismissJob.bind(this));
-        this.view.on('cancelJob', this.handleViewEventCancelJob.bind(this));
-        this.view.on('retryJob', this.handleViewEventRetryJob.bind(this));
-        this.view.on('slowModeToggle', this.handleViewEventSlowModeToggle.bind(this));
+        eventTarget.addEventListener('slowmodetoggle', () => {
+            this.webWorkerDo('slowModeToggle');
+        });
+        eventTarget.addEventListener('processfiles', event => {
+            const files = event.detail;
+            for (const file of files) {
+                this.webWorkerDo('createJob', file);
+            }
+        });
+        eventTarget.addEventListener('dismissjob', event => {
+            const jobId = event.detail;
+            this.webWorkerDo('deleteJob', this.jobs.get(jobId));
+        });
+        eventTarget.addEventListener('canceljob', event => {
+            const jobId = event.detail;
+            this.view.setJobStatus(jobId, 'Cancelando el fichero…');
+            this.view.setJobControls(jobId, 'cancelled');
+            this.webWorkerDo('cancelJob', this.jobs.get(jobId));
+        });
+        eventTarget.addEventListener('retryjob', event => {
+            const jobId = event.detail;
+            this.processJob(this.jobs.get(jobId));
+        });
 
+        this.view.subscribe(eventTarget);
         this.view.render();
-    }
-
-    handleViewEventProcessFiles (files) {
-        for (const file of files) {
-            this.webWorkerDo('createJob', file);
-        }
-    }
-
-    handleViewEventDismissJob (jobId) {
-        this.webWorkerDo('deleteJob', this.jobs.get(jobId));
-    }
-
-    handleViewEventCancelJob (jobId) {
-        this.view.setJobStatus(jobId, 'Cancelando el fichero…');
-        this.view.setJobControls(jobId, 'cancelled');
-        this.webWorkerDo('cancelJob', this.jobs.get(jobId));
-    }
-
-    handleViewEventRetryJob (jobId) {
-        this.processJob(this.jobs.get(jobId));
-    }
-
-    handleViewEventSlowModeToggle () {
-        this.webWorkerDo('slowModeToggle');
     }
 
     async initServiceWorker (serviceWorker) {

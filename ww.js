@@ -13,12 +13,14 @@ globalThis.slowModeEnabled = false;
 
 
 globalThis.postReply = function postReply (reply, ...args) {
+    console.debug(`Sending reply '${reply}'`, args);
     globalThis.postMessage({reply, args});
 };
 
 
 globalThis.addEventListener('message', message => {  // eslint-disable-line max-lines-per-function, max-statements
     const {command, args} = message.data;
+    console.debug(`Received command '${command}'`, args);
 
     switch (command) {
     case 'slowModeToggle':
@@ -47,7 +49,11 @@ globalThis.addEventListener('message', message => {  // eslint-disable-line max-
             'reader': null
         };
 
-        if (job.id in globalThis.jobs) return;
+        if (job.id in globalThis.jobs) {
+            console.debug(`Job '${job.id}' already exists`);
+            return;
+        }
+
         globalThis.jobs[job.id] = job;
 
         job.reader = new FileReader();

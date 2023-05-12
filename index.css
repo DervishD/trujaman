@@ -319,13 +319,18 @@ button:active {
     font-weight: 700;
 }
 
-.error_reason {
+.error_message {
     margin: 1em 0;
 }
 
+.error_location {
+    text-align: center;
+    font-size: 0.8em;
+}
+
 .error_details {
-    font-size: 0.7em;
-    margin: 0.5em 0;
+    font-size: 0.6em;
+    margin: 2em 0 0.5em 0;
     display: inline-block;
     white-space: break-spaces;
 }

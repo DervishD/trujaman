@@ -4,20 +4,27 @@
 // Very crude default function for showing errors to the end user.
 //
 // Works even if the page is not fully loaded, so it is a last resort.
-const errorHeader = '¡ERROR, la aplicación no puede funcionar!';
-globalThis.showError = function showError (reason, details) {
-    globalThis.stop();
-    alert(`${errorHeader}\n${reason}\n${details}`);  // eslint-disable-line no-alert
+globalThis.showError = function showError (message) {
+    alert(`¡Error inesperado!\n${message}\nCompruebe la consola para más detalles.`); // eslint-disable-line no-alert
 };
 
 
-// Default handler for unhandled errors which should not happen in production.
-globalThis.unexpectedErrorHandler = function unexpectedErrorHandler (event) {  // eslint-disable-line max-statements
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
+class FatalError extends Error {
+    constructor (message, details = '') {
+        super(message);
+        this.details = details;
+        this.name = 'FatalError';
+    }
+}
 
+
+// Default handler for unhandled errors which should not happen in production.
+globalThis.addEventListener('error', event => {  // eslint-disable-line max-statements
+    const error = event instanceof PromiseRejectionEvent ? event.reason : event.error;
+    let message = 'No hay información.';
+    let details = '';
     let location = '';
+
     if (event.filename) {
         try {
             location = new URL(event.filename).pathname.substring(1);
@@ -29,36 +36,37 @@ globalThis.unexpectedErrorHandler = function unexpectedErrorHandler (event) {  /
         location = `En ${location}, línea ${event.lineno}, columna ${event.colno}.`;
     }
 
-    let reason = '';
-    let error = '';
-    if (event instanceof PromiseRejectionEvent) {
-        error = event.reason;
-        reason = 'PromiseRejectionEvent';
-    } else {  // For ErrorEvent events.
-        ({error} = event);
-        reason = 'ErrorEvent';
-    }
-
-    reason += `${error && error.name ? `(${error.name})` : ''} sin gestionar.`;
-
-    let details = '';
     if (error) {
-        details += `[${error}]`;
-        details += location ? `\n${location}` : '';
+        ({message} = error);
+
+        if (error instanceof FatalError) {
+            ({details} = error);
+        } else {
+            message = `${error.name ? `${error.name}` : 'Error'}('${message}') sin gestionar.`;
+            details = '';
+        }
+
         if (error.stack) {
-            details += '\nInformación de depurado:\n';
+            details += `${details ? '\n\n' : ''}Información de depurado:\n`;
             for (const line of error.stack.trim().split('\n')) {
                 details += `    ${line.trim()}\n`;
             }
         }
+    } else {
+        ({message} = event);
+        message += message && !message.endsWith('.') ? '.' : '';
     }
 
-    globalThis.showError(reason, details);
-};
+    console.error(`${message}${location ? `\n\n${location}` : ''}${details ? `\n\n${details}` : ''}`);
+    globalThis.showError(message, location, details);
+    event.preventDefault();
+});
 
 
-globalThis.addEventListener('error', globalThis.unexpectedErrorHandler);
-globalThis.addEventListener('unhandledrejection', globalThis.unexpectedErrorHandler);
+globalThis.addEventListener('unhandledrejection', event => {
+    globalThis.reportError(event.reason);
+    event.preventDefault();
+});
 
 
 class UI {
@@ -147,12 +155,7 @@ class UI {
         this.slowMode.textContent = status ? '⊖' : '⊕';
     }
 
-    // Shows a detailed error message.
-    //
-    // The function accepts two parameters:
-    //  1: The error reason, preferably a one-liner explaining (tersely) the main cause of the error.
-    //  2: The details of the error, verbosely explaining the information about the error.
-    showError (reason, details) {
+    showError (message, location, details) {
         if (!this.lastError) {
             for (const job of this.jobsContainer.querySelectorAll('.job:not([hidden])')) {
                 job.querySelector('.job_dismiss_button').click();
@@ -171,9 +174,10 @@ class UI {
 
         const errorElement = this.errorTemplate.cloneNode(true);
 
-        errorElement.querySelector('.error_header').textContent = errorHeader;
-        errorElement.querySelector('.error_reason').textContent = reason;
-        errorElement.querySelector('.error_details').textContent = details;
+        errorElement.querySelector('.error_header').textContent = '¡ERROR, la aplicación no puede funcionar!';
+        errorElement.querySelector('.error_message').textContent = message;
+        errorElement.querySelector('.error_location').textContent = location;
+        errorElement.querySelector('.error_details').textContent = details.trim();
 
         // Errors are shown in a first-happenned, first-shown manner.
         this.lastError.nextSibling.before(errorElement);
@@ -310,6 +314,20 @@ class Presenter {
         }
     }
 
+    async loadFormats (formatsFile) {
+        const response = await fetch(formatsFile);
+        if (response.ok) {
+            try {
+                const formats = await response.json();
+                this.view.populateFormatsDropdown(formats);
+            } catch (error) {
+                throw new FatalError('No se pudo procesar el fichero con la lista de formatos.', error);
+            }
+        } else {
+            throw new FatalError('No se encontró el fichero con la lista de formatos.');
+        }
+    }
+
     processJob (jobId) {
         this.view.setJobControls(this.jobs.get(jobId), 'processing');
         this.webWorkerDo('processJob', jobId);
@@ -352,34 +370,28 @@ class Presenter {
         } catch (error) {
             // Service workers are considered site data, so cookies have to be enabled for the application to work.
             if (navigator.cookieEnabled) {
-                this.view.showError('Falló una parte esencial.', error);
+                throw new FatalError('No se pudo iniciar el service worker.', error);
             } else {
-                this.view.showError('Las cookies están desactivadas.', error);
+                throw new FatalError('Las cookies están desactivadas.', error);
             }
-        }
-    }
-
-    async loadFormats (formatsFile) {
-        try {
-            const response = await fetch(formatsFile);
-            if (response.ok) {
-                const formats = await response.json();
-                this.view.populateFormatsDropdown(formats);
-            } else {
-                this.view.showError(
-                    'No se encontró la lista de formatos.',
-                    'El fichero conteniendo la lista de formatos no se encuentra disponible.'
-                );
-            }
-        } catch (error) {
-            this.view.showError('No se pudo procesar la lista de formatos.', error);
         }
     }
 
     initWebWorker (webWorker) {
         this.worker = new Worker(webWorker);
-        this.worker.addEventListener('error', event => this.handleWebWorkerError(event));
         this.worker.addEventListener('message', event => this.handleWebWorkerMessage(event));
+        this.worker.addEventListener('error', event => {
+            event.preventDefault();
+            if (event instanceof ErrorEvent) {
+                // For syntax errors, that should not happen in production,
+                // the event will be an ErrorEvent instance and will contain
+                // information pertaining to the error.
+                throw new FatalError(`Error de sintaxis en el web worker, línea ${event.lineno}.`, event.message);
+            } else {
+                // For loading errors the error will be an Event.
+                throw new FatalError('No se pudo iniciar el web worker.');
+            }
+        });
     }
 
     webWorkerDo (command, args) {
@@ -387,24 +399,6 @@ class Presenter {
             command,
             args
         });
-    }
-
-    handleWebWorkerError (error) {
-        if (error instanceof ErrorEvent) {
-            // For syntax errors, that should not happen in production,
-            // the event will be an ErrorEvent instance and will contain
-            // information pertaining to the error.
-            this.view.showError(
-                'Error inesperado en el gestor de tareas en segundo plano.',
-                `Error de sintaxis en línea ${error.lineno}\n(${error.message}).`
-            );
-        } else {
-            // For loading errors the event will be Event.
-            this.view.showError(
-                'No se pueden ejecutar tareas en segundo plano.',
-                'No se pudo iniciar el gestor de tareas en segundo plano.'
-            );
-        }
     }
 
     handleWebWorkerMessage (message) {  // eslint-disable-line max-lines-per-function, max-statements
@@ -459,26 +453,14 @@ class Presenter {
                 this.view.setJobStatus(job, status);
             } else {
                 // Unexpected error condition that should not happen in production.
-                // So, it is notified differently, by using view.showError().
-                this.view.showError(
-                    'Error inesperado leyendo un fichero.',
-                    `Ocurrió un error «${error.name}» leyendo el fichero «${error.fileName}».\n` +
-                    `${error.message}.`
-                );
+                throw new FatalError(`Error «${error.name}» leyendo el fichero «${error.fileName}»`, error.message);
             }
             break;
         }
         case 'commandNotFound':
-            this.view.showError(
-                'Se envió un comando desconocido al web worker.',
-                `El comando «${args[0]}» no existe.`
-            );
-            break;
+            throw new FatalError(`El web worker no reconoce el comando «${args[0]}».`);
         default:
-            this.view.showError(
-                'Se recibió un mensaje desconocido del web worker.',
-                `El mensaje «${reply}» no pudo ser gestionado.`
-            );
+            throw new FatalError(`No se reconoce la respuesta del web worker «${reply}».`);
         }
     }
 }

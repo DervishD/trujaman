@@ -18,7 +18,7 @@ globalThis.postReply = function postReply (reply, ...args) {
 };
 
 
-globalThis.addEventListener('message', message => {  // eslint-disable-line max-lines-per-function, max-statements
+globalThis.addEventListener('message', message => {
     const {command, args} = message.data;
     console.debug(`Received command '${command}'`, args);
 

@@ -19,7 +19,7 @@ class FatalError extends Error {
 
 
 // Default handler for unhandled errors which should not happen in production.
-globalThis.addEventListener('error', event => {  // eslint-disable-line max-statements
+globalThis.addEventListener('error', event => {
     const error = event instanceof PromiseRejectionEvent ? event.reason : event.error;
     let message = 'No hay información.';
     let details = '';
@@ -227,15 +227,15 @@ class UI {
         job.remove();
     }
 
-    setJobFileName (job, fileName) {  // eslint-disable-line class-methods-use-this
+    setJobFileName (job, fileName) {
         job.querySelector('.job_filename').textContent = fileName;
     }
 
-    setJobStatus (job, status) {  // eslint-disable-line class-methods-use-this
+    setJobStatus (job, status) {
         job.querySelector('.job_status').innerHTML = status;
     }
 
-    setJobControls (job, state) {  // eslint-disable-line class-methods-use-this
+    setJobControls (job, state) {
         switch (state) {
         case 'processing':
             job.querySelector('.job_retry_button').hidden = true;
@@ -402,7 +402,7 @@ class Presenter {
         });
     }
 
-    handleWebWorkerMessage (message) {  // eslint-disable-line max-lines-per-function, max-statements
+    handleWebWorkerMessage (message) {
         const {reply, args} = message.data;
         console.debug(`Received reply '${reply}'`, args);
 

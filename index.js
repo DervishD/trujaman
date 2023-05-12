@@ -438,7 +438,7 @@ class Presenter {
             this.view.setJobStatus(job, `Leyendo el fichero (${args[1]}%).`);
             break;
         case 'fileReadOK': {
-            let marker = args[1] === 'undefined' ? '××' : `0x${args[1].toString(16).padStart(2, 0)}`;
+            let marker = typeof args[1] === 'undefined' ? '××' : `0x${args[1].toString(16).padStart(2, 0)}`;
             marker = `<span class="monospaced">[${marker}]</span>`;
             this.view.setJobControls(job, 'processed');
             this.view.setJobStatus(job, `El fichero se leyó correctamente. ${marker}`);

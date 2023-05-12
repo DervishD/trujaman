@@ -395,6 +395,7 @@ class Presenter {
     }
 
     webWorkerDo (command, args) {
+        console.debug(`Sending command '${command}'`, args);
         this.worker.postMessage({
             command,
             args
@@ -403,6 +404,8 @@ class Presenter {
 
     handleWebWorkerMessage (message) {  // eslint-disable-line max-lines-per-function, max-statements
         const {reply, args} = message.data;
+        console.debug(`Received reply '${reply}'`, args);
+
         const [jobId] = args;  // Needed for most of the replies, so…
         const job = this.jobs.get(jobId);  // Idem…
 

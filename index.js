@@ -274,31 +274,6 @@ class Presenter {
     }
 
     async run () {
-        navigator.serviceWorker.ready
-        .then(() => {
-            fetch('version')
-            .then(response => response.text())
-            .then(version => {
-                if (version) {
-                    this.view.showVersion(version);
-                    // Enable development mode ONLY for prereleases which are NOT release candidates.
-                    if (version.includes('-') && !version.includes('-rc')) {
-                        this.developmentMode = true;
-                    }
-                }
-            });
-        });
-
-        let refreshing = false;
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-            if (refreshing) return;
-            refreshing = true;
-            globalThis.location.reload();
-        });
-
-        // For now, just prevent the default install handler to appear.
-        globalThis.addEventListener('beforeinstallprompt', event => event.preventDefault());
-
         this.initView();
 
         // Now that the UI is up and running, a new error printing function
@@ -365,6 +340,31 @@ class Presenter {
     }
 
     async initServiceWorker (serviceWorker) {
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (refreshing) return;
+            globalThis.location.reload();
+            refreshing = true;
+        });
+
+        // For now, just prevent the default install handler to appear.
+        globalThis.addEventListener('beforeinstallprompt', event => event.preventDefault());
+
+        navigator.serviceWorker.ready
+        .then(() => {
+            fetch('version')
+            .then(response => response.text())
+            .then(version => {
+                if (version) {
+                    this.view.showVersion(version);
+                    // Enable development mode ONLY for prereleases which are NOT release candidates.
+                    if (version.includes('-') && !version.includes('-rc')) {
+                        this.developmentMode = true;
+                    }
+                }
+            });
+        });
+
         try {
             await navigator.serviceWorker.register(serviceWorker);
         } catch (error) {

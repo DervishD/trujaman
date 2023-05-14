@@ -232,7 +232,7 @@ class UI {
     }
 
     setJobStatus (job, status) {
-        job.querySelector('.job_status').innerHTML = status;
+        job.querySelector('.job_status_message').innerHTML = status;
     }
 
     setJobControls (job, state) {

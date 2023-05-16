@@ -69,10 +69,77 @@ globalThis.addEventListener('unhandledrejection', event => {
 });
 
 
+class Job {
+    constructor (jobId, fileName) {
+        this.jobId = jobId;
+
+        this.element = document.getElementById('job_template').content.firstElementChild.cloneNode(true);
+        this.element.querySelector('.job_filename').textContent = fileName;
+
+        this.statusMessage = this.element.querySelector('.job_status_message');
+
+        this.dismissButton = this.element.querySelector('.job_dismiss_button');
+        this.retryButton = this.element.querySelector('.job_retry_button');
+        this.cancelButton = this.element.querySelector('.job_cancel_button');
+        this.downloadDropdown = this.element.querySelector('.job_download_dropdown');
+
+        this.controller = new AbortController();
+
+        this.dismissButton.addEventListener('click', event => {
+            event.target.dispatchEvent(new CustomEvent('dismissjob', {'detail': this, 'bubbles': true}));
+        }, {'once': true});
+
+        this.cancelButton.addEventListener('click', event => {
+            event.target.dispatchEvent(new CustomEvent('canceljob', {'detail': this, 'bubbles': true}));
+        }, {'signal': this.controller.signal});
+
+        this.retryButton.addEventListener('click', event => {
+            event.target.dispatchEvent(new CustomEvent('retryjob', {'detail': this, 'bubbles': true}));
+        }, {'signal': this.controller.signal});
+
+        this.element.querySelector('.job_download_dropdown').addEventListener('click', () => {
+            const formatsList = this.element.querySelector('.job_formats_list');
+            formatsList.hidden = !formatsList.hidden;
+        }, {'signal': this.controller.signal});
+    }
+
+    remove () {
+        // Remove event listeners before removing the DOM element.
+        // Not really needed, apparently, but it's the Tao.
+        this.controller.abort();
+        this.element.remove();
+    }
+
+    setStatusMessage (statusMessage) {
+        this.statusMessage.innerHTML = statusMessage;
+    }
+
+    setState (state) {
+        switch (state) {
+        case 'processing':
+            this.retryButton.hidden = true;
+            this.cancelButton.hidden = false;
+            break;
+        case 'processed':
+            this.cancelButton.hidden = true;
+            this.downloadDropdown.hidden = false;
+            break;
+        case 'cancelled':
+            this.cancelButton.hidden = true;
+            this.retryButton.hidden = false;
+            break;
+        case 'error':
+            this.cancelButton.hidden = true;
+            this.retryButton.hidden = true;
+            this.downloadDropdown.hidden = true;
+            break;
+        }
+    }
+}
+
+
 class UI {
     constructor () {
-        this.eventTarget = null;
-        this.jobEventListeners = new Map();
         this.filePicker = document.querySelector('#filepicker');
         this.filePickerInput = this.filePicker.querySelector('input');
         this.filePickerButton = this.filePicker.querySelector('button');
@@ -82,11 +149,9 @@ class UI {
         this.errorTemplate = document.querySelector('#error_template');
         this.formatsDropdown = document.querySelector('#job_template').content.querySelector('.job_formats_list');
         this.lastError = null;
-    }
 
-    render () {
         this.slowMode.addEventListener('click', () => {
-            this.emit('slowmodetoggle');
+            globalThis.dispatchEvent(new CustomEvent('slowmodetoggle'));
         });
 
         this.filePicker.hidden = false;
@@ -95,24 +160,12 @@ class UI {
             this.filePickerInput.click();
         });
         this.filePickerInput.addEventListener('change', event => {
-            this.emit('processfiles', event.target.files);
+            globalThis.dispatchEvent(new CustomEvent('processfiles', {'detail': event.target.files}));
             event.target.value = null;  // Otherwise the event won't be fired again if the user selects the same file…
         });
 
         this.jobsContainer.hidden = false;
 
-        this.initDragAndDrop();
-    }
-
-    subscribe (eventTarget) {
-        this.eventTarget = eventTarget;
-    }
-
-    emit (event, payload) {
-        this.eventTarget && this.eventTarget.dispatchEvent(new CustomEvent(event, {'detail': payload}));
-    }
-
-    initDragAndDrop () {
         // This feature is entirely optional.
         // Detection is performed by testing for the existence of the drag and
         // drop events used. This is not orthodox but works well enough.
@@ -131,7 +184,7 @@ class UI {
 
             dropzone.addEventListener('drop', event => {
                 dropzone.dataset.state = 'dismissed';
-                this.emit('processfiles', event.dataTransfer.files);
+                globalThis.dispatchEvent(new CustomEvent('processfiles', {'detail': event.dataTransfer.files}));
                 event.preventDefault();  // Prevent the browser from opening the file.
             });
         }
@@ -185,76 +238,8 @@ class UI {
         this.lastError = errorElement;
     }
 
-    createJob () {
-        const newJob = document.getElementById('job_template').content.firstElementChild.cloneNode(true);
-
-        const handleDismissClicked = function handleDismissClicked () { this.emit('dismissjob', newJob); }.bind(this);
-        const dismissButton = newJob.querySelector('.job_dismiss_button');
-        dismissButton.addEventListener('click', handleDismissClicked, {'once': true});
-
-        const handleCancelClicked = function handleCancelClicked () { this.emit('canceljob', newJob); }.bind(this);
-        const cancelButton = newJob.querySelector('.job_cancel_button');
-        cancelButton.addEventListener('click', handleCancelClicked);
-
-        const handleRetryClicked = function handleRetryClicked () { this.emit('retryjob', newJob); }.bind(this);
-        const retryButton = newJob.querySelector('.job_retry_button');
-        retryButton.addEventListener('click', handleRetryClicked);
-
-        const handleDownloadClicked = function handleDownloadClicked () {
-            const formatsList = newJob.querySelector('.job_formats_list');
-            formatsList.hidden = !formatsList.hidden;
-        };
-        const downloadButton = newJob.querySelector('.job_download_dropdown');
-        downloadButton.addEventListener('click', handleDownloadClicked);
-
-        this.jobEventListeners.set(newJob, [
-            [dismissButton, handleDismissClicked],
-            [cancelButton, handleCancelClicked],
-            [retryButton, handleRetryClicked],
-            [downloadButton, handleDownloadClicked]
-        ]);
-
-        this.jobsContainer.append(newJob);
-        return newJob;
-    }
-
-    removeJob (job) {
-        // Remove event listeners first.
-        // Not really needed, apparently, but it's the Tao.
-        for (const [element, eventListener] of this.jobEventListeners.get(job)) {
-            element.removeEventListener('click', eventListener);
-        }
-        job.remove();
-    }
-
-    setJobFileName (job, fileName) {
-        job.querySelector('.job_filename').textContent = fileName;
-    }
-
-    setJobStatus (job, status) {
-        job.querySelector('.job_status_message').innerHTML = status;
-    }
-
-    setJobControls (job, state) {
-        switch (state) {
-        case 'processing':
-            job.querySelector('.job_retry_button').hidden = true;
-            job.querySelector('.job_cancel_button').hidden = false;
-            break;
-        case 'processed':
-            job.querySelector('.job_cancel_button').hidden = true;
-            job.querySelector('.job_download_dropdown').hidden = false;
-            break;
-        case 'cancelled':
-            job.querySelector('.job_cancel_button').hidden = true;
-            job.querySelector('.job_retry_button').hidden = false;
-            break;
-        case 'error':
-            job.querySelector('.job_cancel_button').hidden = true;
-            job.querySelector('.job_retry_button').hidden = true;
-            job.querySelector('.job_download_dropdown').hidden = true;
-            break;
-        }
+    showJob (job) {
+        this.jobsContainer.append(job);
     }
 }
 
@@ -275,11 +260,6 @@ class Presenter {
 
     async run () {
         this.initView();
-
-        // Now that the UI is up and running, a new error printing function
-        // which shows the errors on the main web page can be set.
-        globalThis.showError = this.view.showError.bind(this.view);
-
         await this.initServiceWorker('sw.js');
         await this.loadFormats('formats.json');
         this.initWebWorker('ww.js');
@@ -304,39 +284,43 @@ class Presenter {
     }
 
     processJob (jobId) {
-        this.view.setJobControls(this.jobs.get(jobId), 'processing');
+        this.jobs.get(jobId).setState('processing');
         this.webWorkerDo('processJob', jobId);
     }
 
     initView () {
-        this.view = new UI();
-        const eventTarget = new EventTarget();
-
-        eventTarget.addEventListener('slowmodetoggle', () => {
-            this.webWorkerDo('slowModeToggle');
-        });
-        eventTarget.addEventListener('processfiles', event => {
+        globalThis.addEventListener('processfiles', event => {
             const files = event.detail;
             for (const file of files) {
                 this.webWorkerDo('createJob', file);
             }
         });
-        eventTarget.addEventListener('dismissjob', event => {
-            const jobId = event.detail;
-            this.webWorkerDo('deleteJob', this.jobs.get(jobId));
-        });
-        eventTarget.addEventListener('canceljob', event => {
-            const jobId = event.detail;
-            this.view.setJobStatus(jobId, 'Cancelando el fichero…');
-            this.webWorkerDo('cancelJob', this.jobs.get(jobId));
-        });
-        eventTarget.addEventListener('retryjob', event => {
-            const jobId = event.detail;
-            this.processJob(this.jobs.get(jobId));
+
+        globalThis.addEventListener('slowmodetoggle', () => {
+            this.webWorkerDo('slowModeToggle');
         });
 
-        this.view.subscribe(eventTarget);
-        this.view.render();
+        globalThis.addEventListener('dismissjob', event => {
+            const job = event.detail;
+            this.webWorkerDo('deleteJob', job.jobId);
+        }, {'once': true});
+
+        globalThis.addEventListener('canceljob', event => {
+            const job = event.detail;
+            job.setStatusMessage('Cancelando el fichero…');
+            this.webWorkerDo('cancelJob', job.jobId);
+        });
+
+        globalThis.addEventListener('retryjob', event => {
+            const job = event.detail;
+            this.processJob(job.jobId);
+        });
+
+        this.view = new UI();
+
+        // Now that the UI is up and running, a new error printing function
+        // which shows the errors on the main web page can be set.
+        globalThis.showError = this.view.showError.bind(this.view);
     }
 
     async initServiceWorker (serviceWorker) {
@@ -414,31 +398,29 @@ class Presenter {
             this.view.showSlowModeStatus(args[0]);
             break;
         case 'jobCreated': {
-            const newJob = this.view.createJob();
             const [, fileName] = args;
-            this.jobs.set(newJob, jobId);
+            const newJob = new Job(jobId, fileName);
             this.jobs.set(jobId, newJob);
-            this.view.setJobFileName(newJob, fileName);
+            this.view.showJob(newJob.element);
             this.processJob(jobId);
             break;
         }
         case 'jobDeleted':
-            this.view.removeJob(job);
-            this.jobs.delete(job);
+            this.jobs.get(jobId).remove();
             this.jobs.delete(jobId);
             break;
         case 'jobCancelled':
-            this.view.setJobControls(job, 'cancelled');
-            this.view.setJobStatus(job, 'Lectura cancelada.');
+            job.setState('cancelled');
+            job.setStatusMessage('Lectura cancelada.');
             break;
         case 'bytesRead':
-            this.view.setJobStatus(job, `Leyendo el fichero (${args[1]}%).`);
+            this.jobs.get(jobId).setStatusMessage(`Leyendo el fichero (${args[1]}%).`);
             break;
         case 'fileReadOK': {
             let marker = typeof args[1] === 'undefined' ? '××' : `0x${args[1].toString(16).padStart(2, 0)}`;
             marker = `<span class="monospaced">[${marker}]</span>`;
-            this.view.setJobControls(job, 'processed');
-            this.view.setJobStatus(job, `El fichero se leyó correctamente. ${marker}`);
+            job.setState('processed');
+            job.setStatusMessage(`El fichero se leyó correctamente. ${marker}`);
             break;
         }
         case 'fileReadError': {
@@ -449,11 +431,11 @@ class Presenter {
                 'NotReadableError': 'el fichero no se puede leer',
                 'SecurityError': 'el fichero no se puede leer de forma segura'
             };
-            this.view.setJobControls(job, 'error');
+            job.setState('error');
             if (error.name in errorMessages) {
-                let status = `ERROR: ${errorMessages[error.name]}`;
-                status += ` <span class="monospaced">(${error.name})</span>.`;
-                this.view.setJobStatus(job, status);
+                let statusMessage = `ERROR: ${errorMessages[error.name]}`;
+                statusMessage += ` <span class="monospaced">(${error.name})</span>.`;
+                job.setStatusMessage(statusMessage);
             } else {
                 // Unexpected error condition that should not happen in production.
                 throw new FatalError(`Error «${error.name}» leyendo el fichero «${error.fileName}»`, error.message);

@@ -80,7 +80,8 @@ globalThis.addEventListener('message', message => {
         globalThis.postReply('jobCreated', job.id, job.file.name);
         break;
     }
-    case 'processJob': {
+    case 'processJob':
+    case 'retryJob': {
         const job = globalThis.jobs[args];
 
         if (job.file.size > globalThis.MAX_FILE_SIZE_BYTES) {

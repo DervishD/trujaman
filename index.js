@@ -117,6 +117,7 @@ class Job {
     setState (state) {
         switch (state) {
         case 'processing':
+        case 'retrying':
             this.retryButton.hidden = true;
             this.cancelButton.hidden = false;
             break;
@@ -283,11 +284,6 @@ class Presenter {
         }
     }
 
-    processJob (jobId) {
-        this.jobs.get(jobId).setState('processing');
-        this.webWorkerDo('processJob', jobId);
-    }
-
     initView () {
         globalThis.addEventListener('processfiles', event => {
             const files = event.detail;
@@ -313,7 +309,8 @@ class Presenter {
 
         globalThis.addEventListener('retryjob', event => {
             const job = event.detail;
-            this.processJob(job.jobId);
+            job.setState('retrying');
+            this.webWorkerDo('retryJob', job.jobId);
         });
 
         this.view = new UI();
@@ -402,7 +399,8 @@ class Presenter {
             const newJob = new Job(jobId, fileName);
             this.jobs.set(jobId, newJob);
             this.view.showJob(newJob.element);
-            this.processJob(jobId);
+            newJob.setState('processing');
+            this.webWorkerDo('processJob', jobId);
             break;
         }
         case 'jobDeleted':

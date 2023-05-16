@@ -299,7 +299,7 @@ class Presenter {
         globalThis.addEventListener('dismissjob', event => {
             const job = event.detail;
             this.webWorkerDo('deleteJob', job.jobId);
-        }, {'once': true});
+        });
 
         globalThis.addEventListener('canceljob', event => {
             const job = event.detail;

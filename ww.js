@@ -20,6 +20,8 @@ globalThis.postReply = function postReply (reply, ...args) {
 
 globalThis.addEventListener('message', message => {
     const {command, args} = message.data;
+    const [jobId] = args;  // Needed for most of the commands, so…
+    const job = globalThis.jobs.get(args[0]);  // Idem…
     console.debug(`Received command '${command}'`, args);
 
     switch (command) {
@@ -82,14 +84,12 @@ globalThis.addEventListener('message', message => {
     }
     case 'processJob':
     case 'retryJob': {
-        const job = globalThis.jobs[args];
-
         if (job.file.size > globalThis.MAX_FILE_SIZE_BYTES) {
             const error = {
                 'name': 'FileTooLargeError',
                 'fileName': job.file.name
             };
-            globalThis.postReply('fileReadError', job.id, error);
+            globalThis.postReply('fileReadError', jobId, error);
         } else {
             // The file is read using the HTML5 File API.
             // Read the file as ArrayBuffer.
@@ -98,18 +98,16 @@ globalThis.addEventListener('message', message => {
         break;
     }
     case 'cancelJob':
-        globalThis.jobs[args].reader.abort();
+        job.reader.abort();
         break;
     case 'deleteJob': {
-        const job = globalThis.jobs[args];
-
         job.reader.abort();
         job.reader.onload = null;
         job.reader.onerror = null;
         job.reader.onabort = null;
         delete globalThis.jobs[args];
 
-        globalThis.postReply('jobDeleted', args);
+        globalThis.postReply('jobDeleted', jobId);
         break;
     }
     default:

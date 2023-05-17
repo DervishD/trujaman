@@ -375,12 +375,9 @@ class Presenter {
         });
     }
 
-    webWorkerDo (command, args) {
+    webWorkerDo (command, ...args) {
         console.debug(`Sending command '${command}'`, args);
-        this.worker.postMessage({
-            command,
-            args
-        });
+        this.worker.postMessage({command, args});
     }
 
     handleWebWorkerMessage (message) {
@@ -404,7 +401,7 @@ class Presenter {
             break;
         }
         case 'jobDeleted':
-            this.jobs.get(jobId).remove();
+            job.element.remove();
             this.jobs.delete(jobId);
             break;
         case 'jobCancelled':
@@ -412,13 +409,13 @@ class Presenter {
             job.setStatusMessage('Lectura cancelada.');
             break;
         case 'bytesRead':
-            this.jobs.get(jobId).setStatusMessage(`Leyendo el fichero (${args[1]}%).`);
+            job.setStatusMessage(`Leyendo el fichero (${args[1]}%).`);
             break;
         case 'fileReadOK': {
             let marker = typeof args[1] === 'undefined' ? '××' : `0x${args[1].toString(16).padStart(2, 0)}`;
             marker = `<span class="monospaced">[${marker}]</span>`;
             job.setState('processed');
-            job.setStatusMessage(`El fichero se leyó correctamente. ${marker}`);
+            job.setStatusMessage(`El fichero se leyó correctamente. ${marker}, ${jobId}`);
             break;
         }
         case 'fileReadError': {

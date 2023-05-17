@@ -264,10 +264,6 @@ class Presenter {
         await this.initServiceWorker('sw.js');
         await this.loadFormats('formats.json');
         this.initWebWorker('ww.js');
-
-        if (this.developmentMode) {
-            this.webWorkerDo('slowModeToggle');
-        }
     }
 
     async loadFormats (formatsFile) {
@@ -341,6 +337,7 @@ class Presenter {
                     // Enable development mode ONLY for prereleases which are NOT release candidates.
                     if (version.includes('-') && !version.includes('-rc')) {
                         this.developmentMode = true;
+                        this.webWorkerDo('slowModeToggle');
                     }
                 }
             });

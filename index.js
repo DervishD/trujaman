@@ -409,10 +409,11 @@ class Presenter {
             job.setStatusMessage(`Leyendo el fichero (${args[1]}%).`);
             break;
         case 'fileReadOK': {
-            let marker = typeof args[1] === 'undefined' ? '××' : `0x${args[1].toString(16).padStart(2, 0)}`;
-            marker = `<span class="monospaced">[${marker}]</span>`;
+            let marker = `[${typeof args[1] === 'undefined' ? '××' : `0x${args[1].toString(16).padStart(2, 0)}`}]`;
+            marker += this.developmentMode ? `<br>jobId <${jobId}>` : '';
+            marker = `<span class="monospaced">${marker}</span>`;
             job.setState('processed');
-            job.setStatusMessage(`El fichero se leyó correctamente. ${marker}, ${jobId}`);
+            job.setStatusMessage(`El fichero se leyó correctamente. ${marker}`);
             break;
         }
         case 'fileReadError': {

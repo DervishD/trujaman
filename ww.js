@@ -3,7 +3,8 @@
 
 console.info('Web worker loaded');
 
-globalThis.jobs = {};
+globalThis.jobs = new Map();
+globalThis.currentJobId = 0;
 
 globalThis.MAX_FILE_SIZE_BYTES = 99 * 1024 * 1024;
 
@@ -30,56 +31,47 @@ globalThis.addEventListener('message', message => {
         globalThis.postReply('slowModeStatus', globalThis.slowModeEnabled);
         break;
     case 'createJob': {
-        // There's a problem with File objects: they don't have paths, only names.
-        // So, there's no way of telling if two user-selected files are the same or
-        // not, because they may have the same name but come from different dirs.
-        //
-        // Best effort here is to create a kind of hash from the file name, size and
-        // the last modification time. This is not bulletproof, as the user may own
-        // and select for upload different files from different directories whose
-        // names, sizes and modification times are equal, but STILL have different
-        // contents.
-        //
-        // Anyway, this minimizes the possibility of leaving the user unable to add
-        // a file just because it has the same name than one previously selected, if
-        // they come from different folders. The chances of both files having the
-        // exact same size and modification time are quite reduced. Hopefully.
-        const file = args;
-        const job = {
-            'id': `${file.name}_${file.size}_${file.lastModified}`,
-            file,
-            'reader': null
-        };
+        const newJob = {'file': args[0]};
+        const newJobId = globalThis.currentJobId++;  // eslint-disable-line no-plusplus
 
-        if (job.id in globalThis.jobs) {
-            console.debug(`Job '${job.id}' already exists`);
-            return;
+        // According to ECMA-262 which says that Number.MAX_SAFE_INTEGER equals
+        // (2^53)-1, and considering a scenario where 1000 jobs are added each
+        // millisecond, which is a bit optimistic, jobs could be added at that
+        // rate for a bit over 285 years for the test below to be true.
+        //
+        // So, it is safe to just silently fail here.
+        if (!Number.isSafeInteger(newJobId)) {
+            break;
         }
 
-        globalThis.jobs[job.id] = job;
+        newJob.reader = new FileReader();
 
-        job.reader = new FileReader();
-
-        job.reader.onprogress = event => {
+        newJob.reader.onprogress = event => {
             if (globalThis.slowModeEnabled && globalThis.FILE_READING_DELAY_MILLISECONDS) {
                 const start = Date.now(); while (Date.now() - start < globalThis.FILE_READING_DELAY_MILLISECONDS);
             }
             const percent = event.total ? Math.floor(100 * event.loaded / event.total) : 100;
-            globalThis.postReply('bytesRead', job.id, percent);
+            globalThis.postReply('bytesRead', newJobId, percent);
         };
 
-        job.reader.onerror = event => {
+        newJob.reader.onerror = event => {
             const error = {
                 'name': event.target.error.name,
                 'message': event.target.error.message,
-                'fileName': job.file.name
+                'fileName': newJob.file.name
             };
-            globalThis.postReply('fileReadError', job.id, error);
+            globalThis.postReply('fileReadError', newJobId, error);
         };
-        job.reader.onload = event => globalThis.postReply('fileReadOK', job.id, new Uint8Array(event.target.result)[0]);
-        job.reader.onabort = () => globalThis.postReply('jobCancelled', job.id);
+        newJob.reader.onload = event => {
+            const [marker] = new Uint8Array(event.target.result);
+            globalThis.postReply('fileReadOK', newJobId, marker);
+        };
+        newJob.reader.onabort = () => {
+            globalThis.postReply('jobCancelled', newJobId);
+        };
 
-        globalThis.postReply('jobCreated', job.id, job.file.name);
+        globalThis.jobs.set(newJobId, newJob);
+        globalThis.postReply('jobCreated', newJobId, newJob.file.name);
         break;
     }
     case 'processJob':
@@ -105,7 +97,7 @@ globalThis.addEventListener('message', message => {
         job.reader.onload = null;
         job.reader.onerror = null;
         job.reader.onabort = null;
-        delete globalThis.jobs[args];
+        globalThis.jobs.delete(args);
 
         globalThis.postReply('jobDeleted', jobId);
         break;

@@ -172,7 +172,7 @@ class Job {
 
 
 class UI {
-    constructor () {
+    constructor (formats) {
         this.filePicker = document.querySelector('#filepicker');
         this.filePickerInput = this.filePicker.querySelector('input');
         this.filePickerButton = this.filePicker.querySelector('button');
@@ -193,6 +193,12 @@ class UI {
         this.filePickerInput.addEventListener('change', event => {
             globalThis.dispatchEvent(new CustomEvent('processfiles', {'detail': event.target.files}));
             event.target.value = null;  // Otherwise the event won't be fired again if the user selects the same file…
+        });
+
+        formats.forEach(format => {
+            const paragraph = document.createElement('p');
+            paragraph.textContent = format;
+            this.formatsDropdown.append(paragraph);
         });
 
         this.jobsContainer.hidden = false;
@@ -218,14 +224,6 @@ class UI {
                 globalThis.dispatchEvent(new CustomEvent('processfiles', {'detail': event.dataTransfer.files}));
                 event.preventDefault();  // Prevent the browser from opening the file.
             });
-        }
-    }
-
-    populateFormatsDropdown (formats) {
-        for (const format in formats) {
-            const paragraph = document.createElement('p');
-            paragraph.textContent = format;
-            this.formatsDropdown.append(paragraph);
         }
     }
 
@@ -256,26 +254,26 @@ class Presenter {
     }
 
     run () {
-        this.initView();
         this.initServiceWorker('sw.js');
         this.initWebWorker('ww.js');
-    }
 
-    async loadFormats (formatsFile) {
-        const response = await fetch(formatsFile);
-        if (response.ok) {
-            try {
-                const formats = await response.json();
-                this.view.populateFormatsDropdown(formats);
-            } catch (error) {
-                throw new FatalError('No se pudo procesar el fichero con la lista de formatos.', error);
+        fetch('formats.json')
+        .then(response => {
+            if (!response.ok) {
+                throw new FatalError('No se encontró el fichero con la lista de formatos.');
             }
-        } else {
-            throw new FatalError('No se encontró el fichero con la lista de formatos.');
-        }
+            return response.json();
+        })
+        .then(formats => {
+            this.initView(Object.keys(formats));
+            this.webWorkerDo('registerFormats', formats);
+        })
+        .catch(error => {
+            throw new FatalError('No se pudo procesar el fichero con la lista de formatos.', error);
+        });
     }
 
-    initView () {
+    initView (formats) {
         globalThis.addEventListener('processfiles', event => {
             const files = event.detail;
             for (const file of files) {
@@ -304,7 +302,7 @@ class Presenter {
             this.webWorkerDo('retryJob', job.jobId);
         });
 
-        this.view = new UI();
+        this.view = new UI(formats);
     }
 
     initServiceWorker (serviceWorker) {
@@ -323,7 +321,7 @@ class Presenter {
             fetch('version')
             .then(response => response.text())
             .then(version => {
-                if (version) {
+                if (version && this.view) {
                     this.view.showVersion(version);
                     // Enable development mode ONLY for prereleases which are NOT release candidates.
                     if (version.includes('-') && !version.includes('-rc')) {

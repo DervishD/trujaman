@@ -3,6 +3,7 @@
 
 console.info('Web worker loaded');
 
+globalThis.formats = null;
 globalThis.jobs = new Map();
 globalThis.currentJobId = 0;
 
@@ -26,6 +27,9 @@ globalThis.addEventListener('message', message => {
     console.debug(`Received command '${command}'`, args);
 
     switch (command) {
+    case 'registerFormats':
+        [globalThis.formats] = args;
+        break;
     case 'slowModeToggle':
         globalThis.slowModeEnabled = !globalThis.slowModeEnabled;
         globalThis.postReply('slowModeStatus', globalThis.slowModeEnabled);
@@ -40,7 +44,10 @@ globalThis.addEventListener('message', message => {
         // rate for a bit over 285 years for the test below to be true.
         //
         // So, it is safe to just silently fail here.
-        if (!Number.isSafeInteger(newJobId)) {
+        //
+        // Also, if the formats have not been registered, silently fail here.
+        // Because that should not happen, either…
+        if (!Number.isSafeInteger(newJobId) || !globalThis.formats) {
             break;
         }
 

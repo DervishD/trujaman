@@ -29,12 +29,6 @@
         <div hidden id="version" class="monospaced"></div>
     </header>
 
-    <div hidden id="error_template" class="error">
-        <div class="error_header"></div>
-        <div class="error_message"></div>
-        <pre class="error_location"></pre>
-        <pre class="error_details"></pre>
-    </div>
     <noscript>
         <div>¡Este navegador no permite el uso de JavaScript por lo que la aplicación no podrá funcionar!</div>
     </noscript>
@@ -45,6 +39,15 @@
     </div>
 
     <div id="jobs"></div>
+
+    <template id="error_template">
+        <div class="error">
+            <div class="error_header"></div>
+            <div class="error_message"></div>
+            <pre class="error_location"></pre>
+            <pre class="error_details"></pre>
+        </div>
+    </template>
 
     <template id="job_template">
         <div class="job">

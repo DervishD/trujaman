@@ -1,11 +1,42 @@
 'use strict';
 
 
-// Very crude default function for showing errors to the end user.
-//
-// Works even if the page is not fully loaded, so it is a last resort.
-globalThis.showError = function showError (message) {
-    alert(`¡Error inesperado!\n${message}\nCompruebe la consola para más detalles.`); // eslint-disable-line no-alert
+globalThis.showError = function showError (message, location, details) {
+    console.error(`${message}${location ? `\n\n${location}` : ''}${details ? `\n\n${details}` : ''}`);
+
+    const errorTemplate = document.querySelector('#error_template');
+
+    if (!globalThis.pageLoaded) {
+        // Very crude default function for showing errors to the end user.
+        // Works even if the page is not fully loaded, so it is a last resort.
+        // eslint-disable-next-line no-alert
+        alert(`¡Error inesperado!\n${message}\nCompruebe la consola para más detalles.`);
+        return;
+    }
+
+    // Disable UI interaction by removing all page elements.
+    Array.from(document.body.children).forEach(element => {
+        if (['HEADER', 'TEMPLATE'].includes(element.tagName)) {
+            return;
+        }
+        if (element.tagName === 'DIV' && element.classList.contains('error')) {
+            return;
+        }
+        element.remove();
+    });
+
+    // At this point no further interaction with the page is possible so the
+    // application is effectively stopped, even though it is still running…
+
+    const errorElement = errorTemplate.content.firstElementChild.cloneNode(true);
+
+    errorElement.querySelector('.error_header').textContent = '¡ERROR, la aplicación no puede funcionar!';
+    errorElement.querySelector('.error_message').textContent = message;
+    errorElement.querySelector('.error_location').textContent = location;
+    errorElement.querySelector('.error_details').textContent = details.trim();
+
+    // Errors are shown in a first-happenned, first-shown manner.
+    errorTemplate.before(errorElement);
 };
 
 
@@ -57,7 +88,6 @@ globalThis.addEventListener('error', event => {
         message += message && !message.endsWith('.') ? '.' : '';
     }
 
-    console.error(`${message}${location ? `\n\n${location}` : ''}${details ? `\n\n${details}` : ''}`);
     globalThis.showError(message, location, details);
     event.preventDefault();
 });
@@ -147,9 +177,7 @@ class UI {
         this.jobsContainer = document.querySelector('#jobs');
         this.version = document.querySelector('#version');
         this.slowMode = document.querySelector('#slow_mode');
-        this.errorTemplate = document.querySelector('#error_template');
         this.formatsDropdown = document.querySelector('#job_template').content.querySelector('.job_formats_list');
-        this.lastError = null;
 
         this.slowMode.addEventListener('click', () => {
             globalThis.dispatchEvent(new CustomEvent('slowmodetoggle'));
@@ -207,36 +235,6 @@ class UI {
     showSlowModeStatus (status) {
         this.slowMode.hidden = false;
         this.slowMode.textContent = status ? '⊖' : '⊕';
-    }
-
-    showError (message, location, details) {
-        if (!this.lastError) {
-            for (const job of this.jobsContainer.querySelectorAll('.job:not([hidden])')) {
-                job.querySelector('.job_dismiss_button').click();
-            }
-
-            // Disable UI interaction by removing the file picker.
-            this.filePicker.remove();
-            delete this.filePicker;
-
-            // At this point no further interaction with the page is possible so the
-            // application is effectively stopped, even though it is still running…
-
-            // Use the hidden template as insertion point.
-            this.lastError = this.errorTemplate;
-        }
-
-        const errorElement = this.errorTemplate.cloneNode(true);
-
-        errorElement.querySelector('.error_header').textContent = '¡ERROR, la aplicación no puede funcionar!';
-        errorElement.querySelector('.error_message').textContent = message;
-        errorElement.querySelector('.error_location').textContent = location;
-        errorElement.querySelector('.error_details').textContent = details.trim();
-
-        // Errors are shown in a first-happenned, first-shown manner.
-        this.lastError.nextSibling.before(errorElement);
-        errorElement.hidden = false;
-        this.lastError = errorElement;
     }
 
     showJob (job) {
@@ -309,10 +307,6 @@ class Presenter {
         });
 
         this.view = new UI();
-
-        // Now that the UI is up and running, a new error printing function
-        // which shows the errors on the main web page can be set.
-        globalThis.showError = this.view.showError.bind(this.view);
     }
 
     initServiceWorker (serviceWorker) {
@@ -444,6 +438,7 @@ class Presenter {
 
 
 globalThis.addEventListener('load', () => {
+    globalThis.pageLoaded = true;
     const presenter = new Presenter();
     presenter.run();
 });

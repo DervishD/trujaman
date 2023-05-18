@@ -131,6 +131,8 @@ class Job {
             const formatsList = this.element.querySelector('.job_formats_list');
             formatsList.hidden = !formatsList.hidden;
         }, {'signal': this.controller.signal});
+
+        document.querySelector('#jobs').append(this.element);
     }
 
     remove () {
@@ -235,10 +237,6 @@ class UI {
     showSlowModeStatus (status) {
         this.slowMode.hidden = false;
         this.slowMode.textContent = status ? '⊖' : '⊕';
-    }
-
-    showJob (job) {
-        this.jobsContainer.append(job);
     }
 }
 
@@ -384,13 +382,12 @@ class Presenter {
             const [, fileName] = args;
             const newJob = new Job(jobId, fileName);
             this.jobs.set(jobId, newJob);
-            this.view.showJob(newJob.element);
             newJob.setState('processing');
             this.webWorkerDo('processJob', jobId);
             break;
         }
         case 'jobDeleted':
-            job.element.remove();
+            job.remove();
             this.jobs.delete(jobId);
             break;
         case 'jobCancelled':

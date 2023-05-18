@@ -259,10 +259,9 @@ class Presenter {
         this.developmentMode = false;
     }
 
-    async run () {
+    run () {
         this.initView();
-        await this.initServiceWorker('sw.js');
-        await this.loadFormats('formats.json');
+        this.initServiceWorker('sw.js');
         this.initWebWorker('ww.js');
     }
 
@@ -316,7 +315,7 @@ class Presenter {
         globalThis.showError = this.view.showError.bind(this.view);
     }
 
-    async initServiceWorker (serviceWorker) {
+    initServiceWorker (serviceWorker) {
         let refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             if (refreshing) return;
@@ -344,7 +343,7 @@ class Presenter {
         });
 
         try {
-            await navigator.serviceWorker.register(serviceWorker);
+            navigator.serviceWorker.register(serviceWorker);
         } catch (error) {
             // Service workers are considered site data, so cookies have to be enabled for the application to work.
             if (navigator.cookieEnabled) {

@@ -336,16 +336,15 @@ class Presenter {
             });
         });
 
-        try {
-            navigator.serviceWorker.register(serviceWorker);
-        } catch (error) {
+        navigator.serviceWorker.register(serviceWorker)
+        .catch(error => {
             // Service workers are considered site data, so cookies have to be enabled for the application to work.
             if (navigator.cookieEnabled) {
                 throw new FatalError('No se pudo iniciar el service worker.', error);
             } else {
                 throw new FatalError('Las cookies están desactivadas.', error);
             }
-        }
+        });
     }
 
     initWebWorker (webWorker) {

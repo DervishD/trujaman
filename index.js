@@ -116,15 +116,15 @@ class Job {
         this.controller = new AbortController();
 
         this.dismissButton.addEventListener('click', event => {
-            event.target.dispatchEvent(new CustomEvent('dismissjob', {'detail': this, 'bubbles': true}));
+            event.target.dispatchEvent(new CustomEvent('custom:dismissjob', {'detail': this, 'bubbles': true}));
         }, {'once': true});
 
         this.cancelButton.addEventListener('click', event => {
-            event.target.dispatchEvent(new CustomEvent('canceljob', {'detail': this, 'bubbles': true}));
+            event.target.dispatchEvent(new CustomEvent('custom:canceljob', {'detail': this, 'bubbles': true}));
         }, {'signal': this.controller.signal});
 
         this.retryButton.addEventListener('click', event => {
-            event.target.dispatchEvent(new CustomEvent('retryjob', {'detail': this, 'bubbles': true}));
+            event.target.dispatchEvent(new CustomEvent('custom:retryjob', {'detail': this, 'bubbles': true}));
         }, {'signal': this.controller.signal});
 
         this.element.querySelector('.job_download_dropdown').addEventListener('click', () => {
@@ -182,7 +182,7 @@ class UI {
         this.formatsDropdown = document.querySelector('#job_template').content.querySelector('.job_formats_list');
 
         this.slowMode.addEventListener('click', () => {
-            globalThis.dispatchEvent(new CustomEvent('slowmodetoggle'));
+            globalThis.dispatchEvent(new CustomEvent('custom:slowmodetoggle'));
         });
 
         this.filePicker.hidden = false;
@@ -191,7 +191,7 @@ class UI {
             this.filePickerInput.click();
         });
         this.filePickerInput.addEventListener('change', event => {
-            globalThis.dispatchEvent(new CustomEvent('processfiles', {'detail': event.target.files}));
+            globalThis.dispatchEvent(new CustomEvent('custom:processfiles', {'detail': event.target.files}));
             event.target.value = null;  // Otherwise the event won't be fired again if the user selects the same file…
         });
 
@@ -221,7 +221,7 @@ class UI {
 
             dropzone.addEventListener('drop', event => {
                 dropzone.dataset.state = 'dismissed';
-                globalThis.dispatchEvent(new CustomEvent('processfiles', {'detail': event.dataTransfer.files}));
+                globalThis.dispatchEvent(new CustomEvent('custom:processfiles', {'detail': event.dataTransfer.files}));
                 event.preventDefault();  // Prevent the browser from opening the file.
             });
         }
@@ -274,29 +274,29 @@ class Presenter {
     }
 
     initView (formats) {
-        globalThis.addEventListener('processfiles', event => {
+        globalThis.addEventListener('custom:processfiles', event => {
             const files = event.detail;
             for (const file of files) {
                 this.webWorkerDo('createJob', file);
             }
         });
 
-        globalThis.addEventListener('slowmodetoggle', () => {
+        globalThis.addEventListener('custom:slowmodetoggle', () => {
             this.webWorkerDo('slowModeToggle');
         });
 
-        globalThis.addEventListener('dismissjob', event => {
+        globalThis.addEventListener('custom:dismissjob', event => {
             const job = event.detail;
             this.webWorkerDo('deleteJob', job.jobId);
         });
 
-        globalThis.addEventListener('canceljob', event => {
+        globalThis.addEventListener('custom:canceljob', event => {
             const job = event.detail;
             job.setStatusMessage('Cancelando el fichero…');
             this.webWorkerDo('cancelJob', job.jobId);
         });
 
-        globalThis.addEventListener('retryjob', event => {
+        globalThis.addEventListener('custom:retryjob', event => {
             const job = event.detail;
             job.setState('retrying');
             this.webWorkerDo('retryJob', job.jobId);

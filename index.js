@@ -128,6 +128,15 @@ class Job {
         document.querySelector('#jobs').append(this.element);
     }
 
+    static setDownloadFormats (formats) {
+        const formatsDropdown = document.querySelector('#job_template').content.querySelector('.job_formats_list');
+        formats.forEach(format => {
+            const paragraph = document.createElement('p');
+            paragraph.textContent = format;
+            formatsDropdown.append(paragraph);
+        });
+    }
+
     remove () {
         // Remove event listeners before removing the DOM element.
         // Not really needed, apparently, but it's the Tao.
@@ -166,11 +175,10 @@ class Job {
 
 
 class UI {
-    constructor (formats) {
+    constructor () {
         const filePicker = document.querySelector('#filepicker');
         const filePickerInput = filePicker.querySelector('input');
         const filePickerButton = filePicker.querySelector('button');
-        const formatsDropdown = document.querySelector('#job_template').content.querySelector('.job_formats_list');
 
         filePicker.hidden = false;
         filePickerButton.focus();
@@ -180,12 +188,6 @@ class UI {
         filePickerInput.addEventListener('change', event => {
             globalThis.dispatchEvent(new CustomEvent('custom:processfiles', {'detail': event.target.files}));
             event.target.value = null;  // Otherwise the event won't be fired again if the user selects the same file…
-        });
-
-        formats.forEach(format => {
-            const paragraph = document.createElement('p');
-            paragraph.textContent = format;
-            formatsDropdown.append(paragraph);
         });
 
         // This feature is entirely optional.
@@ -231,6 +233,7 @@ class Presenter {
     run () {
         this.initServiceWorker('sw.js');
         this.initWebWorker('ww.js');
+        this.initView();
 
         fetch('formats.json')
         .then(response => {
@@ -240,7 +243,7 @@ class Presenter {
             return response.json();
         })
         .then(formats => {
-            this.initView(Object.keys(formats));
+            Job.setDownloadFormats(Object.keys(formats));
             this.webWorkerDo('registerFormats', formats);
         })
         .catch(error => {
@@ -248,7 +251,7 @@ class Presenter {
         });
     }
 
-    initView (formats) {
+    initView () {
         globalThis.addEventListener('custom:processfiles', event => {
             const files = event.detail;
             for (const file of files) {
@@ -277,7 +280,7 @@ class Presenter {
             this.webWorkerDo('retryJob', job.jobId);
         });
 
-        this.view = new UI(formats);
+        this.view = new UI();
     }
 
     initServiceWorker (serviceWorker) {

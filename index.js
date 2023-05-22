@@ -197,23 +197,29 @@ class VersionIndicator {
     }
 }
 
-class UI {
-    static enableFilePicker () {
-        const filePicker = document.querySelector('#filepicker');
-        const filePickerInput = filePicker.querySelector('input');
-        const filePickerButton = filePicker.querySelector('button');
 
-        filePicker.hidden = false;
-        filePickerButton.focus();
-        filePickerButton.addEventListener('click', () => {
-            filePickerInput.click();
+class FilePicker {
+    constructor () {
+        this.container = document.querySelector('#filepicker');
+        this.input = this.container.querySelector('input');
+        this.button = this.container.querySelector('button');
+    }
+
+    show () {
+        this.button.addEventListener('click', () => {
+            this.input.click();
         });
-        filePickerInput.addEventListener('change', event => {
+        this.input.addEventListener('change', event => {
             globalThis.dispatchEvent(new CustomEvent('custom:processfiles', {'detail': event.target.files}));
             event.target.value = null;  // Otherwise the event won't be fired again if the user selects the same file…
         });
+        this.container.hidden = false;
+        this.button.focus();
     }
+}
 
+
+class UI {
     static enableDragAndDrop () {
         // This feature is entirely optional.
         // Detection is performed by testing for the existence of the drag and drop events used.
@@ -246,6 +252,7 @@ class Presenter {
         this.jobViews = new Map();
         this.developmentMode = false;
         this.slowModeIndicator = new SlowModeIndicator();
+        this.filePicker = new FilePicker();
     }
 
     run () {
@@ -354,7 +361,7 @@ class Presenter {
         });
 
         this.slowModeIndicator.show();
-        UI.enableFilePicker();
+        this.filePicker.show();
         UI.enableDragAndDrop();
     }
 

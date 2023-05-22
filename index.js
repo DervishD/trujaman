@@ -92,7 +92,7 @@ globalThis.addEventListener('unhandledrejection', event => {
 });
 
 
-class JobElement {
+class JobView {
     constructor (jobId, fileName) {
         this.jobId = jobId;
 
@@ -237,15 +237,7 @@ class UI {
 
 class Presenter {
     constructor () {
-        // For keeping track of jobs.
-        //
-        // Since the Presenter has to keep a bijection map between job objects
-        // as returned by the View and job ids as returned by the web worker,
-        // for converting between them as needed, it would be necessary to keep
-        // two different maps. BUT, since it's impossible that a View object
-        // will collide with a web worker job id, BOTH of them can be added to
-        // the same Map() and that way it will work as a bijection.
-        this.jobs = new Map();
+        this.jobViews = new Map();
         this.developmentMode = false;
         this.slowModeIndicator = new SlowModeIndicator();
     }
@@ -263,7 +255,7 @@ class Presenter {
             return response.json();
         })
         .then(formats => {
-            JobElement.setDownloadFormats(Object.keys(formats));
+            JobView.setDownloadFormats(Object.keys(formats));
             this.webWorkerDo('registerFormats', formats);
         })
         .catch(error => {
@@ -339,20 +331,20 @@ class Presenter {
         });
 
         globalThis.addEventListener('custom:dismissjob', event => {
-            const job = event.detail;
-            this.webWorkerDo('deleteJob', job.jobId);
+            const jobView = event.detail;
+            this.webWorkerDo('deleteJob', jobView.jobId);
         });
 
         globalThis.addEventListener('custom:canceljob', event => {
-            const job = event.detail;
-            job.setStatusMessage('Cancelando el fichero…');
-            this.webWorkerDo('cancelJob', job.jobId);
+            const jobView = event.detail;
+            jobView.setStatusMessage('Cancelando el fichero…');
+            this.webWorkerDo('cancelJob', jobView.jobId);
         });
 
         globalThis.addEventListener('custom:retryjob', event => {
-            const job = event.detail;
-            job.setState('retrying');
-            this.webWorkerDo('retryJob', job.jobId);
+            const jobView = event.detail;
+            jobView.setState('retrying');
+            this.webWorkerDo('retryJob', jobView.jobId);
         });
 
         this.slowModeIndicator.show();
@@ -370,7 +362,7 @@ class Presenter {
         console.debug(`Received reply '${reply}'`, args);
 
         const [jobId] = args;  // Needed for most of the replies, so…
-        const job = this.jobs.get(jobId);  // Idem…
+        const jobView = this.jobViews.get(jobId);  // Idem…
 
         switch (reply) {
         case 'slowModeStatus': {
@@ -380,23 +372,23 @@ class Presenter {
         }
         case 'jobCreated': {
             const [, fileName] = args;
-            const newJob = new JobElement(jobId, fileName);
-            this.jobs.set(jobId, newJob);
-            newJob.setState('processing');
+            const newJobView = new JobView(jobId, fileName);
+            this.jobViews.set(jobId, newJobView);
+            newJobView.setState('processing');
             this.webWorkerDo('processJob', jobId);
             break;
         }
         case 'jobDeleted':
-            job.remove();
-            this.jobs.delete(jobId);
+            jobView.remove();
+            this.jobViews.delete(jobId);
             break;
         case 'jobCancelled':
-            job.setState('cancelled');
-            job.setStatusMessage('Lectura cancelada.');
+            jobView.setState('cancelled');
+            jobView.setStatusMessage('Lectura cancelada.');
             break;
         case 'bytesRead': {
             const [, percent] = args;
-            job.setStatusMessage(`Leyendo el fichero (${percent}%).`);
+            jobView.setStatusMessage(`Leyendo el fichero (${percent}%).`);
             break;
         }
         case 'fileReadOK': {
@@ -414,8 +406,8 @@ class Presenter {
                 }
                 debugInfo += '</span>';
             }
-            job.setState('processed');
-            job.setStatusMessage(`El fichero se leyó correctamente.${debugInfo}`);
+            jobView.setState('processed');
+            jobView.setStatusMessage(`El fichero se leyó correctamente.${debugInfo}`);
             break;
         }
         case 'fileReadError': {
@@ -426,11 +418,11 @@ class Presenter {
                 'NotReadableError': 'el fichero no se puede leer',
                 'SecurityError': 'el fichero no se puede leer de forma segura'
             };
-            job.setState('error');
+            jobView.setState('error');
             if (error.name in errorMessages) {
                 let statusMessage = `ERROR: ${errorMessages[error.name]}`;
                 statusMessage += ` <span class="monospaced">(${error.name})</span>.`;
-                job.setStatusMessage(statusMessage);
+                jobView.setStatusMessage(statusMessage);
             } else {
                 // Unexpected error condition that should not happen in production.
                 throw new FatalError(`Error «${error.name}» leyendo el fichero «${error.fileName}»`, error.message);

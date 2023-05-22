@@ -6,14 +6,6 @@ globalThis.showError = function showError (message, location, details) {
 
     const errorTemplate = document.querySelector('#error_template');
 
-    if (!globalThis.pageLoaded) {
-        // Very crude default function for showing errors to the end user.
-        // Works even if the page is not fully loaded, so it is a last resort.
-        // eslint-disable-next-line no-alert
-        alert(`¡Error inesperado!\n${message}\nCompruebe la consola para más detalles.`);
-        return;
-    }
-
     // Disable UI interaction by removing all page elements.
     Array.from(document.body.children).forEach(element => {
         if (['HEADER', 'TEMPLATE'].includes(element.tagName)) {
@@ -436,7 +428,6 @@ class Presenter {
 
 
 globalThis.addEventListener('load', () => {
-    globalThis.pageLoaded = true;
     const presenter = new Presenter();
     presenter.run();
 });

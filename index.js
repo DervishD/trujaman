@@ -172,10 +172,6 @@ class UI {
         const filePickerButton = filePicker.querySelector('button');
         const formatsDropdown = document.querySelector('#job_template').content.querySelector('.job_formats_list');
 
-        document.querySelector('#slow_mode').addEventListener('click', () => {
-            globalThis.dispatchEvent(new CustomEvent('custom:slowmodetoggle'));
-        });
-
         filePicker.hidden = false;
         filePickerButton.focus();
         filePickerButton.addEventListener('click', () => {
@@ -260,7 +256,7 @@ class Presenter {
             }
         });
 
-        globalThis.addEventListener('custom:slowmodetoggle', () => {
+        document.querySelector('#slow_mode').addEventListener('click', () => {
             this.webWorkerDo('slowModeToggle');
         });
 

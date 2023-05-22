@@ -45,6 +45,11 @@ globalThis.showVersion = function showVersion (version) {
 };
 
 
+globalThis.showSlowModeStatus = function showSlowModeStatus (status) {
+    document.querySelector('#slow_mode').textContent = status ? '⊖' : '⊕';
+};
+
+
 class FatalError extends Error {
     constructor (message, details = '') {
         super(message);
@@ -185,7 +190,7 @@ class UI {
         this.slowMode = document.querySelector('#slow_mode');
         this.formatsDropdown = document.querySelector('#job_template').content.querySelector('.job_formats_list');
 
-        this.slowMode.addEventListener('click', () => {
+        document.querySelector('#slow_mode').addEventListener('click', () => {
             globalThis.dispatchEvent(new CustomEvent('custom:slowmodetoggle'));
         });
 
@@ -229,10 +234,6 @@ class UI {
                 event.preventDefault();  // Prevent the browser from opening the file.
             });
         }
-    }
-
-    showSlowModeStatus (status) {
-        this.slowMode.textContent = status ? '⊖' : '⊕';
     }
 }
 
@@ -371,8 +372,7 @@ class Presenter {
         const job = this.jobs.get(jobId);  // Idem…
 
         switch (reply) {
-        case 'slowModeStatus':
-            this.view.showSlowModeStatus(args[0]);
+            globalThis.showSlowModeStatus(slowModeStatus);
             break;
         case 'jobCreated': {
             const [, fileName] = args;

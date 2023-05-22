@@ -23,7 +23,7 @@ globalThis.postReply = function postReply (reply, ...args) {
 globalThis.addEventListener('message', message => {
     const {command, args} = message.data;
     const [jobId] = args;  // Needed for most of the commands, so…
-    const job = globalThis.jobs.get(args[0]);  // Idem…
+    const job = globalThis.jobs.get(jobId);  // Idem…
     console.debug(`Received command '${command}'`, args);
 
     switch (command) {
@@ -35,8 +35,8 @@ globalThis.addEventListener('message', message => {
         globalThis.postReply('slowModeStatus', globalThis.slowModeEnabled);
         break;
     case 'createJob': {
-        const newJob = {'file': args[0]};
-        const newJobId = globalThis.currentJobId++;  // eslint-disable-line no-plusplus
+        const [fileName] = args;
+        const newJob = {'file': fileName};
 
         // According to ECMA-262 which says that Number.MAX_SAFE_INTEGER equals
         // (2^53)-1, and considering a scenario where 1000 jobs are added each
@@ -54,10 +54,12 @@ globalThis.addEventListener('message', message => {
         newJob.reader = new FileReader();
 
         newJob.reader.onprogress = event => {
+            const PERCENT_FACTOR = 100;
+            const percent = event.total ? Math.floor(PERCENT_FACTOR * event.loaded / event.total) : PERCENT_FACTOR;
+
             if (globalThis.slowModeEnabled && globalThis.FILE_READING_DELAY_MILLISECONDS) {
                 const start = Date.now(); while (Date.now() - start < globalThis.FILE_READING_DELAY_MILLISECONDS);
             }
-            const percent = event.total ? Math.floor(100 * event.loaded / event.total) : 100;
             globalThis.postReply('bytesRead', newJobId, percent);
         };
 

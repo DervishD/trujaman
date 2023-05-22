@@ -68,7 +68,8 @@ globalThis.addEventListener('error', event => {
 
     if (event.filename) {
         try {
-            location = new URL(event.filename).pathname.substring(1);
+            const FROM_SLASH = 1;
+            location = new URL(event.filename).pathname.substring(FROM_SLASH);
         } catch (exc) {
             if (exc instanceof TypeError) {
                 location = event.filename;
@@ -372,8 +373,11 @@ class Presenter {
         const job = this.jobs.get(jobId);  // Idem…
 
         switch (reply) {
+        case 'slowModeStatus': {
+            const [slowModeStatus] = args;
             globalThis.showSlowModeStatus(slowModeStatus);
             break;
+        }
         case 'jobCreated': {
             const [, fileName] = args;
             const newJob = new Job(jobId, fileName);
@@ -390,15 +394,28 @@ class Presenter {
             job.setState('cancelled');
             job.setStatusMessage('Lectura cancelada.');
             break;
-        case 'bytesRead':
-            job.setStatusMessage(`Leyendo el fichero (${args[1]}%).`);
+        case 'bytesRead': {
+            const [, percent] = args;
+            job.setStatusMessage(`Leyendo el fichero (${percent}%).`);
             break;
+        }
         case 'fileReadOK': {
-            let marker = `[${typeof args[1] === 'undefined' ? '××' : `0x${args[1].toString(16).padStart(2, 0)}`}]`;
-            marker += this.developmentMode ? `<br>jobId <${jobId}>` : '';
-            marker = `<span class="monospaced">${marker}</span>`;
+            const [, data] = args;
+            let debugInfo = '';
+            if (this.developmentMode) {
+                const HEX_RADIX = 16;
+                const TARGET_LENGTH = 2;
+                const PAD_STRING = '0';
+                debugInfo = `<br><span class="monospaced">jobId <${jobId}>`;
+                if (typeof data === 'undefined') {
+                    debugInfo += ', empty file';
+                } else {
+                    debugInfo += `, data <0x${data.toString(HEX_RADIX).padStart(TARGET_LENGTH, PAD_STRING)}>`;
+                }
+                debugInfo += '</span>';
+            }
             job.setState('processed');
-            job.setStatusMessage(`El fichero se leyó correctamente. ${marker}`);
+            job.setStatusMessage(`El fichero se leyó correctamente.${debugInfo}`);
             break;
         }
         case 'fileReadError': {
@@ -420,8 +437,10 @@ class Presenter {
             }
             break;
         }
-        case 'commandNotFound':
-            throw new FatalError(`El web worker no reconoce el comando «${args[0]}».`);
+        case 'commandNotFound': {
+            const [command] = args;
+            throw new FatalError(`El web worker no reconoce el comando «${command}».`);
+        }
         default:
             throw new FatalError(`No se reconoce la respuesta del web worker «${reply}».`);
         }

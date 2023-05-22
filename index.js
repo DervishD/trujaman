@@ -175,23 +175,21 @@ class Job {
 
 class UI {
     constructor (formats) {
-        this.filePicker = document.querySelector('#filepicker');
-        this.filePickerInput = this.filePicker.querySelector('input');
-        this.filePickerButton = this.filePicker.querySelector('button');
-        this.jobsContainer = document.querySelector('#jobs');
-        this.slowMode = document.querySelector('#slow_mode');
-        this.formatsDropdown = document.querySelector('#job_template').content.querySelector('.job_formats_list');
+        const filePicker = document.querySelector('#filepicker');
+        const filePickerInput = filePicker.querySelector('input');
+        const filePickerButton = filePicker.querySelector('button');
+        const formatsDropdown = document.querySelector('#job_template').content.querySelector('.job_formats_list');
 
         document.querySelector('#slow_mode').addEventListener('click', () => {
             globalThis.dispatchEvent(new CustomEvent('custom:slowmodetoggle'));
         });
 
-        this.filePicker.hidden = false;
-        this.filePickerButton.focus();
-        this.filePickerButton.addEventListener('click', () => {
-            this.filePickerInput.click();
+        filePicker.hidden = false;
+        filePickerButton.focus();
+        filePickerButton.addEventListener('click', () => {
+            filePickerInput.click();
         });
-        this.filePickerInput.addEventListener('change', event => {
+        filePickerInput.addEventListener('change', event => {
             globalThis.dispatchEvent(new CustomEvent('custom:processfiles', {'detail': event.target.files}));
             event.target.value = null;  // Otherwise the event won't be fired again if the user selects the same file…
         });
@@ -199,14 +197,12 @@ class UI {
         formats.forEach(format => {
             const paragraph = document.createElement('p');
             paragraph.textContent = format;
-            this.formatsDropdown.append(paragraph);
+            formatsDropdown.append(paragraph);
         });
 
-        this.jobsContainer.hidden = false;
-
         // This feature is entirely optional.
-        // Detection is performed by testing for the existence of the drag and
-        // drop events used. This is not orthodox but works well enough.
+        // Detection is performed by testing for the existence of the drag and drop events used.
+        // This is not orthodox but works well enough.
         if (['dragenter', 'dragover', 'dragleave', 'drop'].every(event => `on${event}` in globalThis)) {
             const dropzone = document.querySelector('#dropzone');
 

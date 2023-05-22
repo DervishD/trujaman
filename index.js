@@ -41,9 +41,7 @@ globalThis.showError = function showError (message, location, details) {
 
 
 globalThis.showVersion = function showVersion (version) {
-    const versionElement = document.querySelector('#version');
-    versionElement.hidden = false;
-    versionElement.textContent += `v${version}`;
+    document.querySelector('#version').textContent += `v${version}`;
 };
 
 
@@ -233,13 +231,7 @@ class UI {
         }
     }
 
-    showVersion (version) {
-        this.version.hidden = false;
-        this.version.textContent += `v${version}`;
-    }
-
     showSlowModeStatus (status) {
-        this.slowMode.hidden = false;
         this.slowMode.textContent = status ? '⊖' : '⊕';
     }
 }

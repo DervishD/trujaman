@@ -7,7 +7,7 @@ globalThis.formats = null;
 globalThis.jobs = new Map();
 globalThis.currentJobId = 0;
 
-globalThis.MAX_FILE_SIZE_BYTES = 99 * 1024 * 1024;
+const MAX_FILE_SIZE_MIB = 99;
 
 // For delaying for file reading operations so the UI can be tested better, in "slow mode".
 globalThis.FILE_READING_DELAY_MILLISECONDS = 500;
@@ -85,7 +85,8 @@ globalThis.addEventListener('message', message => {
     }
     case 'processJob':
     case 'retryJob': {
-        if (job.file.size > globalThis.MAX_FILE_SIZE_BYTES) {
+        const KIB_MULTIPLIER = 1024;
+        if (job.file.size > MAX_FILE_SIZE_MIB * KIB_MULTIPLIER * KIB_MULTIPLIER) {
             const error = {
                 'name': 'FileTooLargeError',
                 'fileName': job.file.name

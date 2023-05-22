@@ -183,6 +183,7 @@ class SlowModeIndicator {
         this.element.addEventListener('click', () => {
             globalThis.dispatchEvent(new CustomEvent('custom:slowmodetoggle'));
         });
+        this.element.hidden = false;
     }
 
     setStatus (status) {
@@ -297,6 +298,7 @@ class Presenter {
                     // Enable development mode ONLY for prereleases which are NOT release candidates.
                     if (version.includes('-') && !version.includes('-rc')) {
                         this.developmentMode = true;
+                        this.slowModeIndicator.show();
                         this.webWorkerDo('slowModeToggle');
                     }
                 }
@@ -360,7 +362,6 @@ class Presenter {
             this.webWorkerDo('retryJob', jobView.jobId);
         });
 
-        this.slowModeIndicator.show();
         this.filePicker.show();
         UI.enableDragAndDrop();
     }

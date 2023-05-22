@@ -40,6 +40,13 @@ globalThis.showError = function showError (message, location, details) {
 };
 
 
+globalThis.showVersion = function showVersion (version) {
+    const versionElement = document.querySelector('#version');
+    versionElement.hidden = false;
+    versionElement.textContent += `v${version}`;
+};
+
+
 class FatalError extends Error {
     constructor (message, details = '') {
         super(message);
@@ -177,7 +184,6 @@ class UI {
         this.filePickerInput = this.filePicker.querySelector('input');
         this.filePickerButton = this.filePicker.querySelector('button');
         this.jobsContainer = document.querySelector('#jobs');
-        this.version = document.querySelector('#version');
         this.slowMode = document.querySelector('#slow_mode');
         this.formatsDropdown = document.querySelector('#job_template').content.querySelector('.job_formats_list');
 
@@ -321,8 +327,8 @@ class Presenter {
             fetch('version')
             .then(response => response.text())
             .then(version => {
-                if (version && this.view) {
-                    this.view.showVersion(version);
+                if (version) {
+                    globalThis.showVersion(version);
                     // Enable development mode ONLY for prereleases which are NOT release candidates.
                     if (version.includes('-') && !version.includes('-rc')) {
                         this.developmentMode = true;

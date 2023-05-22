@@ -40,16 +40,6 @@ globalThis.showError = function showError (message, location, details) {
 };
 
 
-globalThis.showVersion = function showVersion (version) {
-    document.querySelector('#version').textContent += `v${version}`;
-};
-
-
-globalThis.showSlowModeStatus = function showSlowModeStatus (status) {
-    document.querySelector('#slow_mode').textContent = status ? '⊖' : '⊕';
-};
-
-
 class FatalError extends Error {
     constructor (message, details = '') {
         super(message);
@@ -322,7 +312,7 @@ class Presenter {
             .then(response => response.text())
             .then(version => {
                 if (version) {
-                    globalThis.showVersion(version);
+                    document.querySelector('#version').textContent += `v${version}`;
                     // Enable development mode ONLY for prereleases which are NOT release candidates.
                     if (version.includes('-') && !version.includes('-rc')) {
                         this.developmentMode = true;
@@ -375,7 +365,7 @@ class Presenter {
         switch (reply) {
         case 'slowModeStatus': {
             const [slowModeStatus] = args;
-            globalThis.showSlowModeStatus(slowModeStatus);
+            document.querySelector('#slow_mode').textContent = slowModeStatus ? '⊖' : '⊕';
             break;
         }
         case 'jobCreated': {

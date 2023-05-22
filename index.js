@@ -191,6 +191,12 @@ class SlowModeIndicator {
 }
 
 
+class VersionIndicator {
+    static show (version) {
+        document.querySelector('#version').textContent += `v${version}`;
+    }
+}
+
 class UI {
     static enableFilePicker () {
         const filePicker = document.querySelector('#filepicker');
@@ -280,7 +286,7 @@ class Presenter {
             .then(response => response.text())
             .then(version => {
                 if (version) {
-                    document.querySelector('#version').textContent += `v${version}`;
+                    VersionIndicator.show(version);
                     // Enable development mode ONLY for prereleases which are NOT release candidates.
                     if (version.includes('-') && !version.includes('-rc')) {
                         this.developmentMode = true;

@@ -92,7 +92,7 @@ globalThis.addEventListener('unhandledrejection', event => {
 });
 
 
-class Job {
+class JobElement {
     constructor (jobId, fileName) {
         this.jobId = jobId;
 
@@ -243,7 +243,7 @@ class Presenter {
             return response.json();
         })
         .then(formats => {
-            Job.setDownloadFormats(Object.keys(formats));
+            JobElement.setDownloadFormats(Object.keys(formats));
             this.webWorkerDo('registerFormats', formats);
         })
         .catch(error => {
@@ -358,7 +358,7 @@ class Presenter {
         }
         case 'jobCreated': {
             const [, fileName] = args;
-            const newJob = new Job(jobId, fileName);
+            const newJob = new JobElement(jobId, fileName);
             this.jobs.set(jobId, newJob);
             newJob.setState('processing');
             this.webWorkerDo('processJob', jobId);

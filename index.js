@@ -220,30 +220,27 @@ class FilePicker {
 }
 
 
-class UI {
-    static enableDragAndDrop () {
-        // This feature is entirely optional.
-        // Detection is performed by testing for the existence of the drag and drop events used.
-        // This is not orthodox but works well enough.
-        if (['dragenter', 'dragover', 'dragleave', 'drop'].every(event => `on${event}` in globalThis)) {
-            const dropzone = document.querySelector('#dropzone');
+class DropZone {
+    constructor () {
+        this.element = document.querySelector('#dropzone');
+    }
 
-            dropzone.hidden = false;
-            dropzone.dataset.state = 'hidden';
+    show () {
+        globalThis.addEventListener('dragenter', () => { this.element.dataset.state = 'visible'; });
+        this.element.addEventListener('dragleave', () => { this.element.dataset.state = 'hidden'; });
 
-            globalThis.addEventListener('dragenter', () => { dropzone.dataset.state = 'visible'; });
-            dropzone.addEventListener('dragleave', () => { dropzone.dataset.state = 'hidden'; });
+        // This is needed because otherwise the page is NOT a valid drop target,
+        // and when the file is dropped the default action is performed by the browser.
+        this.element.addEventListener('dragover', event => { event.preventDefault(); });
 
-            // This is needed because otherwise the page is NOT a valid drop target,
-            // and when the file is dropped the default action is performed by the browser.
-            dropzone.addEventListener('dragover', event => { event.preventDefault(); });
+        this.element.addEventListener('drop', event => {
+            this.element.dataset.state = 'dismissed';
+            globalThis.dispatchEvent(new CustomEvent('custom:processfiles', {'detail': event.dataTransfer.files}));
+            event.preventDefault();  // Prevent the browser from opening the file.
+        });
 
-            dropzone.addEventListener('drop', event => {
-                dropzone.dataset.state = 'dismissed';
-                globalThis.dispatchEvent(new CustomEvent('custom:processfiles', {'detail': event.dataTransfer.files}));
-                event.preventDefault();  // Prevent the browser from opening the file.
-            });
-        }
+        this.element.hidden = false;
+        this.element.dataset.state = 'hidden';
     }
 }
 
@@ -254,6 +251,13 @@ class Presenter {
         this.developmentMode = false;
         this.slowModeIndicator = new SlowModeIndicator();
         this.filePicker = new FilePicker();
+
+        // This feature is entirely optional.
+        // Detection is performed by testing for the existence of the drag and drop events used.
+        // This is not orthodox but works well enough.
+        if (['dragenter', 'dragover', 'dragleave', 'drop'].every(event => `on${event}` in globalThis)) {
+            this.dropZone = new DropZone();
+        }
     }
 
     run () {
@@ -363,7 +367,7 @@ class Presenter {
         });
 
         this.filePicker.show();
-        UI.enableDragAndDrop();
+        this.dropZone?.show();
     }
 
     webWorkerDo (command, ...args) {

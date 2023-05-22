@@ -167,6 +167,7 @@ class Job {
             this.retryButton.hidden = true;
             this.downloadDropdown.hidden = true;
             break;
+        // No default
         }
     }
 }

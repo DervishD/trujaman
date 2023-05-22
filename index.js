@@ -174,6 +174,23 @@ class JobElement {
 }
 
 
+class SlowModeIndicator {
+    constructor () {
+        this.element = document.querySelector('#slow_mode');
+    }
+
+    show () {
+        this.element.addEventListener('click', () => {
+            globalThis.dispatchEvent(new CustomEvent('custom:slowmodetoggle'));
+        });
+    }
+
+    setStatus (status) {
+        this.element.textContent = status ? '⊖' : '⊕';
+    }
+}
+
+
 class UI {
     static enableFilePicker () {
         const filePicker = document.querySelector('#filepicker');
@@ -230,6 +247,7 @@ class Presenter {
         // the same Map() and that way it will work as a bijection.
         this.jobs = new Map();
         this.developmentMode = false;
+        this.slowModeIndicator = new SlowModeIndicator();
     }
 
     run () {
@@ -316,7 +334,7 @@ class Presenter {
             }
         });
 
-        document.querySelector('#slow_mode').addEventListener('click', () => {
+        globalThis.addEventListener('custom:slowmodetoggle', () => {
             this.webWorkerDo('slowModeToggle');
         });
 
@@ -337,6 +355,7 @@ class Presenter {
             this.webWorkerDo('retryJob', job.jobId);
         });
 
+        this.slowModeIndicator.show();
         UI.enableFilePicker();
         UI.enableDragAndDrop();
     }
@@ -356,7 +375,7 @@ class Presenter {
         switch (reply) {
         case 'slowModeStatus': {
             const [slowModeStatus] = args;
-            document.querySelector('#slow_mode').textContent = slowModeStatus ? '⊖' : '⊕';
+            this.slowModeIndicator.setStatus(slowModeStatus);
             break;
         }
         case 'jobCreated': {

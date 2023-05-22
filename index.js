@@ -175,7 +175,7 @@ class JobElement {
 
 
 class UI {
-    constructor () {
+    static enableFilePicker () {
         const filePicker = document.querySelector('#filepicker');
         const filePickerInput = filePicker.querySelector('input');
         const filePickerButton = filePicker.querySelector('button');
@@ -189,7 +189,9 @@ class UI {
             globalThis.dispatchEvent(new CustomEvent('custom:processfiles', {'detail': event.target.files}));
             event.target.value = null;  // Otherwise the event won't be fired again if the user selects the same file…
         });
+    }
 
+    static enableDragAndDrop () {
         // This feature is entirely optional.
         // Detection is performed by testing for the existence of the drag and drop events used.
         // This is not orthodox but works well enough.
@@ -251,38 +253,6 @@ class Presenter {
         });
     }
 
-    initView () {
-        globalThis.addEventListener('custom:processfiles', event => {
-            const files = event.detail;
-            for (const file of files) {
-                this.webWorkerDo('createJob', file);
-            }
-        });
-
-        document.querySelector('#slow_mode').addEventListener('click', () => {
-            this.webWorkerDo('slowModeToggle');
-        });
-
-        globalThis.addEventListener('custom:dismissjob', event => {
-            const job = event.detail;
-            this.webWorkerDo('deleteJob', job.jobId);
-        });
-
-        globalThis.addEventListener('custom:canceljob', event => {
-            const job = event.detail;
-            job.setStatusMessage('Cancelando el fichero…');
-            this.webWorkerDo('cancelJob', job.jobId);
-        });
-
-        globalThis.addEventListener('custom:retryjob', event => {
-            const job = event.detail;
-            job.setState('retrying');
-            this.webWorkerDo('retryJob', job.jobId);
-        });
-
-        this.view = new UI();
-    }
-
     initServiceWorker (serviceWorker) {
         let refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
@@ -336,6 +306,39 @@ class Presenter {
                 throw new FatalError('No se pudo iniciar el web worker.');
             }
         });
+    }
+
+    initView () {
+        globalThis.addEventListener('custom:processfiles', event => {
+            const files = event.detail;
+            for (const file of files) {
+                this.webWorkerDo('createJob', file);
+            }
+        });
+
+        document.querySelector('#slow_mode').addEventListener('click', () => {
+            this.webWorkerDo('slowModeToggle');
+        });
+
+        globalThis.addEventListener('custom:dismissjob', event => {
+            const job = event.detail;
+            this.webWorkerDo('deleteJob', job.jobId);
+        });
+
+        globalThis.addEventListener('custom:canceljob', event => {
+            const job = event.detail;
+            job.setStatusMessage('Cancelando el fichero…');
+            this.webWorkerDo('cancelJob', job.jobId);
+        });
+
+        globalThis.addEventListener('custom:retryjob', event => {
+            const job = event.detail;
+            job.setState('retrying');
+            this.webWorkerDo('retryJob', job.jobId);
+        });
+
+        UI.enableFilePicker();
+        UI.enableDragAndDrop();
     }
 
     webWorkerDo (command, ...args) {

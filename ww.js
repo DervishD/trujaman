@@ -37,6 +37,7 @@ globalThis.addEventListener('message', message => {
     case 'createJob': {
         const [fileName] = args;
         const newJob = {'file': fileName};
+        const newJobId = globalThis.currentJobId++;
 
         // According to ECMA-262 which says that Number.MAX_SAFE_INTEGER equals
         // (2^53)-1, and considering a scenario where 1000 jobs are added each

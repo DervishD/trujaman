@@ -113,6 +113,7 @@ class JobView {
         }, {'once': true});
 
         this.cancelButton.addEventListener('click', event => {
+            this.cancelButton.disabled = true;
             event.target.dispatchEvent(new CustomEvent('custom:canceljob', {'detail': this, 'bubbles': true}));
         }, {'signal': this.controller.signal});
 
@@ -153,6 +154,7 @@ class JobView {
         case 'processing':
         case 'retrying':
             this.retryButton.hidden = true;
+            this.cancelButton.disabled = false;
             this.cancelButton.hidden = false;
             break;
         case 'processed':

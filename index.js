@@ -373,90 +373,92 @@ class Presenter {
         this.dropZone?.show();
     }
 
-    webWorkerDo (command, ...args) {
-        console.debug(`Sending command '${command}'`, args);
-        this.worker.postMessage({command, args});
+    webWorkerDo (command, payload) {
+        console.debug(`Sending command '${command}'`, payload);
+        this.worker.postMessage({command, payload});
     }
 
     handleWebWorkerMessage (message) {
-        const {reply, args} = message.data;
-        console.debug(`Received reply '${reply}'`, args);
+        const {reply, payload} = message.data;
+        console.debug(`Received reply '${reply}'`, payload);
 
-        const [jobId] = args;  // Needed for most of the replies, so…
-        const jobView = this.jobViews.get(jobId);  // Idem…
-
-        switch (reply) {
-        case 'slowModeState': {
-            const [slowModeState] = args;
-            this.slowModeIndicator.setState(slowModeState);
-            this.slowModeState = slowModeState;
-            break;
-        }
-        case 'jobCreated': {
-            const [, fileName] = args;
-            const newJobView = new JobView(jobId, fileName);
-            this.jobViews.set(jobId, newJobView);
-            newJobView.setState('processing');
-            this.webWorkerDo('processJob', jobId);
-            break;
-        }
-        case 'jobDeleted':
-            jobView.remove();
-            this.jobViews.delete(jobId);
-            break;
-        case 'jobCancelled':
-            jobView.setState('cancelled');
-            jobView.setStatusMessage('Lectura cancelada.');
-            break;
-        case 'bytesRead': {
-            const [, percent] = args;
-            jobView.setStatusMessage(`Leyendo el fichero (${percent}%).`);
-            break;
-        }
-        case 'fileReadOK': {
-            const [, data] = args;
-            let debugInfo = '';
-            if (this.developmentMode) {
-                const HEX_RADIX = 16;
-                const TARGET_LENGTH = 2;
-                const PAD_STRING = '0';
-                debugInfo = `<br><span class="monospaced">jobId <${jobId}>`;
-                if (typeof data === 'undefined') {
-                    debugInfo += ', empty file';
-                } else {
-                    debugInfo += `, data <0x${data.toString(HEX_RADIX).padStart(TARGET_LENGTH, PAD_STRING)}>`;
-                }
-                debugInfo += '</span>';
-            }
-            jobView.setState('processed');
-            jobView.setStatusMessage(`El fichero se leyó correctamente.${debugInfo}`);
-            break;
-        }
-        case 'fileReadError': {
-            const [, error] = args;
-            const errorMessages = {
-                'FileTooLargeError': 'el fichero es muy grande',
-                'NotFoundError': 'el fichero no existe',
-                'NotReadableError': 'el fichero no se puede leer',
-                'SecurityError': 'el fichero no se puede leer de forma segura'
-            };
-            jobView.setState('error');
-            if (error.name in errorMessages) {
-                let statusMessage = `ERROR: ${errorMessages[error.name]}`;
-                statusMessage += ` <span class="monospaced">(${error.name})</span>.`;
-                jobView.setStatusMessage(statusMessage);
-            } else {
-                // Unexpected error condition that should not happen in production.
-                throw new FatalError(`Error «${error.name}» leyendo el fichero «${error.fileName}»`, error.message);
-            }
-            break;
-        }
-        case 'commandNotFound': {
-            const [command] = args;
+        if (reply === 'commandNotFound') {
+            const command = payload;
             throw new FatalError(`El web worker no reconoce el comando «${command}».`);
         }
-        default:
+
+        const handler = `${reply}Handler`;
+        if (handler in this) {
+            this[handler](payload);
+        } else {
             throw new FatalError(`No se reconoce la respuesta del web worker «${reply}».`);
+        }
+    }
+
+    slowModeStateHandler (state) {
+        this.slowModeState = state;
+        this.slowModeIndicator.setState(this.slowModeState);
+    }
+
+    jobCreatedHandler ({jobId, fileName}) {
+        const newJobView = new JobView(jobId, fileName);
+        this.jobViews.set(jobId, newJobView);
+        newJobView.setState('processing');
+        this.webWorkerDo('processJob', jobId);
+    }
+
+    jobDeletedHandler (jobId) {
+        const jobView = this.jobViews.get(jobId);
+        jobView.remove();
+        this.jobViews.delete(jobId);
+    }
+
+    jobCancelledHandler (jobId) {
+        const jobView = this.jobViews.get(jobId);
+        jobView.setState('cancelled');
+        jobView.setStatusMessage('Lectura cancelada.');
+    }
+
+    bytesReadHandler ({jobId, percent}) {
+        const jobView = this.jobViews.get(jobId);
+        jobView.setStatusMessage(`Leyendo el fichero (${percent}%).`);
+    }
+
+    fileReadOKHandler ({jobId, contents}) {
+        const jobView = this.jobViews.get(jobId);
+        let debugInfo = '';
+        if (this.developmentMode) {
+            const HEX_RADIX = 16;
+            const TARGET_LENGTH = 2;
+            const PAD_STRING = '0';
+            debugInfo = `<br><span class="monospaced">jobId <${jobId}>`;
+            if (typeof contents === 'undefined') {
+                debugInfo += ', empty file';
+            } else {
+                debugInfo += `, data <0x${contents.toString(HEX_RADIX).padStart(TARGET_LENGTH, PAD_STRING)}>`;
+            }
+            debugInfo += '</span>';
+        }
+        jobView.setState('processed');
+        jobView.setStatusMessage(`El fichero se leyó correctamente.${debugInfo}`);
+    }
+
+    fileReadErrorHandler ({jobId, error}) {
+        const jobView = this.jobViews.get(jobId);
+        const errorMessages = {
+            'FileTooLargeError': 'el fichero es muy grande',
+            'NotFoundError': 'el fichero no existe',
+            'NotReadableError': 'el fichero no se puede leer',
+            'SecurityError': 'el fichero no se puede leer de forma segura'
+        };
+        jobView.setState('error');
+        if (error.name in errorMessages) {
+            let statusMessage = `ERROR: ${errorMessages[error.name]}`;
+            statusMessage += ` <span class="monospaced">(${error.name})</span>.`;
+            jobView.setStatusMessage(statusMessage);
+        } else {
+            // Unexpected error condition that should not happen in production.
+            throw new FatalError(`Error «${error.name}» leyendo el fichero «${error.fileName}»`, error.message);
         }
     }
 }

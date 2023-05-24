@@ -14,9 +14,9 @@ globalThis.FILE_READING_DELAY_MILLISECONDS = 500;
 globalThis.slowModeEnabled = false;
 
 
-globalThis.postReply = function postReply (reply, ...args) {
-    console.debug(`Sending reply '${reply}'`, args);
-    globalThis.postMessage({reply, args});
+globalThis.postReply = function postReply (reply, payload) {
+    console.debug(`Sending reply '${reply}'`, payload);
+    globalThis.postMessage({reply, payload});
 };
 
 
@@ -59,7 +59,7 @@ globalThis.createJobHandler = function createJobHandler (file) {
         if (globalThis.slowModeEnabled) {
             const start = Date.now(); while (Date.now() - start < globalThis.FILE_READING_DELAY_MILLISECONDS);
         }
-        globalThis.postReply('bytesRead', jobId, percent);
+        globalThis.postReply('bytesRead', {jobId, percent});
     };
 
     job.reader.onerror = event => {
@@ -68,18 +68,18 @@ globalThis.createJobHandler = function createJobHandler (file) {
             'message': event.target.error.message,
             'fileName': job.file.name
         };
-        globalThis.postReply('fileReadError', jobId, error);
+        globalThis.postReply('fileReadError', {jobId, error});
     };
     job.reader.onload = event => {
-        const [marker] = new Uint8Array(event.target.result);
-        globalThis.postReply('fileReadOK', jobId, marker);
+        const [contents] = new Uint8Array(event.target.result);
+        globalThis.postReply('fileReadOK', {jobId, contents});
     };
     job.reader.onabort = () => {
         globalThis.postReply('jobCancelled', jobId);
     };
 
     globalThis.jobs.set(jobId, job);
-    globalThis.postReply('jobCreated', jobId, job.file.name);
+    globalThis.postReply('jobCreated', {jobId, 'fileName': job.file.name});
 };
 
 
@@ -103,7 +103,7 @@ globalThis.processJobHandler = function processJobHandler (jobId) {
             'name': 'FileTooLargeError',
             'fileName': job.file.name
         };
-        globalThis.postReply('fileReadError', jobId, error);
+        globalThis.postReply('fileReadError', {jobId, error});
     } else {
         // The file is read using the HTML5 File API.
         // Read the file as ArrayBuffer.

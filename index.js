@@ -186,8 +186,8 @@ class SlowModeIndicator {
         this.element.hidden = false;
     }
 
-    setStatus (status) {
-        this.element.textContent = status ? '⊖' : '⊕';
+    setState (state) {
+        this.element.textContent = state ? '⊖' : '⊕';
     }
 }
 
@@ -250,6 +250,7 @@ class Presenter {
         this.jobViews = new Map();
         this.developmentMode = false;
         this.slowModeIndicator = new SlowModeIndicator();
+        this.slowModeState = false;
         this.filePicker = new FilePicker();
 
         // This feature is entirely optional.
@@ -302,8 +303,9 @@ class Presenter {
                     // Enable development mode ONLY for prereleases which are NOT release candidates.
                     if (version.includes('-') && !version.includes('-rc')) {
                         this.developmentMode = true;
+                        this.slowModeState = true;
                         this.slowModeIndicator.show();
-                        this.webWorkerDo('slowModeToggle');
+                        this.webWorkerDo('setSlowMode', this.slowModeState);
                     }
                 }
             });
@@ -346,7 +348,8 @@ class Presenter {
         });
 
         globalThis.addEventListener('custom:slowmodetoggle', () => {
-            this.webWorkerDo('slowModeToggle');
+            this.slowModeState = !this.slowModeState;
+            this.webWorkerDo('setSlowMode', this.slowModeState);
         });
 
         globalThis.addEventListener('custom:dismissjob', event => {
@@ -383,9 +386,10 @@ class Presenter {
         const jobView = this.jobViews.get(jobId);  // Idem…
 
         switch (reply) {
-        case 'slowModeStatus': {
-            const [slowModeStatus] = args;
-            this.slowModeIndicator.setStatus(slowModeStatus);
+        case 'slowModeState': {
+            const [slowModeState] = args;
+            this.slowModeIndicator.setState(slowModeState);
+            this.slowModeState = slowModeState;
             break;
         }
         case 'jobCreated': {

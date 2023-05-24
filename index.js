@@ -130,11 +130,11 @@ class JobView {
     }
 
     static setDownloadFormats (formats) {
-        const formatsDropdown = document.querySelector('#job_template').content.querySelector('.job_formats_list');
+        const formatsList = document.querySelector('#job_template').content.querySelector('.job_formats_list');
         formats.forEach(format => {
             const paragraph = document.createElement('p');
             paragraph.textContent = format;
-            formatsDropdown.append(paragraph);
+            formatsList.append(paragraph);
         });
     }
 

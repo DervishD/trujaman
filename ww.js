@@ -5,7 +5,6 @@ console.info('Web worker loaded');
 
 globalThis.formats = null;
 globalThis.jobs = new Map();
-globalThis.currentJobId = 0;
 
 const MAX_FILE_SIZE_MIB = 99;
 
@@ -33,20 +32,24 @@ globalThis.addEventListener('message', message => {
 });
 
 
-globalThis.createJobHandler = function createJobHandler (file) {
-    const job = {file, 'reader': null};
-    const jobId = globalThis.currentJobId++;
-
+globalThis.generateJobId = (function *generateJobId () {
     // According to ECMA-262 Number.MAX_SAFE_INTEGER is (2^53)-1. So, even in an
     // scenario where 1000 jobs are added each millisecond, which is, in fact, a
     // bit optimistic, jobs could be added at that rate for a bit over 285 years
     // for the test below to be true.
     //
-    // So, it is safe to just silently fail here.
-    //
-    // Also, if the formats have not been registered, silently fail here.
-    // Because that should not happen, either…
-    if (!Number.isSafeInteger(jobId) || !globalThis.formats) {
+    // So, it is perfectly safe to end the generator in that case.
+    let id = 0;
+    while (Number.isSafeInteger(id)) {
+        yield id++;
+    }
+}());
+
+globalThis.createJobHandler = function createJobHandler (file) {
+    const job = {file, 'reader': null};
+    const jobId = globalThis.generateJobId.next().value;
+
+    if (typeof jobId === 'undefined' || !globalThis.formats) {
         return;
     }
 

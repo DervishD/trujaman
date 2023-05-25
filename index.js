@@ -1,7 +1,7 @@
 'use strict';
 
 
-globalThis.showError = function showError (message, location, details) {
+globalThis.showError = (message, location, details) => {
     console.error(`${message}${location ? `\n\n${location}` : ''}${details ? `\n\n${details}` : ''}`);
 
     const errorTemplate = document.querySelector('#error_template');

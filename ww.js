@@ -13,7 +13,7 @@ globalThis.FILE_READING_DELAY_MILLISECONDS = 500;
 globalThis.slowModeEnabled = false;
 
 
-globalThis.postReply = function postReply (reply, payload) {
+globalThis.postReply = (reply, payload) => {
     console.debug(`Sending reply '${reply}'`, payload);
     globalThis.postMessage({reply, payload});
 };
@@ -45,7 +45,7 @@ globalThis.generateJobId = (function *generateJobId () {
     }
 }());
 
-globalThis.createJobHandler = function createJobHandler (file) {
+globalThis.createJobHandler = file => {
     const job = {file, 'reader': null};
     const jobId = globalThis.generateJobId.next().value;
 
@@ -86,18 +86,18 @@ globalThis.createJobHandler = function createJobHandler (file) {
 };
 
 
-globalThis.registerFormatsHandler = function registerFormatsHandler (formats) {
+globalThis.registerFormatsHandler = formats => {
     globalThis.formats = formats;
 };
 
 
-globalThis.setSlowModeHandler = function setSlowModeHandler (state) {
+globalThis.setSlowModeHandler = state => {
     globalThis.slowModeEnabled = state;
     globalThis.postReply('slowModeState', globalThis.slowModeEnabled);
 };
 
 
-globalThis.processJobHandler = function processJobHandler (jobId) {
+globalThis.processJobHandler = jobId => {
     const job = globalThis.jobs.get(jobId);
     const KIB_MULTIPLIER = 1024;
 
@@ -116,13 +116,13 @@ globalThis.processJobHandler = function processJobHandler (jobId) {
 globalThis.retryJobHandler = globalThis.processJobHandler;
 
 
-globalThis.cancelJobHandler = function cancelJobHandler (jobId) {
+globalThis.cancelJobHandler = jobId => {
     const job = globalThis.jobs.get(jobId);
     job.reader.abort();
 };
 
 
-globalThis.deleteJobHandler = function deleteJobHandler (jobId) {
+globalThis.deleteJobHandler = jobId => {
     const job = globalThis.jobs.get(jobId);
     job.reader.abort();
     job.reader.onload = null;

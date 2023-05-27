@@ -196,7 +196,7 @@ class SlowModeIndicator {
 
 class VersionIndicator {
     static show (version) {
-        document.querySelector('#version').textContent += `v${version}`;
+        document.querySelector('#version').textContent = `v${version}`;
     }
 }
 

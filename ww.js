@@ -1,6 +1,3 @@
-'use strict';
-
-
 globalThis.formats = null;
 globalThis.jobs = new Map();
 

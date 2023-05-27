@@ -1,6 +1,3 @@
-'use strict';
-
-
 // Follows Semantic Versioning 2.0.0 (https://semver.org/spec/v2.0.0.html).
 const version = {
     'major': '0',

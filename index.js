@@ -1,6 +1,3 @@
-'use strict';
-
-
 globalThis.showError = (message, location, details) => {
     console.error(`${message}${location ? `\n\n${location}` : ''}${details ? `\n\n${details}` : ''}`);
 
@@ -313,7 +310,7 @@ class Presenter {
             });
         });
 
-        navigator.serviceWorker.register(serviceWorker)
+        navigator.serviceWorker.register(serviceWorker, {'type': 'module'})
         .catch(error => {
             // Service workers are considered site data, so cookies have to be enabled for the application to work.
             if (navigator.cookieEnabled) {
@@ -325,7 +322,7 @@ class Presenter {
     }
 
     initWebWorker (webWorker) {
-        this.worker = new Worker(webWorker);
+        this.worker = new Worker(webWorker, {'type': 'module'});
         this.worker.addEventListener('message', event => this.handleWebWorkerMessage(event));
         this.worker.addEventListener('error', event => {
             event.preventDefault();
@@ -473,4 +470,3 @@ globalThis.addEventListener('load', () => {
 
 
 console.info('Main script processed.');
-

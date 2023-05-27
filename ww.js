@@ -1,8 +1,6 @@
 'use strict';
 
 
-console.info('Web worker loaded');
-
 globalThis.formats = null;
 globalThis.jobs = new Map();
 
@@ -131,3 +129,5 @@ globalThis.deleteJobHandler = jobId => {
     globalThis.jobs.delete(jobId);
     globalThis.postReply('jobDeleted', jobId);
 };
+
+console.info('Web worker script processed.');

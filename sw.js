@@ -1,8 +1,6 @@
 'use strict';
 
 
-console.info('Service worker loaded');
-
 // Follows Semantic Versioning 2.0.0 (https://semver.org/spec/v2.0.0.html).
 const version = {
     'major': '0',
@@ -84,3 +82,5 @@ globalThis.addEventListener('fetch', event => {
         });
     })());
 });
+
+console.info('Service worker script processed.');

@@ -470,3 +470,7 @@ globalThis.addEventListener('load', () => {
     const presenter = new Presenter();
     presenter.run();
 });
+
+
+console.info('Main script processed.');
+

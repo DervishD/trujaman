@@ -64,7 +64,7 @@ globalThis.createJobHandler = file => {
         const error = {
             'name': event.target.error.name,
             'message': event.target.error.message,
-            'fileName': job.file.name
+            'fileName': job.file.name,
         };
         globalThis.postReply('fileReadError', {jobId, error});
     };
@@ -99,7 +99,7 @@ globalThis.processJobHandler = jobId => {
     if (job.file.size > MAX_FILE_SIZE_MIB * KIB_MULTIPLIER * KIB_MULTIPLIER) {
         const error = {
             'name': 'FileTooLargeError',
-            'fileName': job.file.name
+            'fileName': job.file.name,
         };
         globalThis.postReply('fileReadError', {jobId, error});
     } else {

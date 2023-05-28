@@ -7,7 +7,7 @@ const version = {
     'build': new Date().toISOString().split('T')[0].replaceAll('-', ''),
     toString () {
         return `${this.major}.${this.minor}.${this.patch}${this.prerelease && `-${this.prerelease}+${this.build}`}`;
-    }
+    },
 };
 const landingPage = '.';  // Maybe: "new URL(globalThis.registration.scope).pathname"???
 const cachePrefix = `trujaman@${globalThis.registration.scope}`;
@@ -23,7 +23,7 @@ const assets = [
     'ww.js',
     'manifest.webmanifest',
     'appicon.png',
-    'favicon.ico'
+    'favicon.ico',
 ];
 
 

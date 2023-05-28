@@ -448,7 +448,7 @@ class Presenter {
             'FileTooLargeError': 'el fichero es muy grande',
             'NotFoundError': 'el fichero no existe',
             'NotReadableError': 'el fichero no se puede leer',
-            'SecurityError': 'el fichero no se puede leer de forma segura'
+            'SecurityError': 'el fichero no se puede leer de forma segura',
         };
         jobView.setState('error');
         if (error.name in errorMessages) {

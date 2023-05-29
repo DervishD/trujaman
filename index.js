@@ -153,12 +153,9 @@ class JobView {
         this.element.remove();
     }
 
-    setStatusMessage (statusMessage) {
-        this.statusMessage.innerHTML = statusMessage;
-    }
-
-    setState (state) {
-        switch (state) {
+    setStatus (status, message) {
+        this.statusMessage.innerHTML = message;
+        switch (status) {
         case 'processing':
         case 'retrying':
             this.retryButton.hidden = true;
@@ -178,7 +175,7 @@ class JobView {
             this.retryButton.hidden = true;
             this.downloadDropdown.hidden = true;
             break;
-        // No default
+        default:
         }
     }
 }
@@ -369,13 +366,13 @@ class Presenter {
 
         globalThis.addEventListener(customEvents.jobCancel, event => {
             const jobView = event.detail;
-            jobView.setStatusMessage('Cancelando el fichero…');
+            jobView.setStatus('cancelling', 'Cancelando el fichero…');
             this.webWorkerDo('cancelJob', jobView.jobId);
         });
 
         globalThis.addEventListener(customEvents.jobRetry, event => {
             const jobView = event.detail;
-            jobView.setState('retrying');
+            jobView.setStatus('retrying', 'Reintentando…');
             this.webWorkerDo('retryJob', jobView.jobId);
         });
 
@@ -413,7 +410,7 @@ class Presenter {
     jobCreatedHandler ({jobId, fileName}) {
         const newJobView = new JobView(jobId, fileName);
         this.jobViews.set(jobId, newJobView);
-        newJobView.setState('processing');
+        newJobView.setStatus('processing', 'Leyendo el fichero…');
         this.webWorkerDo('processJob', jobId);
     }
 
@@ -425,13 +422,12 @@ class Presenter {
 
     jobCancelledHandler (jobId) {
         const jobView = this.jobViews.get(jobId);
-        jobView.setState('cancelled');
-        jobView.setStatusMessage('Lectura cancelada.');
+        jobView.setStatus('cancelled', 'Lectura cancelada.');
     }
 
     bytesReadHandler ({jobId, percent}) {
         const jobView = this.jobViews.get(jobId);
-        jobView.setStatusMessage(`Leyendo el fichero (${percent}%).`);
+        jobView.setStatus('reading', `Leyendo el fichero (${percent}%).`);
     }
 
     fileReadOKHandler ({jobId, contents}) {
@@ -449,8 +445,7 @@ class Presenter {
             }
             debugInfo += '</span>';
         }
-        jobView.setState('processed');
-        jobView.setStatusMessage(`El fichero se leyó correctamente.${debugInfo}`);
+        jobView.setStatus('processed', `El fichero se leyó correctamente.${debugInfo}`);
     }
 
     fileReadErrorHandler ({jobId, error}) {
@@ -461,11 +456,10 @@ class Presenter {
             'NotReadableError': 'el fichero no se puede leer',
             'SecurityError': 'el fichero no se puede leer de forma segura',
         };
-        jobView.setState('error');
         if (error.name in errorMessages) {
-            let statusMessage = `ERROR: ${errorMessages[error.name]}`;
-            statusMessage += ` <span class="monospaced">(${error.name})</span>.`;
-            jobView.setStatusMessage(statusMessage);
+            let message = `ERROR: ${errorMessages[error.name]}`;
+            message += ` <span class="monospaced">(${error.name})</span>.`;
+            jobView.setStatus('error', message);
         } else {
             // Unexpected error condition that should not happen in production.
             throw new FatalError(`Error «${error.name}» leyendo el fichero «${error.fileName}»`, error.message);

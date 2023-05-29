@@ -137,15 +137,6 @@ class JobView {
         document.querySelector('#jobs').append(this.element);
     }
 
-    static setDownloadFormats (formats) {
-        const formatsList = document.querySelector('#job_template').content.querySelector('.job_formats_list');
-        formats.forEach(format => {
-            const paragraph = document.createElement('p');
-            paragraph.textContent = format;
-            formatsList.append(paragraph);
-        });
-    }
-
     remove () {
         // Remove event listeners before removing the DOM element.
         // Not really needed, apparently, but it's the Tao.
@@ -177,6 +168,21 @@ class JobView {
             break;
         default:
         }
+    }
+}
+
+
+class FormatsList {
+    constructor () {
+        this.formatsList = document.querySelector('#job_template').content.querySelector('.job_formats_list');
+    }
+
+    set formats (formats) {
+        formats.forEach(format => {
+            const paragraph = document.createElement('p');
+            paragraph.textContent = format;
+            this.formatsList.append(paragraph);
+        });
     }
 }
 
@@ -256,6 +262,7 @@ class Presenter {
     constructor () {
         this.jobViews = new Map();
         this.developmentMode = false;
+        this.formatsList = new FormatsList();
         this.slowModeIndicator = new SlowModeIndicator();
         this.slowModeState = false;
         this.filePicker = new FilePicker();
@@ -281,7 +288,7 @@ class Presenter {
             return response.json();
         })
         .then(formats => {
-            JobView.setDownloadFormats(Object.keys(formats));
+            this.formatsList.formats = Object.keys(formats);
             this.webWorkerDo('registerFormats', formats);
         })
         .catch(error => {

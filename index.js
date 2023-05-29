@@ -372,7 +372,7 @@ class Presenter {
 
         globalThis.addEventListener(customEvents.jobRetry, event => {
             const jobView = event.detail;
-            jobView.setStatus('retrying', 'Reintentando…');
+            jobView.setStatus('retrying', 'Reintentando…');  // cspell:disable-line
             this.webWorkerDo('retryJob', jobView.jobId);
         });
 

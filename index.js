@@ -1,4 +1,4 @@
-globalThis.showError = (message, location, details) => {
+const showError = (message, location, details) => {
     console.error(`${message}${location ? `\n\n${location}` : ''}${details ? `\n\n${details}` : ''}`);
 
     const errorTemplate = document.querySelector('#error_template');
@@ -78,7 +78,7 @@ globalThis.addEventListener('error', event => {
         message += message && !message.endsWith('.') ? '.' : '';
     }
 
-    globalThis.showError(message, location, details);
+    showError(message, location, details);
     event.preventDefault();
 });
 

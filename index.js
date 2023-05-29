@@ -100,9 +100,9 @@ Object.keys(customEvents).forEach(key => { customEvents[key] = `custom:${key}`; 
 Object.freeze(customEvents);
 
 
-class JobView {
-    constructor (jobId, fileName) {
-        this.jobId = jobId;
+class Job {
+    constructor (id, fileName) {
+        this.id = id;
 
         this.element = document.getElementById('job_template').content.firstElementChild.cloneNode(true);
         this.element.querySelector('.job_filename').textContent = fileName;
@@ -260,7 +260,7 @@ class DropZone {
 
 class Presenter {
     constructor () {
-        this.jobViews = new Map();
+        this.jobIds = new Map();
         this.developmentMode = false;
         this.formatsList = new FormatsList();
         this.slowModeIndicator = new SlowModeIndicator();
@@ -367,20 +367,20 @@ class Presenter {
         });
 
         globalThis.addEventListener(customEvents.jobDismiss, event => {
-            const jobView = event.detail;
-            this.webWorkerDo('deleteJob', jobView.jobId);
+            const job = event.detail;
+            this.webWorkerDo('deleteJob', job.id);
         });
 
         globalThis.addEventListener(customEvents.jobCancel, event => {
-            const jobView = event.detail;
-            jobView.setStatus('cancelling', 'Cancelando el fichero…');
-            this.webWorkerDo('cancelJob', jobView.jobId);
+            const job = event.detail;
+            job.setStatus('cancelling', 'Cancelando el fichero…');
+            this.webWorkerDo('cancelJob', job.id);
         });
 
         globalThis.addEventListener(customEvents.jobRetry, event => {
-            const jobView = event.detail;
-            jobView.setStatus('retrying', 'Reintentando…');  // cspell:disable-line
-            this.webWorkerDo('retryJob', jobView.jobId);
+            const job = event.detail;
+            job.setStatus('retrying', 'Reintentando…');  // cspell:disable-line
+            this.webWorkerDo('retryJob', job.id);
         });
 
         this.filePicker.show();
@@ -415,30 +415,30 @@ class Presenter {
     }
 
     jobCreatedHandler ({jobId, fileName}) {
-        const newJobView = new JobView(jobId, fileName);
-        this.jobViews.set(jobId, newJobView);
-        newJobView.setStatus('processing', 'Leyendo el fichero…');
-        this.webWorkerDo('processJob', jobId);
+        const newJob = new Job(jobId, fileName);
+        this.jobIds.set(jobId, newJob);
+        newJob.setStatus('processing', 'Leyendo el fichero…');
+        this.webWorkerDo('processJob', newJob.id);
     }
 
     jobDeletedHandler (jobId) {
-        const jobView = this.jobViews.get(jobId);
-        jobView.remove();
-        this.jobViews.delete(jobId);
+        const job = this.jobIds.get(jobId);
+        job.remove();
+        this.jobIds.delete(job.id);
     }
 
     jobCancelledHandler (jobId) {
-        const jobView = this.jobViews.get(jobId);
-        jobView.setStatus('cancelled', 'Lectura cancelada.');
+        const job = this.jobIds.get(jobId);
+        job.setStatus('cancelled', 'Lectura cancelada.');
     }
 
     bytesReadHandler ({jobId, percent}) {
-        const jobView = this.jobViews.get(jobId);
-        jobView.setStatus('reading', `Leyendo el fichero (${percent}%).`);
+        const job = this.jobIds.get(jobId);
+        job.setStatus('reading', `Leyendo el fichero (${percent}%).`);
     }
 
     fileReadOKHandler ({jobId, contents}) {
-        const jobView = this.jobViews.get(jobId);
+        const job = this.jobIds.get(jobId);
         let debugInfo = '';
         if (this.developmentMode) {
             const HEX_RADIX = 16;
@@ -452,11 +452,11 @@ class Presenter {
             }
             debugInfo += '</span>';
         }
-        jobView.setStatus('processed', `El fichero se leyó correctamente.${debugInfo}`);
+        job.setStatus('processed', `El fichero se leyó correctamente.${debugInfo}`);
     }
 
     fileReadErrorHandler ({jobId, error}) {
-        const jobView = this.jobViews.get(jobId);
+        const job = this.jobIds.get(jobId);
         const errorMessages = {
             'FileTooLargeError': 'el fichero es muy grande',
             'NotFoundError': 'el fichero no existe',
@@ -466,7 +466,7 @@ class Presenter {
         if (error.name in errorMessages) {
             let message = `ERROR: ${errorMessages[error.name]}`;
             message += ` <span class="monospaced">(${error.name})</span>.`;
-            jobView.setStatus('error', message);
+            job.setStatus('error', message);
         } else {
             // Unexpected error condition that should not happen in production.
             throw new FatalError(`Error «${error.name}» leyendo el fichero «${error.fileName}»`, error.message);

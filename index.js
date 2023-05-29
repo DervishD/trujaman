@@ -154,9 +154,10 @@ class Job {
         this.element.remove();
     }
 
-    setState (state, message) {
-        this.message.innerHTML = message;
-        switch (state) {
+    set state (state) {
+        const [stateCode, stateMessage] = state;
+        this.message.innerHTML = stateMessage;
+        switch (stateCode) {
         case Job.states.processing:
         case Job.states.retrying:
             this.retryButton.hidden = true;
@@ -209,7 +210,7 @@ class SlowModeIndicator {
         this.element.hidden = false;
     }
 
-    setState (state) {
+    set state (state) {
         this.element.textContent = state ? '⊖' : '⊕';
     }
 }
@@ -383,13 +384,13 @@ class Presenter {
 
         globalThis.addEventListener(customEvents.jobCancel, event => {
             const job = event.detail;
-            job.setState(Job.states.cancelling, 'Cancelando el fichero…');
+            job.state = [Job.states.cancelling, 'Cancelando el fichero…'];
             this.webWorkerDo('cancelJob', job.id);
         });
 
         globalThis.addEventListener(customEvents.jobRetry, event => {
             const job = event.detail;
-            job.setState(Job.states.retrying, 'Reintentando…');  // cspell:disable-line
+            job.state = [Job.states.retrying, 'Reintentando…'];  // cspell:disable-line
             this.webWorkerDo('retryJob', job.id);
         });
 
@@ -421,13 +422,13 @@ class Presenter {
 
     slowModeStateHandler (state) {
         this.slowModeState = state;
-        this.slowModeIndicator.setState(this.slowModeState);
+        this.slowModeIndicator.state = this.slowModeState;
     }
 
     jobCreatedHandler ({jobId, fileName}) {
         const newJob = new Job(jobId, fileName);
         this.jobIds.set(jobId, newJob);
-        newJob.setState(Job.states.processing, 'Leyendo el fichero…');
+        newJob.state = [Job.states.processing, 'Leyendo el fichero…'];
         this.webWorkerDo('processJob', newJob.id);
     }
 
@@ -439,12 +440,12 @@ class Presenter {
 
     jobCancelledHandler (jobId) {
         const job = this.jobIds.get(jobId);
-        job.setState(Job.states.cancelled, 'Lectura cancelada.');
+        job.state = [Job.states.cancelled, 'Lectura cancelada.'];
     }
 
     bytesReadHandler ({jobId, percent}) {
         const job = this.jobIds.get(jobId);
-        job.setState(Job.states.reading, `Leyendo el fichero (${percent}%).`);
+        job.state = [Job.states.reading, `Leyendo el fichero (${percent}%).`];
     }
 
     fileReadOKHandler ({jobId, contents}) {
@@ -462,7 +463,7 @@ class Presenter {
             }
             debugInfo += '</span>';
         }
-        job.setState(Job.states.processed, `El fichero se leyó correctamente.${debugInfo}`);
+        job.state = [Job.states.processed, `El fichero se leyó correctamente.${debugInfo}`];
     }
 
     fileReadErrorHandler ({jobId, error}) {
@@ -476,7 +477,7 @@ class Presenter {
         if (error.name in errorMessages) {
             let message = `ERROR: ${errorMessages[error.name]}`;
             message += ` <span class="monospaced">(${error.name})</span>.`;
-            job.setState(Job.states.reading, message);
+            job.state = [Job.states.reading, message];
         } else {
             // Unexpected error condition that should not happen in production.
             throw new FatalError(`Error «${error.name}» leyendo el fichero «${error.fileName}»`, error.message);

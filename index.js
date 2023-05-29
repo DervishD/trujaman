@@ -278,7 +278,6 @@ class Presenter {
     run () {
         this.initServiceWorker('sw.js');
         this.initWebWorker('ww.js');
-        this.initView();
 
         fetch('formats.json')
         .then(response => {
@@ -288,8 +287,9 @@ class Presenter {
             return response.json();
         })
         .then(formats => {
-            this.formatsList.formats = Object.keys(formats);
             this.webWorkerDo('registerFormats', formats);
+            this.formatsList.formats = Object.keys(formats);
+            this.initView();
         })
         .catch(error => {
             throw new FatalError('No se pudo procesar el fichero con la lista de formatos.', error);

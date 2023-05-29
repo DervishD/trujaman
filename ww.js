@@ -41,7 +41,7 @@ globalThis.generateJobId = (function *generateJobId () {
 }());
 
 globalThis.createJobHandler = file => {
-    const job = {file, 'reader': null};
+    const job = {file, reader: null};
     const jobId = globalThis.generateJobId.next().value;
 
     if (typeof jobId === 'undefined' || !globalThis.formats) {
@@ -62,9 +62,9 @@ globalThis.createJobHandler = file => {
 
     job.reader.onerror = event => {
         const error = {
-            'name': event.target.error.name,
-            'message': event.target.error.message,
-            'fileName': job.file.name,
+            name: event.target.error.name,
+            message: event.target.error.message,
+            fileName: job.file.name,
         };
         globalThis.postReply('fileReadError', {jobId, error});
     };
@@ -77,7 +77,7 @@ globalThis.createJobHandler = file => {
     };
 
     globalThis.jobs.set(jobId, job);
-    globalThis.postReply('jobCreated', {jobId, 'fileName': job.file.name});
+    globalThis.postReply('jobCreated', {jobId, fileName: job.file.name});
 };
 
 
@@ -98,8 +98,8 @@ globalThis.processJobHandler = jobId => {
 
     if (job.file.size > MAX_FILE_SIZE_MIB * KIB_MULTIPLIER * KIB_MULTIPLIER) {
         const error = {
-            'name': 'FileTooLargeError',
-            'fileName': job.file.name,
+            name: 'FileTooLargeError',
+            fileName: job.file.name,
         };
         globalThis.postReply('fileReadError', {jobId, error});
     } else {

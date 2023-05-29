@@ -90,11 +90,11 @@ globalThis.addEventListener('unhandledrejection', event => {
 
 
 const customEvents = {
-    'jobDismiss': null,
-    'jobCancel': null,
-    'jobRetry': null,
-    'slowModeToggle': null,
-    'processFiles': null,
+    jobDismiss: null,
+    jobCancel: null,
+    jobRetry: null,
+    slowModeToggle: null,
+    processFiles: null,
 };
 Object.keys(customEvents).forEach(key => { customEvents[key] = `custom:${key}`; });
 Object.freeze(customEvents);
@@ -102,13 +102,13 @@ Object.freeze(customEvents);
 
 class Job {
     static states = {
-        'processing': Symbol('processing'),
-        'reading': Symbol('reading'),
-        'processed': Symbol('processed'),
-        'retrying': Symbol('retrying'),
-        'cancelling': Symbol('cancelling'),
-        'cancelled': Symbol('cancelled'),
-        'error': Symbol('error'),
+        processing: Symbol('processing'),
+        reading: Symbol('reading'),
+        processed: Symbol('processed'),
+        retrying: Symbol('retrying'),
+        cancelling: Symbol('cancelling'),
+        cancelled: Symbol('cancelled'),
+        error: Symbol('error'),
     };
 
     constructor (id, fileName) {
@@ -127,22 +127,22 @@ class Job {
         this.controller = new AbortController();
 
         this.dismissButton.addEventListener('click', event => {
-            event.target.dispatchEvent(new CustomEvent(customEvents.jobDismiss, {'detail': this, 'bubbles': true}));
-        }, {'once': true});
+            event.target.dispatchEvent(new CustomEvent(customEvents.jobDismiss, {detail: this, bubbles: true}));
+        }, {once: true});
 
         this.cancelButton.addEventListener('click', event => {
             this.cancelButton.disabled = true;
-            event.target.dispatchEvent(new CustomEvent(customEvents.jobCancel, {'detail': this, 'bubbles': true}));
-        }, {'signal': this.controller.signal});
+            event.target.dispatchEvent(new CustomEvent(customEvents.jobCancel, {detail: this, bubbles: true}));
+        }, {signal: this.controller.signal});
 
         this.retryButton.addEventListener('click', event => {
-            event.target.dispatchEvent(new CustomEvent(customEvents.jobRetry, {'detail': this, 'bubbles': true}));
-        }, {'signal': this.controller.signal});
+            event.target.dispatchEvent(new CustomEvent(customEvents.jobRetry, {detail: this, bubbles: true}));
+        }, {signal: this.controller.signal});
 
         this.element.querySelector('.job_download_dropdown').addEventListener('click', () => {
             const formatsList = this.element.querySelector('.job_formats_list');
             formatsList.hidden = !formatsList.hidden;
-        }, {'signal': this.controller.signal});
+        }, {signal: this.controller.signal});
 
         document.querySelector('#jobs').append(this.element);
     }
@@ -234,7 +234,7 @@ class FilePicker {
             this.input.click();
         });
         this.input.addEventListener('change', event => {
-            globalThis.dispatchEvent(new CustomEvent(customEvents.processFiles, {'detail': event.target.files}));
+            globalThis.dispatchEvent(new CustomEvent(customEvents.processFiles, {detail: event.target.files}));
             event.target.value = null;  // Otherwise the event won't be fired again if the user selects the same file…
         });
         this.container.hidden = false;
@@ -258,7 +258,7 @@ class DropZone {
 
         this.element.addEventListener('drop', event => {
             this.element.dataset.state = 'dismissed';
-            globalThis.dispatchEvent(new CustomEvent(customEvents.processFiles, {'detail': event.dataTransfer.files}));
+            globalThis.dispatchEvent(new CustomEvent(customEvents.processFiles, {detail: event.dataTransfer.files}));
             event.preventDefault();  // Prevent the browser from opening the file.
         });
 
@@ -335,7 +335,7 @@ class Presenter {
             });
         });
 
-        navigator.serviceWorker.register(serviceWorker, {'type': 'module'})
+        navigator.serviceWorker.register(serviceWorker, {type: 'module'})
         .catch(error => {
             // Service workers are considered site data, so cookies have to be enabled for the application to work.
             if (navigator.cookieEnabled) {
@@ -347,7 +347,7 @@ class Presenter {
     }
 
     initWebWorker (webWorker) {
-        this.worker = new Worker(webWorker, {'type': 'module'});
+        this.worker = new Worker(webWorker, {type: 'module'});
         this.worker.addEventListener('message', event => this.handleWebWorkerMessage(event));
         this.worker.addEventListener('error', event => {
             event.preventDefault();
@@ -468,10 +468,10 @@ class Presenter {
     fileReadErrorHandler ({jobId, error}) {
         const job = this.jobIds.get(jobId);
         const errorMessages = {
-            'FileTooLargeError': 'el fichero es muy grande',
-            'NotFoundError': 'el fichero no existe',
-            'NotReadableError': 'el fichero no se puede leer',
-            'SecurityError': 'el fichero no se puede leer de forma segura',
+            FileTooLargeError: 'el fichero es muy grande',
+            NotFoundError: 'el fichero no existe',
+            NotReadableError: 'el fichero no se puede leer',
+            SecurityError: 'el fichero no se puede leer de forma segura',
         };
         if (error.name in errorMessages) {
             let message = `ERROR: ${errorMessages[error.name]}`;

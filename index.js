@@ -102,17 +102,27 @@ Object.freeze(customEvents);
 
 class Job {
     static states = {
-        processing: Symbol('processing'),
-        reading: Symbol('reading'),
-        processed: Symbol('processed'),
-        retrying: Symbol('retrying'),
-        cancelling: Symbol('cancelling'),
-        cancelled: Symbol('cancelled'),
-        error: Symbol('error'),
+        processing: Symbol('Leyendo el fichero…'),
+        reading: Symbol('Leyendo el fichero '),
+        processed: Symbol('El fichero se leyó correctamente.'),
+        retrying: Symbol('Reintentando…'),  // cspell:disable-line
+        cancelling: Symbol('Cancelando el fichero…'),
+        cancelled: Symbol('Lectura cancelada.'),
+        error: Symbol('Error: '),
+    };
+
+    static errors = {
+        FileTooLargeError: 'el fichero es muy grande',
+        NotFoundError: 'el fichero no existe',
+        NotReadableError: 'el fichero no se puede leer',
+        SecurityError: 'el fichero no se puede leer de forma segura',
     };
 
     constructor (id, fileName) {
         this.id = id;
+        this.progressString = '';
+        this.debugInfo = '';
+        this.errorName = '';
 
         this.element = document.getElementById('job_template').content.firstElementChild.cloneNode(true);
         this.element.querySelector('.job_filename').textContent = fileName;
@@ -154,17 +164,32 @@ class Job {
         this.element.remove();
     }
 
+    set progress (progress) {
+        this.progressString = progress;
+    }
+
+    set debugMarker (marker) {
+        this.debugInfo = `<br><span class="monospaced">Id <${this.id}>, ${marker}</span>`;
+    }
+
+    set error (error) {
+        this.errorName = error;
+    }
+
     set state (state) {
-        const [stateCode, stateMessage] = state;
-        this.message.innerHTML = stateMessage;
-        switch (stateCode) {
+        this.message.innerHTML = state.description;
+        switch (state) {
         case Job.states.processing:
         case Job.states.retrying:
             this.retryButton.hidden = true;
             this.cancelButton.disabled = false;
             this.cancelButton.hidden = false;
             break;
+        case Job.states.reading:
+            this.message.innerHTML += `(${this.progressString}%).`;
+            break;
         case Job.states.processed:
+            this.message.innerHTML += this.debugInfo;
             this.cancelButton.hidden = true;
             this.downloadDropdown.hidden = false;
             break;
@@ -173,6 +198,7 @@ class Job {
             this.retryButton.hidden = false;
             break;
         case Job.states.error:
+            this.message.innerHTML += `${Job.errors[this.errorName]}.`;
             this.cancelButton.hidden = true;
             this.retryButton.hidden = true;
             this.downloadDropdown.hidden = true;
@@ -384,13 +410,13 @@ class Presenter {
 
         globalThis.addEventListener(customEvents.jobCancel, event => {
             const job = event.detail;
-            job.state = [Job.states.cancelling, 'Cancelando el fichero…'];
+            job.state = Job.states.cancelling;
             this.webWorkerDo('cancelJob', job.id);
         });
 
         globalThis.addEventListener(customEvents.jobRetry, event => {
             const job = event.detail;
-            job.state = [Job.states.retrying, 'Reintentando…'];  // cspell:disable-line
+            job.state = Job.states.retrying;
             this.webWorkerDo('retryJob', job.id);
         });
 
@@ -428,7 +454,7 @@ class Presenter {
     jobCreatedHandler ({jobId, fileName}) {
         const newJob = new Job(jobId, fileName);
         this.jobIds.set(jobId, newJob);
-        newJob.state = [Job.states.processing, 'Leyendo el fichero…'];
+        newJob.state = Job.states.processing;
         this.webWorkerDo('processJob', newJob.id);
     }
 
@@ -440,44 +466,35 @@ class Presenter {
 
     jobCancelledHandler (jobId) {
         const job = this.jobIds.get(jobId);
-        job.state = [Job.states.cancelled, 'Lectura cancelada.'];
+        job.state = Job.states.cancelled;
     }
 
     bytesReadHandler ({jobId, percent}) {
         const job = this.jobIds.get(jobId);
-        job.state = [Job.states.reading, `Leyendo el fichero (${percent}%).`];
+        job.progress = percent;
+        job.state = Job.states.reading;
     }
 
     fileReadOKHandler ({jobId, contents}) {
         const job = this.jobIds.get(jobId);
-        let debugInfo = '';
         if (this.developmentMode) {
             const HEX_RADIX = 16;
             const TARGET_LENGTH = 2;
             const PAD_STRING = '0';
-            debugInfo = `<br><span class="monospaced">jobId <${jobId}>`;
             if (typeof contents === 'undefined') {
-                debugInfo += ', empty file';
+                job.debugMarker = 'empty file';
             } else {
-                debugInfo += `, data <0x${contents.toString(HEX_RADIX).padStart(TARGET_LENGTH, PAD_STRING)}>`;
+                job.debugMarker = `data <0x${contents.toString(HEX_RADIX).padStart(TARGET_LENGTH, PAD_STRING)}>`;
             }
-            debugInfo += '</span>';
         }
-        job.state = [Job.states.processed, `El fichero se leyó correctamente.${debugInfo}`];
+        job.state = Job.states.processed;
     }
 
     fileReadErrorHandler ({jobId, error}) {
         const job = this.jobIds.get(jobId);
-        const errorMessages = {
-            FileTooLargeError: 'el fichero es muy grande',
-            NotFoundError: 'el fichero no existe',
-            NotReadableError: 'el fichero no se puede leer',
-            SecurityError: 'el fichero no se puede leer de forma segura',
-        };
-        if (error.name in errorMessages) {
-            let message = `ERROR: ${errorMessages[error.name]}`;
-            message += ` <span class="monospaced">(${error.name})</span>.`;
-            job.state = [Job.states.reading, message];
+        if (error.name in Job.errors) {
+            job.error = error.name;
+            job.state = Job.states.error;
         } else {
             // Unexpected error condition that should not happen in production.
             throw new FatalError(`Error «${error.name}» leyendo el fichero «${error.fileName}»`, error.message);

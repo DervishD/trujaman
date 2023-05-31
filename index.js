@@ -1,4 +1,4 @@
-import {commands} from './contracts.js';
+import {commands, customEvents} from './contracts.js';
 
 const showError = (message, location, details) => {
     console.error(`${message}${location ? `\n\n${location}` : ''}${details ? `\n\n${details}` : ''}`);
@@ -89,17 +89,6 @@ globalThis.addEventListener('unhandledrejection', event => {
     globalThis.reportError(event.reason);
     event.preventDefault();
 });
-
-
-const customEvents = {
-    jobDismiss: null,
-    jobCancel: null,
-    jobRetry: null,
-    slowModeToggle: null,
-    processFiles: null,
-};
-Object.keys(customEvents).forEach(key => { customEvents[key] = `custom:${key}`; });
-Object.freeze(customEvents);
 
 
 class Job {

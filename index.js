@@ -94,8 +94,8 @@ globalThis.addEventListener('unhandledrejection', event => {
 
 
 class UI {
-    constructor (versionString) {
-        document.querySelector('#version').textContent = versionString;
+    constructor () {
+        document.querySelector('#version').textContent = `v${version}`;
 
         this.formatsList = document.querySelector('#job_template').content.querySelector('.job_formats_list');
 
@@ -273,10 +273,9 @@ class Job {
 
 
 class Presenter {
-    constructor (versionString) {
+    constructor () {
         this.jobIds = new Map();
-        this.developmentMode = false;
-        this.UI = new UI(versionString);
+        this.UI = new UI();
         this.handlers = {};
         Object.keys(replies).forEach(reply => {
             const handler = `${reply}Handler`;
@@ -429,7 +428,7 @@ class Presenter {
 
     fileReadOKHandler ({jobId, contents}) {
         const job = this.jobIds.get(jobId);
-        if (this.developmentMode) {
+        if (version.prerelease) {
             const HEX_RADIX = 16;
             const TARGET_LENGTH = 2;
             const PAD_STRING = '0';
@@ -456,7 +455,7 @@ class Presenter {
 
 
 globalThis.addEventListener('load', () => {
-    const presenter = new Presenter(`v${version}`);
+    const presenter = new Presenter();
     presenter.run();
 });
 

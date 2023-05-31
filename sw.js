@@ -1,14 +1,6 @@
-// Follows Semantic Versioning 2.0.0 (https://semver.org/spec/v2.0.0.html).
-const version = {
-    major: '0',
-    minor: '2',
-    patch: '0',
-    prerelease: 'alpha',
-    build: new Date().toISOString().split('T')[0].replaceAll('-', ''),
-    toString () {
-        return `${this.major}.${this.minor}.${this.patch}${this.prerelease && `-${this.prerelease}+${this.build}`}`;
-    },
-};
+import {version} from './version.js';
+
+
 const landingPage = '.';  // Maybe: "new URL(globalThis.registration.scope).pathname"???
 const cachePrefix = `trujaman@${globalThis.registration.scope}`;
 const currentCacheName = `${cachePrefix} v${version}`;
@@ -67,17 +59,13 @@ globalThis.addEventListener('fetch', event => {
         return;
     }
 
-    event.respondWith((() => {
-        if (event.request.url.endsWith('version')) return new Response(version);
-
-        // This is TEMPORARY!
-        // This is needed to be able to test changes fast and at the same time having offline functionality.
-        return fetch(event.request).catch(async () => {
-            const cache = await caches.open(currentCacheName);
-            const response = await cache.match(event.request);
-            return response || cache.match(landingPage);
-        });
-    })());
+    // This is TEMPORARY!
+    // This is needed to be able to test changes fast and at the same time having offline functionality.
+    event.respondWith((() => fetch(event.request).catch(async () => {
+        const cache = await caches.open(currentCacheName);
+        const response = await cache.match(event.request);
+        return response || cache.match(landingPage);
+    }))());
 });
 
 console.info('Service worker script processed.');

@@ -1,3 +1,4 @@
+import {version} from './version.js';
 import {commands, replies} from './contracts.js';
 
 
@@ -7,7 +8,7 @@ const MAX_FILE_SIZE_MIB = 99;
 
 // For delaying for file reading operations so the UI can be tested better, in "slow mode".
 const FILE_READING_DELAY_MILLISECONDS = 500;
-let slowModeEnabled = false;
+let slowMode = Boolean(version.prerelease);  // Enabled by default on prereleases.
 
 const handlers = {...commands};
 Object.keys(handlers).forEach(command => { handlers[command] = null; });
@@ -52,8 +53,8 @@ function registerFormatsHandler (formats) {
 
 handlers.setSlowMode = setSlowModeHandler;
 function setSlowModeHandler (state) {
-    slowModeEnabled = state;
-    postReply(replies.slowModeState, slowModeEnabled);
+    slowMode = state;
+    postReply(replies.slowModeState, slowMode);
 }
 
 
@@ -72,7 +73,7 @@ function createJobHandler (file) {
         const PERCENT_FACTOR = 100;
         const percent = event.total ? Math.floor(PERCENT_FACTOR * event.loaded / event.total) : PERCENT_FACTOR;
 
-        if (slowModeEnabled) {
+        if (slowMode) {
             const start = Date.now(); while (Date.now() - start < FILE_READING_DELAY_MILLISECONDS);
         }
         postReply(replies.bytesRead, {jobId, percent});

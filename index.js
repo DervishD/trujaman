@@ -1,3 +1,4 @@
+import {version} from './version.js';
 import {commands, replies, customEvents} from './contracts.js';
 
 
@@ -235,7 +236,7 @@ class SlowModeIndicator {
 
 
 class VersionIndicator {
-    static show (version) {
+    static show () {
         document.querySelector('#version').textContent = `v${version}`;
     }
 }
@@ -341,23 +342,23 @@ class Presenter {
         // For now, just prevent the default install handler to appear.
         globalThis.addEventListener('beforeinstallprompt', event => event.preventDefault());
 
-        navigator.serviceWorker.ready
-        .then(() => {
-            fetch('version')
-            .then(response => response.text())
-            .then(version => {
-                if (version) {
-                    VersionIndicator.show(version);
-                    // Enable development mode ONLY for prereleases which are NOT release candidates.
-                    if (version.includes('-') && !version.includes('-rc')) {
-                        this.developmentMode = true;
-                        this.slowModeState = true;
-                        this.slowModeIndicator.show();
-                        this.webWorkerDo(commands.setSlowMode, this.slowModeState);
-                    }
-                }
-            });
-        });
+        // navigator.serviceWorker.ready
+        // .then(() => {
+        //     fetch('version')
+        //     .then(response => response.text())
+        //     .then(version => {
+        //         if (version) {
+        //             VersionIndicator.show(version);
+        //             // Enable development mode ONLY for prereleases which are NOT release candidates.
+        //             if (version.includes('-') && !version.includes('-rc')) {
+                        // this.developmentMode = true;
+        //                 this.slowModeState = true;
+        //                 this.slowModeIndicator.show();
+        //                 this.webWorkerDo(commands.setSlowMode, this.slowModeState);
+        //             }
+        //         }
+        //     });
+        // });
 
         navigator.serviceWorker.register(serviceWorker, {type: 'module'})
         .catch(error => {
@@ -417,6 +418,7 @@ class Presenter {
             this.webWorkerDo(commands.retryJob, job.id);
         });
 
+        VersionIndicator.show();
         this.filePicker.show();
         this.dropZone?.show();
     }

@@ -46,7 +46,19 @@ const generateJobId = (function *generateJobId () {
     }
 }());
 
-globalThis.createJobHandler = file => {
+
+function registerFormatsHandler (formats) {
+    knownFormats = formats;
+}
+
+
+function setSlowModeHandler (state) {
+    slowModeEnabled = state;
+    postReply('slowModeState', slowModeEnabled);
+}
+
+
+function createJobHandler (file) {
     const job = {file, reader: null};
     const jobId = generateJobId.next().value;
 
@@ -87,7 +99,7 @@ globalThis.createJobHandler = file => {
 }
 
 
-globalThis.processJobHandler = jobId => {
+function processJobHandler (jobId) {
     const job = jobs.get(jobId);
     const KIB_MULTIPLIER = 1024;
 
@@ -102,17 +114,16 @@ globalThis.processJobHandler = jobId => {
         // Read the file as ArrayBuffer.
         job.reader.readAsArrayBuffer(job.file);
     }
-};
-globalThis.retryJobHandler = globalThis.processJobHandler;
+}
 
 
-globalThis.cancelJobHandler = jobId => {
+function cancelJobHandler (jobId) {
     const job = jobs.get(jobId);
     job.reader.abort();
-};
+}
 
 
-globalThis.deleteJobHandler = jobId => {
+function deleteJobHandler (jobId) {
     const job = jobs.get(jobId);
     job.reader.abort();
     job.reader.onload = null;
@@ -120,5 +131,7 @@ globalThis.deleteJobHandler = jobId => {
     job.reader.onabort = null;
     jobs.delete(jobId);
     postReply('jobDeleted', jobId);
+}
+
 
 console.info('Web worker script processed.');

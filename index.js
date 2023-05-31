@@ -1,3 +1,5 @@
+import {commands} from './contracts.js';
+
 const showError = (message, location, details) => {
     console.error(`${message}${location ? `\n\n${location}` : ''}${details ? `\n\n${details}` : ''}`);
 
@@ -324,7 +326,7 @@ class Presenter {
             return response.json();
         })
         .then(formats => {
-            this.webWorkerDo('registerFormats', formats);
+            this.webWorkerDo(commands.registerFormats, formats);
             this.formatsList.formats = Object.keys(formats);
             this.initView();
         })
@@ -356,7 +358,7 @@ class Presenter {
                         this.developmentMode = true;
                         this.slowModeState = true;
                         this.slowModeIndicator.show();
-                        this.webWorkerDo('setSlowMode', this.slowModeState);
+                        this.webWorkerDo(commands.setSlowMode, this.slowModeState);
                     }
                 }
             });
@@ -394,30 +396,30 @@ class Presenter {
         globalThis.addEventListener(customEvents.processFiles, event => {
             const files = event.detail;
             for (const file of files) {
-                this.webWorkerDo('createJob', file);
+                this.webWorkerDo(commands.createJob, file);
             }
         });
 
         globalThis.addEventListener(customEvents.slowModeToggle, () => {
             this.slowModeState = !this.slowModeState;
-            this.webWorkerDo('setSlowMode', this.slowModeState);
+            this.webWorkerDo(commands.setSlowMode, this.slowModeState);
         });
 
         globalThis.addEventListener(customEvents.jobDismiss, event => {
             const job = event.detail;
-            this.webWorkerDo('deleteJob', job.id);
+            this.webWorkerDo(commands.deleteJob, job.id);
         });
 
         globalThis.addEventListener(customEvents.jobCancel, event => {
             const job = event.detail;
             job.state = Job.states.cancelling;
-            this.webWorkerDo('cancelJob', job.id);
+            this.webWorkerDo(commands.cancelJob, job.id);
         });
 
         globalThis.addEventListener(customEvents.jobRetry, event => {
             const job = event.detail;
             job.state = Job.states.retrying;
-            this.webWorkerDo('retryJob', job.id);
+            this.webWorkerDo(commands.retryJob, job.id);
         });
 
         this.filePicker.show();

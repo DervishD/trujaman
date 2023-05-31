@@ -1,30 +1,21 @@
+import {commands} from './contracts.js';
+
+const handlers = {...commands};
 let knownFormats = null;
 const jobs = new Map();
-
 const MAX_FILE_SIZE_MIB = 99;
 
 // For delaying for file reading operations so the UI can be tested better, in "slow mode".
 const FILE_READING_DELAY_MILLISECONDS = 500;
 let slowModeEnabled = false;
 
-const commands = {
-    registerFormats: registerFormatsHandler,
-    setSlowMode: setSlowModeHandler,
-    createJob: createJobHandler,
-    processJob: processJobHandler,
-    retryJob: processJobHandler,
-    cancelJob: cancelJobHandler,
-    deleteJob: deleteJobHandler,
-};
-
 
 globalThis.addEventListener('message', message => {
     const {command, payload} = message.data;
     console.debug(`Received command '${command}'`, payload);
 
-    const handler = commands[command];
-    if (handler) {
-        handler(payload);
+    if (command in commands) {
+        handlers[command](payload);
     } else {
         postReply('commandNotFound', command);
     }
@@ -51,17 +42,20 @@ const generateJobId = (function *generateJobId () {
 }());
 
 
+handlers.registerFormats = registerFormatsHandler;
 function registerFormatsHandler (formats) {
     knownFormats = formats;
 }
 
 
+handlers.setSlowMode = setSlowModeHandler;
 function setSlowModeHandler (state) {
     slowModeEnabled = state;
     postReply('slowModeState', slowModeEnabled);
 }
 
 
+handlers.createJob = createJobHandler;
 function createJobHandler (file) {
     const job = {file, reader: null};
     const jobId = generateJobId.next().value;
@@ -103,6 +97,8 @@ function createJobHandler (file) {
 }
 
 
+handlers.processJob = processJobHandler;
+handlers.retryJob = processJobHandler;
 function processJobHandler (jobId) {
     const job = jobs.get(jobId);
     const KIB_MULTIPLIER = 1024;
@@ -121,12 +117,14 @@ function processJobHandler (jobId) {
 }
 
 
+handlers.cancelJob = cancelJobHandler;
 function cancelJobHandler (jobId) {
     const job = jobs.get(jobId);
     job.reader.abort();
 }
 
 
+handlers.deleteJob = deleteJobHandler;
 function deleteJobHandler (jobId) {
     const job = jobs.get(jobId);
     job.reader.abort();

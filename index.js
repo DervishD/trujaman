@@ -1,4 +1,5 @@
-import {commands, customEvents} from './contracts.js';
+import {commands, replies, customEvents} from './contracts.js';
+
 
 const showError = (message, location, details) => {
     console.error(`${message}${location ? `\n\n${location}` : ''}${details ? `\n\n${details}` : ''}`);
@@ -294,6 +295,11 @@ class Presenter {
         this.slowModeIndicator = new SlowModeIndicator();
         this.slowModeState = false;
         this.filePicker = new FilePicker();
+        this.handlers = {};
+        Object.keys(replies).forEach(reply => {
+            const handler = `${reply}Handler`;
+            this.handlers[reply] = handler in this ? this[handler].bind(this) : null;
+        });
 
         // This feature is entirely optional.
         // Detection is performed by testing for the existence of the drag and drop events used.
@@ -424,14 +430,13 @@ class Presenter {
         const {reply, payload} = message.data;
         console.debug(`Received reply '${reply}'`, payload);
 
-        if (reply === 'commandNotFound') {
+        if (reply === replies.commandNotFound) {
             const command = payload;
             throw new FatalError(`El web worker no reconoce el comando «${command}».`);
         }
 
-        const handler = `${reply}Handler`;
-        if (handler in this) {
-            this[handler](payload);
+        if (this.handlers[reply]) {
+            this.handlers[reply](payload);
         } else {
             throw new FatalError(`No se reconoce la respuesta del web worker «${reply}».`);
         }

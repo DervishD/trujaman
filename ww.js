@@ -1,4 +1,5 @@
-import {commands} from './contracts.js';
+import {commands, replies} from './contracts.js';
+
 
 let knownFormats = null;
 const jobs = new Map();
@@ -18,7 +19,7 @@ globalThis.addEventListener('message', message => {
     if (command in commands && handlers[command]) {
         handlers[command](payload);
     } else {
-        postReply('commandNotFound', command);
+        postReply(replies.commandNotFound, command);
     }
 });
 
@@ -52,7 +53,7 @@ function registerFormatsHandler (formats) {
 handlers.setSlowMode = setSlowModeHandler;
 function setSlowModeHandler (state) {
     slowModeEnabled = state;
-    postReply('slowModeState', slowModeEnabled);
+    postReply(replies.slowModeState, slowModeEnabled);
 }
 
 
@@ -74,7 +75,7 @@ function createJobHandler (file) {
         if (slowModeEnabled) {
             const start = Date.now(); while (Date.now() - start < FILE_READING_DELAY_MILLISECONDS);
         }
-        postReply('bytesRead', {jobId, percent});
+        postReply(replies.bytesRead, {jobId, percent});
     };
 
     job.reader.onerror = event => {
@@ -83,18 +84,18 @@ function createJobHandler (file) {
             message: event.target.error.message,
             fileName: job.file.name,
         };
-        postReply('fileReadError', {jobId, error});
+        postReply(replies.fileReadError, {jobId, error});
     };
     job.reader.onload = event => {
         const [contents] = new Uint8Array(event.target.result);
-        postReply('fileReadOK', {jobId, contents});
+        postReply(replies.fileReadOK, {jobId, contents});
     };
     job.reader.onabort = () => {
-        postReply('jobCancelled', jobId);
+        postReply(replies.jobCancelled, jobId);
     };
 
     jobs.set(jobId, job);
-    postReply('jobCreated', {jobId, fileName: job.file.name});
+    postReply(replies.jobCreated, {jobId, fileName: job.file.name});
 }
 
 
@@ -109,7 +110,7 @@ function processJobHandler (jobId) {
             name: 'FileTooLargeError',
             fileName: job.file.name,
         };
-        postReply('fileReadError', {jobId, error});
+        postReply(replies.fileReadError, {jobId, error});
     } else {
         // The file is read using the HTML5 File API.
         // Read the file as ArrayBuffer.
@@ -133,7 +134,7 @@ function deleteJobHandler (jobId) {
     job.reader.onerror = null;
     job.reader.onabort = null;
     jobs.delete(jobId);
-    postReply('jobDeleted', jobId);
+    postReply(replies.jobDeleted, jobId);
 }
 
 

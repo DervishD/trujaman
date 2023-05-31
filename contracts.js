@@ -11,6 +11,20 @@ Object.keys(commands).forEach(key => { commands[key] = key; });
 Object.freeze(commands);
 
 
+export const replies = {
+    commandNotFound: null,
+    slowModeState: null,
+    jobCreated: null,
+    jobCancelled: null,
+    jobDeleted: null,
+    bytesRead: null,
+    fileReadError: null,
+    fileReadOK: null,
+};
+Object.keys(replies).forEach(key => { replies[key] = key; });
+Object.freeze(replies);
+
+
 export const customEvents = {
     jobDismiss: null,
     jobCancel: null,

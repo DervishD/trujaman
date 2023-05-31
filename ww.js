@@ -1,11 +1,11 @@
-globalThis.formats = null;
-globalThis.jobs = new Map();
+let knownFormats = null;
+const jobs = new Map();
 
 const MAX_FILE_SIZE_MIB = 99;
 
 // For delaying for file reading operations so the UI can be tested better, in "slow mode".
-globalThis.FILE_READING_DELAY_MILLISECONDS = 500;
-globalThis.slowModeEnabled = false;
+const FILE_READING_DELAY_MILLISECONDS = 500;
+let slowModeEnabled = false;
 
 
 globalThis.postReply = (reply, payload) => {
@@ -27,7 +27,13 @@ globalThis.addEventListener('message', message => {
 });
 
 
-globalThis.generateJobId = (function *generateJobId () {
+function postReply (reply, payload) {
+    console.debug(`Sending reply '${reply}'`, payload);
+    globalThis.postMessage({reply, payload});
+}
+
+
+const generateJobId = (function *generateJobId () {
     // According to ECMA-262 Number.MAX_SAFE_INTEGER is (2^53)-1. So, even in an
     // scenario where 1000 jobs are added each millisecond, which is, in fact, a
     // bit optimistic, jobs could be added at that rate for a bit over 285 years
@@ -42,9 +48,9 @@ globalThis.generateJobId = (function *generateJobId () {
 
 globalThis.createJobHandler = file => {
     const job = {file, reader: null};
-    const jobId = globalThis.generateJobId.next().value;
+    const jobId = generateJobId.next().value;
 
-    if (typeof jobId === 'undefined' || !globalThis.formats) {
+    if (typeof jobId === 'undefined' || !knownFormats) {
         return;
     }
 
@@ -54,10 +60,10 @@ globalThis.createJobHandler = file => {
         const PERCENT_FACTOR = 100;
         const percent = event.total ? Math.floor(PERCENT_FACTOR * event.loaded / event.total) : PERCENT_FACTOR;
 
-        if (globalThis.slowModeEnabled) {
-            const start = Date.now(); while (Date.now() - start < globalThis.FILE_READING_DELAY_MILLISECONDS);
+        if (slowModeEnabled) {
+            const start = Date.now(); while (Date.now() - start < FILE_READING_DELAY_MILLISECONDS);
         }
-        globalThis.postReply('bytesRead', {jobId, percent});
+        postReply('bytesRead', {jobId, percent});
     };
 
     job.reader.onerror = event => {
@@ -66,34 +72,23 @@ globalThis.createJobHandler = file => {
             message: event.target.error.message,
             fileName: job.file.name,
         };
-        globalThis.postReply('fileReadError', {jobId, error});
+        postReply('fileReadError', {jobId, error});
     };
     job.reader.onload = event => {
         const [contents] = new Uint8Array(event.target.result);
-        globalThis.postReply('fileReadOK', {jobId, contents});
+        postReply('fileReadOK', {jobId, contents});
     };
     job.reader.onabort = () => {
-        globalThis.postReply('jobCancelled', jobId);
+        postReply('jobCancelled', jobId);
     };
 
-    globalThis.jobs.set(jobId, job);
-    globalThis.postReply('jobCreated', {jobId, fileName: job.file.name});
-};
-
-
-globalThis.registerFormatsHandler = formats => {
-    globalThis.formats = formats;
-};
-
-
-globalThis.setSlowModeHandler = state => {
-    globalThis.slowModeEnabled = state;
-    globalThis.postReply('slowModeState', globalThis.slowModeEnabled);
-};
+    jobs.set(jobId, job);
+    postReply('jobCreated', {jobId, fileName: job.file.name});
+}
 
 
 globalThis.processJobHandler = jobId => {
-    const job = globalThis.jobs.get(jobId);
+    const job = jobs.get(jobId);
     const KIB_MULTIPLIER = 1024;
 
     if (job.file.size > MAX_FILE_SIZE_MIB * KIB_MULTIPLIER * KIB_MULTIPLIER) {
@@ -101,7 +96,7 @@ globalThis.processJobHandler = jobId => {
             name: 'FileTooLargeError',
             fileName: job.file.name,
         };
-        globalThis.postReply('fileReadError', {jobId, error});
+        postReply('fileReadError', {jobId, error});
     } else {
         // The file is read using the HTML5 File API.
         // Read the file as ArrayBuffer.
@@ -112,19 +107,18 @@ globalThis.retryJobHandler = globalThis.processJobHandler;
 
 
 globalThis.cancelJobHandler = jobId => {
-    const job = globalThis.jobs.get(jobId);
+    const job = jobs.get(jobId);
     job.reader.abort();
 };
 
 
 globalThis.deleteJobHandler = jobId => {
-    const job = globalThis.jobs.get(jobId);
+    const job = jobs.get(jobId);
     job.reader.abort();
     job.reader.onload = null;
     job.reader.onerror = null;
     job.reader.onabort = null;
-    globalThis.jobs.delete(jobId);
-    globalThis.postReply('jobDeleted', jobId);
-};
+    jobs.delete(jobId);
+    postReply('jobDeleted', jobId);
 
 console.info('Web worker script processed.');

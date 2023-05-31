@@ -16,7 +16,7 @@ globalThis.addEventListener('message', message => {
     const {command, payload} = message.data;
     console.debug(`Received command '${command}'`, payload);
 
-    if (command in commands && handlers[command]) {
+    if (handlers[command]) {
         handlers[command](payload);
     } else {
         postReply(replies.commandNotFound, command);

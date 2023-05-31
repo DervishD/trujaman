@@ -7,10 +7,14 @@ const MAX_FILE_SIZE_MIB = 99;
 const FILE_READING_DELAY_MILLISECONDS = 500;
 let slowModeEnabled = false;
 
-
-globalThis.postReply = (reply, payload) => {
-    console.debug(`Sending reply '${reply}'`, payload);
-    globalThis.postMessage({reply, payload});
+const commands = {
+    registerFormats: registerFormatsHandler,
+    setSlowMode: setSlowModeHandler,
+    createJob: createJobHandler,
+    processJob: processJobHandler,
+    retryJob: processJobHandler,
+    cancelJob: cancelJobHandler,
+    deleteJob: deleteJobHandler,
 };
 
 
@@ -18,11 +22,11 @@ globalThis.addEventListener('message', message => {
     const {command, payload} = message.data;
     console.debug(`Received command '${command}'`, payload);
 
-    const handler = `${command}Handler`;
-    if (handler in globalThis) {
-        globalThis[handler](payload);
+    const handler = commands[command];
+    if (handler) {
+        handler(payload);
     } else {
-        globalThis.postReply('commandNotFound', command);
+        postReply('commandNotFound', command);
     }
 });
 

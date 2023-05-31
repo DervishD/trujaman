@@ -124,6 +124,7 @@ header {
     margin: 0;
     align-items: baseline;
     justify-content: center;
+    user-select: none;
 }
 
 button {
@@ -161,6 +162,7 @@ button:active {
 #version {
     font-size: 0.5em;
     text-align: center;
+    user-select: all;
 }
 
 #filepicker {

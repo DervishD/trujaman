@@ -286,6 +286,7 @@ class Presenter {
     run () {
         this.initServiceWorker('sw.js');
         this.initWebWorker('ww.js');
+        this.initCustomEventHandlers();
 
         fetch('formats.json')
         .then(response => {
@@ -346,7 +347,7 @@ class Presenter {
         });
     }
 
-    initView () {
+    initCustomEventHandlers () {
         globalThis.addEventListener(customEvents.processFiles, event => {
             const files = event.detail;
             for (const file of files) {

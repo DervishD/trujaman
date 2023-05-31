@@ -93,6 +93,76 @@ globalThis.addEventListener('unhandledrejection', event => {
 });
 
 
+class UI {
+    constructor (versionString) {
+        document.querySelector('#version').textContent = versionString;
+
+        this.formatsList = document.querySelector('#job_template').content.querySelector('.job_formats_list');
+
+        this.slowModeIndicator = document.querySelector('#slow_mode');
+        this.slowModeIndicator.addEventListener('click', () => {
+            globalThis.dispatchEvent(new CustomEvent(customEvents.slowModeToggle));
+        });
+
+        this.filePicker = document.querySelector('#filepicker');
+        this.filePicker.querySelector('button').addEventListener('click', () => {
+            this.filePicker.querySelector('input').click();
+        });
+
+        this.filePicker.querySelector('input').addEventListener('change', event => {
+            globalThis.dispatchEvent(new CustomEvent(customEvents.processFiles, {detail: event.target.files}));
+            event.target.value = null;  // Otherwise the event won't be fired again if the user selects the same file…
+        });
+
+        // This feature is entirely optional.
+        // Detection is performed by testing for the existence of the drag and drop events used.
+        // This is not orthodox but works well enough.
+        if (['dragenter', 'dragover', 'dragleave', 'drop'].every(event => `on${event}` in globalThis)) {
+            this.dropZone = document.querySelector('#dropzone');
+            globalThis.addEventListener('dragenter', () => { this.dropZone.dataset.state = 'visible'; });
+            this.dropZone.addEventListener('dragleave', () => { this.dropZone.dataset.state = 'hidden'; });
+
+            // This is needed because otherwise the page is NOT a valid drop target,
+            // and when the file is dropped the default action is performed by the browser.
+            this.dropZone.addEventListener('dragover', event => { event.preventDefault(); });
+
+            this.dropZone.addEventListener('drop', event => {
+                this.dropZone.dataset.state = 'dismissed';
+                const {files} = event.dataTransfer;
+                globalThis.dispatchEvent(new CustomEvent(customEvents.processFiles, {detail: files}));
+                event.preventDefault();  // Prevent the browser from opening the file.
+            });
+        }
+    }
+
+    show () {
+        this.filePicker.hidden = false;
+        this.filePicker.querySelector('button').focus();
+        if (this.dropZone) {
+            this.dropZone.hidden = false;
+            this.dropZone.dataset.state = 'hidden';
+        }
+        document.querySelector('#logo').dataset.state = 'running';
+    }
+
+    showSlowModeIndicator () {
+        this.slowModeIndicator.hidden = false;
+    }
+
+    set formats (formats) {
+        formats.forEach(format => {
+            const paragraph = document.createElement('p');
+            paragraph.textContent = format;
+            this.formatsList.append(paragraph);
+        });
+    }
+
+    set slowMode (state) {
+        this.slowModeIndicator.textContent = state ? '⊖' : '⊕';
+    }
+}
+
+
 class Job {
     static states = {
         processing: Symbol('Leyendo el fichero…'),
@@ -202,111 +272,16 @@ class Job {
 }
 
 
-class FormatsList {
-    constructor () {
-        this.formatsList = document.querySelector('#job_template').content.querySelector('.job_formats_list');
-    }
-
-    set formats (formats) {
-        formats.forEach(format => {
-            const paragraph = document.createElement('p');
-            paragraph.textContent = format;
-            this.formatsList.append(paragraph);
-        });
-    }
-}
-
-
-class SlowModeIndicator {
-    constructor () {
-        this.element = document.querySelector('#slow_mode');
-        this.element.addEventListener('click', () => {
-            globalThis.dispatchEvent(new CustomEvent(customEvents.slowModeToggle));
-        });
-    }
-
-    show () {
-        this.element.hidden = false;
-    }
-
-    set state (state) {
-        this.element.textContent = state ? '⊖' : '⊕';
-    }
-}
-
-
-class VersionIndicator {
-    static show () {
-        document.querySelector('#version').textContent = `v${version}`;
-    }
-}
-
-
-class FilePicker {
-    constructor () {
-        this.container = document.querySelector('#filepicker');
-        this.input = this.container.querySelector('input');
-        this.button = this.container.querySelector('button');
-    }
-
-    show () {
-        this.button.addEventListener('click', () => {
-            this.input.click();
-        });
-        this.input.addEventListener('change', event => {
-            globalThis.dispatchEvent(new CustomEvent(customEvents.processFiles, {detail: event.target.files}));
-            event.target.value = null;  // Otherwise the event won't be fired again if the user selects the same file…
-        });
-        this.container.hidden = false;
-        this.button.focus();
-    }
-}
-
-
-class DropZone {
-    constructor () {
-        this.element = document.querySelector('#dropzone');
-    }
-
-    show () {
-        globalThis.addEventListener('dragenter', () => { this.element.dataset.state = 'visible'; });
-        this.element.addEventListener('dragleave', () => { this.element.dataset.state = 'hidden'; });
-
-        // This is needed because otherwise the page is NOT a valid drop target,
-        // and when the file is dropped the default action is performed by the browser.
-        this.element.addEventListener('dragover', event => { event.preventDefault(); });
-
-        this.element.addEventListener('drop', event => {
-            this.element.dataset.state = 'dismissed';
-            globalThis.dispatchEvent(new CustomEvent(customEvents.processFiles, {detail: event.dataTransfer.files}));
-            event.preventDefault();  // Prevent the browser from opening the file.
-        });
-
-        this.element.hidden = false;
-        this.element.dataset.state = 'hidden';
-    }
-}
-
-
 class Presenter {
-    constructor () {
+    constructor (versionString) {
         this.jobIds = new Map();
         this.developmentMode = false;
-        this.formatsList = new FormatsList();
-        this.slowModeIndicator = new SlowModeIndicator();
-        this.filePicker = new FilePicker();
+        this.UI = new UI(versionString);
         this.handlers = {};
         Object.keys(replies).forEach(reply => {
             const handler = `${reply}Handler`;
             this.handlers[reply] = handler in this ? this[handler].bind(this) : null;
         });
-
-        // This feature is entirely optional.
-        // Detection is performed by testing for the existence of the drag and drop events used.
-        // This is not orthodox but works well enough.
-        if (['dragenter', 'dragover', 'dragleave', 'drop'].every(event => `on${event}` in globalThis)) {
-            this.dropZone = new DropZone();
-        }
     }
 
     run () {
@@ -322,8 +297,7 @@ class Presenter {
         })
         .then(formats => {
             this.webWorkerDo(commands.registerFormats, formats);
-            this.formatsList.formats = Object.keys(formats);
-            this.initView();
+            this.UI.formats = Object.keys(formats);
         })
         .catch(error => {
             throw new FatalError('No se pudo procesar el fichero con la lista de formatos.', error);
@@ -341,7 +315,9 @@ class Presenter {
         // For now, just prevent the default install handler to appear.
         globalThis.addEventListener('beforeinstallprompt', event => event.preventDefault());
 
-        navigator.serviceWorker.ready.then(() => { /* NOP, temporarily */ });
+        navigator.serviceWorker.ready.then(() => {
+            this.UI.show();
+        });
 
         navigator.serviceWorker.register(serviceWorker, {type: 'module'})
         .catch(error => {
@@ -399,10 +375,6 @@ class Presenter {
             job.state = Job.states.retrying;
             this.webWorkerDo(commands.retryJob, job.id);
         });
-
-        VersionIndicator.show();
-        this.filePicker.show();
-        this.dropZone?.show();
     }
 
     webWorkerDo (command, payload) {
@@ -427,8 +399,8 @@ class Presenter {
     }
 
     slowModeStateHandler (state) {
-        this.slowModeIndicator.show();
-        this.slowModeIndicator.state = state;
+        this.UI.showSlowModeIndicator();
+        this.UI.slowMode = state;
     }
 
     jobCreatedHandler ({jobId, fileName}) {
@@ -484,7 +456,7 @@ class Presenter {
 
 
 globalThis.addEventListener('load', () => {
-    const presenter = new Presenter();
+    const presenter = new Presenter(`v${version}`);
     presenter.run();
 });
 

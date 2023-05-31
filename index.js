@@ -2,37 +2,6 @@ import {version} from './version.js';
 import {commands, replies, customEvents} from './contracts.js';
 
 
-const showError = (message, location, details) => {
-    console.error(`${message}${location ? `\n\n${location}` : ''}${details ? `\n\n${details}` : ''}`);
-
-    const errorTemplate = document.querySelector('#error_template');
-
-    // Disable UI interaction by removing all page elements.
-    Array.from(document.body.children).forEach(element => {
-        if (['HEADER', 'TEMPLATE'].includes(element.tagName)) {
-            return;
-        }
-        if (element.tagName === 'DIV' && element.classList.contains('error')) {
-            return;
-        }
-        element.remove();
-    });
-
-    // At this point no further interaction with the page is possible so the
-    // application is effectively stopped, even though it is still running…
-
-    const errorElement = errorTemplate.content.firstElementChild.cloneNode(true);
-
-    errorElement.querySelector('.error_header').textContent = '¡ERROR, la aplicación no puede funcionar!';
-    errorElement.querySelector('.error_message').textContent = message;
-    errorElement.querySelector('.error_location').textContent = location;
-    errorElement.querySelector('.error_details').textContent = details.trim();
-
-    // Errors are shown in a first-happenned, first-shown manner.
-    errorTemplate.before(errorElement);
-};
-
-
 class FatalError extends Error {
     constructor (message, details = '') {
         super(message);
@@ -82,7 +51,29 @@ globalThis.addEventListener('error', event => {
         message += message && !message.endsWith('.') ? '.' : '';
     }
 
-    showError(message, location, details);
+    console.error(`${message}${location ? `\n\n${location}` : ''}${details ? `\n\n${details}` : ''}`);
+
+    const errorTemplate = document.querySelector('#error_template');
+
+    // Disable UI interaction by removing all page elements.
+    Array.from(document.body.children).forEach(element => {
+        if (['HEADER', 'TEMPLATE'].includes(element.tagName)) return;
+        if (element.tagName === 'DIV' && element.classList.contains('error')) return;
+        element.remove();
+    });
+
+    // At this point no further interaction with the page is possible so the
+    // application is effectively stopped, even though it is still running…
+
+    const errorElement = errorTemplate.content.firstElementChild.cloneNode(true);
+
+    errorElement.querySelector('.error_header').textContent = '¡ERROR, la aplicación no puede funcionar!';
+    errorElement.querySelector('.error_message').textContent = message;
+    errorElement.querySelector('.error_location').textContent = location;
+    errorElement.querySelector('.error_details').textContent = details.trim();
+
+    // Errors are shown in a first-happenned, first-shown manner.
+    errorTemplate.before(errorElement);
     event.preventDefault();
 });
 

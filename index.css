@@ -157,6 +157,7 @@ button:active {
 #slow_mode {
     font-weight: 400;
     font-size: 0.75em;
+    cursor: pointer;
 }
 
 #version {

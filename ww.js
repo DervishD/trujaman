@@ -1,6 +1,5 @@
 import {commands} from './contracts.js';
 
-const handlers = {...commands};
 let knownFormats = null;
 const jobs = new Map();
 const MAX_FILE_SIZE_MIB = 99;
@@ -9,12 +8,14 @@ const MAX_FILE_SIZE_MIB = 99;
 const FILE_READING_DELAY_MILLISECONDS = 500;
 let slowModeEnabled = false;
 
+const handlers = {...commands};
+Object.keys(handlers).forEach(command => { handlers[command] = null; });
 
 globalThis.addEventListener('message', message => {
     const {command, payload} = message.data;
     console.debug(`Received command '${command}'`, payload);
 
-    if (command in commands) {
+    if (command in commands && handlers[command]) {
         handlers[command](payload);
     } else {
         postReply('commandNotFound', command);

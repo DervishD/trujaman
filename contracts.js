@@ -1,6 +1,6 @@
 export const commands = {
     registerFormats: null,
-    setSlowMode: null,
+    slowModeToggle: null,
     createJob: null,
     processJob: null,
     retryJob: null,

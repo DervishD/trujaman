@@ -220,12 +220,12 @@ class FormatsList {
 class SlowModeIndicator {
     constructor () {
         this.element = document.querySelector('#slow_mode');
-    }
-
-    show () {
         this.element.addEventListener('click', () => {
             globalThis.dispatchEvent(new CustomEvent(customEvents.slowModeToggle));
         });
+    }
+
+    show () {
         this.element.hidden = false;
     }
 
@@ -294,7 +294,6 @@ class Presenter {
         this.developmentMode = false;
         this.formatsList = new FormatsList();
         this.slowModeIndicator = new SlowModeIndicator();
-        this.slowModeState = false;
         this.filePicker = new FilePicker();
         this.handlers = {};
         Object.keys(replies).forEach(reply => {
@@ -342,23 +341,7 @@ class Presenter {
         // For now, just prevent the default install handler to appear.
         globalThis.addEventListener('beforeinstallprompt', event => event.preventDefault());
 
-        // navigator.serviceWorker.ready
-        // .then(() => {
-        //     fetch('version')
-        //     .then(response => response.text())
-        //     .then(version => {
-        //         if (version) {
-        //             VersionIndicator.show(version);
-        //             // Enable development mode ONLY for prereleases which are NOT release candidates.
-        //             if (version.includes('-') && !version.includes('-rc')) {
-                        // this.developmentMode = true;
-        //                 this.slowModeState = true;
-        //                 this.slowModeIndicator.show();
-        //                 this.webWorkerDo(commands.setSlowMode, this.slowModeState);
-        //             }
-        //         }
-        //     });
-        // });
+        navigator.serviceWorker.ready.then(() => { /* NOP, temporarily */ });
 
         navigator.serviceWorker.register(serviceWorker, {type: 'module'})
         .catch(error => {
@@ -397,8 +380,7 @@ class Presenter {
         });
 
         globalThis.addEventListener(customEvents.slowModeToggle, () => {
-            this.slowModeState = !this.slowModeState;
-            this.webWorkerDo(commands.setSlowMode, this.slowModeState);
+            this.webWorkerDo(commands.slowModeToggle);
         });
 
         globalThis.addEventListener(customEvents.jobDismiss, event => {
@@ -445,8 +427,8 @@ class Presenter {
     }
 
     slowModeStateHandler (state) {
-        this.slowModeState = state;
-        this.slowModeIndicator.state = this.slowModeState;
+        this.slowModeIndicator.show();
+        this.slowModeIndicator.state = state;
     }
 
     jobCreatedHandler ({jobId, fileName}) {

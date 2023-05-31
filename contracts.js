@@ -1,11 +1,11 @@
 export const commands = {
-    registerFormats: '',
-    setSlowMode: '',
-    createJob: '',
-    processJob: '',
-    retryJob: '',
-    cancelJob: '',
-    deleteJob: '',
+    registerFormats: null,
+    setSlowMode: null,
+    createJob: null,
+    processJob: null,
+    retryJob: null,
+    cancelJob: null,
+    deleteJob: null,
 };
 Object.keys(commands).forEach(key => { commands[key] = key; });
 Object.freeze(commands);

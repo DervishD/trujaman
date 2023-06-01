@@ -117,13 +117,9 @@ p, pre {
 }
 
 header {
-    display: flex;
-    flex-wrap: wrap;
     font-size: clamp(1em, 15vw, 3em);
-    gap: 0.25em;
     margin: 0;
-    align-items: baseline;
-    justify-content: center;
+    text-align: center;
     user-select: none;
 }
 
@@ -152,11 +148,16 @@ button:active {
 
 #logo {
     font-weight: 700;
+    opacity: 0.1;
+}
+
+#logo[data-state="running"] {
+    transition: opacity 1s cubic-bezier(0.25, 1, 0.25, 1);
+    opacity: 1;
 }
 
 #slow_mode {
-    font-weight: 400;
-    font-size: 0.75em;
+    font-size: 0.5em;
     cursor: pointer;
 }
 

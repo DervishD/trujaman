@@ -9,7 +9,7 @@ const MAX_FILE_SIZE_MIB = 99;
 // For delaying for file reading operations so the UI can be tested better, in "slow mode".
 const FILE_READING_DELAY_MILLISECONDS = 500;
 let slowMode = Boolean(version.prerelease);  // Enabled by default on prereleases.
-if (slowMode) postReply(replies.slowModeState, slowMode);
+if (slowMode) postReply(replies.showSlowModeIndicator);
 
 const handlers = {...commands};
 Object.keys(handlers).forEach(command => { handlers[command] = null; });

@@ -389,8 +389,12 @@ class Presenter {
         }
     }
 
-    slowModeStateHandler (state) {
+    showSlowModeIndicatorHandler () {
+        this.UI.slowMode = true;
         this.UI.showSlowModeIndicator();
+    }
+
+    slowModeStateHandler (state) {
         this.UI.slowMode = state;
     }
 

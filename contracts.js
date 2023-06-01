@@ -13,6 +13,7 @@ Object.freeze(commands);
 
 export const replies = {
     commandNotFound: null,
+    showSlowModeIndicator: null,
     slowModeState: null,
     jobCreated: null,
     jobCancelled: null,

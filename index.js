@@ -31,7 +31,7 @@ globalThis.addEventListener('error', event => {
     }
 
     if (error) {
-        ({message} = error);
+        ({message} = error.message ? error : {message});
 
         if (error instanceof FatalError) {
             ({details} = error);
@@ -47,7 +47,7 @@ globalThis.addEventListener('error', event => {
             }
         }
     } else {
-        ({message} = event);
+        ({message} = error.message ? error : {message});
         message += message && !message.endsWith('.') ? '.' : '';
     }
 

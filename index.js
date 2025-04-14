@@ -437,6 +437,12 @@ class Presenter {
         job.state = Job.states.processed;
     }
 
+    fileTooLargeHandler (jobId) {
+        const job = this.jobIds.get(jobId);
+        job.error = Object.keys(Job.errors).find(property => Job.errors[property] === Job.errors.FileTooLargeError);
+        job.state = Job.states.error;
+    }
+
     fileReadErrorHandler ({jobId, error}) {
         const job = this.jobIds.get(jobId);
         if (error.name in Job.errors) {

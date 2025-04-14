@@ -108,11 +108,7 @@ function processJobHandler (jobId) {
     const KIB_MULTIPLIER = 1024;
 
     if (job.file.size > MAX_FILE_SIZE_MIB * KIB_MULTIPLIER * KIB_MULTIPLIER) {
-        const error = {
-            name: 'FileTooLargeError',
-            fileName: job.file.name,
-        };
-        postReply(replies.fileReadError, {jobId, error});
+        postReply(replies.fileTooLarge, jobId);
     } else {
         // The file is read using the HTML5 File API.
         // Read the file as ArrayBuffer.

@@ -5,9 +5,9 @@ import * as C from './constants.js';
 
 class FatalError extends Error {
     constructor (message, details = '') {
-        super(message);
+        super(`${message}.`);
         this.details = details;
-        this.name = 'FatalError';
+        this.name = new.target.name;
     }
 }
 

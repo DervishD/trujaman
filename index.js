@@ -15,7 +15,7 @@ class FatalError extends Error {
 // Default handler for unhandled errors which should not happen in production.
 globalThis.addEventListener('error', event => {
     const error = event instanceof PromiseRejectionEvent ? event.reason : event.error;
-    let message = 'No hay información.';
+    let message = '';
     let details = '';
     let location = '';
 

@@ -37,7 +37,7 @@ globalThis.addEventListener('error', event => {
         if (error instanceof FatalError) {
             ({details} = error);
         } else {
-            message = `${error.name ? `${error.name}` : 'Error'}('${message}') sin gestionar.`;
+            message = `${error.name ? `${error.name}` : 'Error'}(${message ? `'${message}'` : ''}) sin gestionar.`;
             details = '';
         }
 
@@ -403,7 +403,7 @@ class Presenter {
         const newJob = new Job(jobId, fileName);
         this.jobIds.set(jobId, newJob);
         newJob.state = Job.states.processing;
-        this.webWorkerDo('processJob', newJob.id);
+        this.webWorkerDo(commands.processJob, newJob.id);
     }
 
     jobDeletedHandler (jobId) {

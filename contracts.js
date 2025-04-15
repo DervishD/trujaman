@@ -1,3 +1,6 @@
+import { LOG } from './strings.js';
+
+
 export const commands = {
     registerFormats: null,
     slowModeToggle: null,
@@ -38,4 +41,4 @@ Object.keys(customEvents).forEach(key => { customEvents[key] = `custom:${key}`; 
 Object.freeze(customEvents);
 
 
-console.info('Contracts script processed.');
+console.info(LOG.SCRIPT_PROCESSED('Constants'));  // eslint-disable-line new-cap

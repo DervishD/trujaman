@@ -1,4 +1,5 @@
 // Follows Semantic Versioning 2.0.0 (https://semver.org/spec/v2.0.0.html).
+import { LOG } from './strings.js';
 export const version = {
     major: '0',
     minor: '2',
@@ -11,4 +12,4 @@ export const version = {
 };
 
 
-console.info('Version script processed.');
+console.info(LOG.SCRIPT_PROCESSED('Version'));  // eslint-disable-line new-cap

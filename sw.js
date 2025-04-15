@@ -1,4 +1,5 @@
 import {version} from './version.js';
+import {LOG} from './strings.js';
 
 
 const landingPage = '.';  // Maybe: "new URL(globalThis.registration.scope).pathname"???
@@ -20,7 +21,7 @@ const assets = [
 
 
 globalThis.addEventListener('install', event => {
-    console.debug(`Installing service worker v${version}`);
+    console.debug(LOG.SW_INSTALLING(version));  // eslint-disable-line new-cap
     event.waitUntil(
         caches.open(currentCacheName)
         .then(cache => cache.addAll(assets))
@@ -30,7 +31,7 @@ globalThis.addEventListener('install', event => {
 
 
 globalThis.addEventListener('activate', event => {
-    console.debug(`Activating service worker v${version}`);
+    console.debug(LOG.SW_ACTIVATING(version));  // eslint-disable-line new-cap
     event.waitUntil(
         caches.keys()
         .then(keys => Promise.all(
@@ -48,14 +49,14 @@ globalThis.addEventListener('activate', event => {
 // This makes sure the PWA fully works when offline,
 // and it's perfect for the core assets.
 globalThis.addEventListener('fetch', event => {
-    console.debug(`Fetch request for ${event.request.url}`);
+    console.debug(LOG.SW_FETCH_REQUEST(event.request.url));  // eslint-disable-line new-cap
     if (event.request.method !== 'GET') {
-        console.error(`Fetch request with non-GET method '${event.request.method}'`);
+        console.error(LOG.SW_FETCH_REQUEST_NON_GET(event.request.method));  // eslint-disable-line new-cap
         return;
     }
 
     if (!event.request.url.startsWith(globalThis.location.origin)) {
-        console.error(`Cross-origin fetch request for '${event.request.url}'`);
+        console.error(LOG.SW_FETCH_REQUEST_CROSS_ORIGIN(event.request.url));  // eslint-disable-line new-cap
         return;
     }
 
@@ -68,4 +69,4 @@ globalThis.addEventListener('fetch', event => {
     }))());
 });
 
-console.info('Service worker script processed.');
+console.info(LOG.SCRIPT_PROCESSED('Service Worker'));  // eslint-disable-line new-cap

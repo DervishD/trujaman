@@ -1,6 +1,6 @@
 import {version} from './version.js';
 import {commands, replies, customEvents} from './contracts.js';
-import {ERRMSG, MSG, STR} from './strings.js';
+import {ERRMSG, MSG, STR, LOG} from './strings.js';
 import * as C from './constants.js';
 
 
@@ -371,13 +371,13 @@ class Presenter {
     }
 
     webWorkerDo (command, payload) {
-        console.debug(`Sending command '${command}'`, payload);
+        console.debug(LOG.WW_SENDING_COMMAND(command), payload);  // eslint-disable-line new-cap
         this.worker.postMessage({command, payload});
     }
 
     handleWebWorkerMessage (message) {
         const {reply, payload} = message.data;
-        console.debug(`Received reply '${reply}'`, payload);
+        console.debug(LOG.WW_RECEIVED_REPLY(reply), payload);  // eslint-disable-line new-cap
 
         if (reply === replies.commandNotFound) {
             const command = payload;
@@ -455,4 +455,4 @@ globalThis.addEventListener('load', () => {
 });
 
 
-console.info('Main script processed.');
+console.info(LOG.SCRIPT_PROCESSED('Main'));  // eslint-disable-line new-cap

@@ -38,3 +38,17 @@ export const STR = {
     UPLOAD_MODE_SLOW: '⊖',
     UPLOAD_MODE_FAST: '⊕',
 }
+
+
+export const LOG = {
+    WW_SENDING_COMMAND: command =>`Sending command '${command}'`,
+    WW_RECEIVED_COMMAND: command => `Received command '${command}'`,
+    WW_SENDING_REPLY: reply => `Sending reply '${reply}'`,
+    WW_RECEIVED_REPLY: reply => `Received reply '${reply}'`,
+    SCRIPT_PROCESSED: script => `${script} script processed.`,
+    SW_INSTALLING: version => `Installing service worker v${version}`,
+    SW_ACTIVATING: version => `Activating service worker v${version}`,
+    SW_FETCH_REQUEST: url => `Fetch request for ${url}`,
+    SW_FETCH_REQUEST_NON_GET: method => `Fetch request with non-GET method '${method}'`,
+    SW_FETCH_REQUEST_CROSS_ORIGIN: url => `Cross-origin fetch request for '${url}'`,
+}

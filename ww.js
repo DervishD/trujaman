@@ -1,5 +1,6 @@
 import {version} from './version.js';
 import {commands, replies} from './contracts.js';
+import {LOG} from './strings.js';
 
 
 let knownFormats = null;
@@ -16,7 +17,7 @@ Object.keys(handlers).forEach(command => { handlers[command] = null; });
 
 globalThis.addEventListener('message', message => {
     const {command, payload} = message.data;
-    console.debug(`Received command '${command}'`, payload);
+    console.debug(LOG.WW_RECEIVED_COMMAND(command), payload);  // eslint-disable-line new-cap
 
     if (handlers[command]) {
         handlers[command](payload);
@@ -27,7 +28,7 @@ globalThis.addEventListener('message', message => {
 
 
 function postReply (reply, payload) {
-    console.debug(`Sending reply '${reply}'`, payload);
+    console.debug(LOG.WW_SENDING_REPLY(reply), payload);  // eslint-disable-line new-cap
     globalThis.postMessage({reply, payload});
 }
 
@@ -136,4 +137,4 @@ function deleteJobHandler (jobId) {
 }
 
 
-console.info('Web worker script processed.');
+console.info(LOG.SCRIPT_PROCESSED('Web Worker'));  // eslint-disable-line new-cap

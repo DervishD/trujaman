@@ -1,5 +1,6 @@
 import {version} from './version.js';
 import {commands, replies, customEvents} from './contracts.js';
+import * as C from './constants.js';
 
 
 class FatalError extends Error {
@@ -275,11 +276,11 @@ class Presenter {
     }
 
     run () {
-        this.initServiceWorker('sw.js');
-        this.initWebWorker('ww.js');
+        this.initServiceWorker(C.SERVICE_WORKER_URL);
+        this.initWebWorker(C.WEB_WORKER_URL);
         this.initCustomEventHandlers();
 
-        fetch('formats.json')
+        fetch(C.FORMATS_URL)
         .then(response => {
             if (!response.ok) {
                 throw new FatalError('No se encontró el fichero con la lista de formatos.');

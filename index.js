@@ -1,5 +1,6 @@
 import {version} from './version.js';
 import {commands, replies, customEvents} from './contracts.js';
+import {ERRMSG, MSG, STR} from './strings.js';
 import * as C from './constants.js';
 
 
@@ -150,27 +151,27 @@ class UI {
     }
 
     set slowMode (state) {
-        this.slowModeIndicator.textContent = state ? '⊖' : '⊕';
+        this.slowModeIndicator.textContent = state ? STR.UPLOAD_MODE_SLOW : STR.UPLOAD_MODE_FAST;
     }
 }
 
 
 class Job {
     static states = {
-        processing: Symbol('Leyendo el fichero…'),
-        reading: Symbol('Leyendo el fichero '),
-        processed: Symbol('El fichero se leyó correctamente.'),
-        retrying: Symbol('Reintentando…'),  // cspell:disable-line
-        cancelling: Symbol('Cancelando el fichero…'),
-        cancelled: Symbol('Lectura cancelada.'),
-        error: Symbol('Error: '),
+        processing: Symbol(MSG.JOB_STATES_PROCESSING),
+        reading: Symbol(MSG.JOB_STATES_READING),
+        processed: Symbol(MSG.JOB_STATES_PROCESSED),
+        retrying: Symbol(MSG.JOB_STATES_RETRYING),
+        cancelling: Symbol(MSG.JOB_STATES_CANCELLING),
+        cancelled: Symbol(MSG.JOB_STATES_CANCELLED),
+        error: Symbol(MSG.JOB_STATES_ERROR),
     };
 
     static errors = {
-        FileTooLargeError: 'el fichero es muy grande',
-        NotFoundError: 'el fichero no existe',
-        NotReadableError: 'el fichero no se puede leer',
-        SecurityError: 'el fichero no se puede leer de forma segura',
+        FileTooLargeError: ERRMSG.FILE_TOO_LARGE,
+        NotFoundError: ERRMSG.FILE_NOT_FOUND,
+        NotReadableError: ERRMSG.FILE_NOT_READABLE,
+        SecurityError: ERRMSG.FILE_SECURITY,
     };
 
     constructor (id, fileName) {
@@ -283,7 +284,7 @@ class Presenter {
         fetch(C.FORMATS_URL)
         .then(response => {
             if (!response.ok) {
-                throw new FatalError('No se encontró el fichero con la lista de formatos.');
+                throw new FatalError(ERRMSG.FORMATS_NOT_FOUND);
             }
             return response.json();
         })
@@ -292,7 +293,7 @@ class Presenter {
             this.UI.formats = Object.keys(formats);
         })
         .catch(error => {
-            throw new FatalError('No se pudo procesar el fichero con la lista de formatos.', error);
+            throw new FatalError(ERRMSG.CANNOT_PROCESS_FORMATS, error);
         });
     }
 
@@ -315,9 +316,9 @@ class Presenter {
         .catch(error => {
             // Service workers are considered site data, so cookies have to be enabled for the application to work.
             if (navigator.cookieEnabled) {
-                throw new FatalError('No se pudo iniciar el service worker.', error);
+                throw new FatalError(ERRMSG.CANNOT_RUN_SW, error);
             } else {
-                throw new FatalError('Las cookies están desactivadas.', error);
+                throw new FatalError(ERRMSG.COOKIES_ARE_DISABLED, error);
             }
         });
     }
@@ -331,10 +332,10 @@ class Presenter {
                 // For syntax errors, that should not happen in production,
                 // the event will be an ErrorEvent instance and will contain
                 // information pertaining to the error.
-                throw new FatalError(`Error de sintaxis en el web worker, línea ${event.lineno}.`, event.message);
+                throw new FatalError(ERRMSG.WW_SYNTAX(event.lineno), event.message);  // eslint-disable-line new-cap
             } else {
                 // For loading errors the error will be an Event.
-                throw new FatalError('No se pudo iniciar el web worker.');
+                throw new FatalError(ERRMSG.CANNOT_RUN_WW);
             }
         });
     }
@@ -380,13 +381,13 @@ class Presenter {
 
         if (reply === replies.commandNotFound) {
             const command = payload;
-            throw new FatalError(`El web worker no reconoce el comando «${command}».`);
+            throw new FatalError(ERRMSG.UNKNOWN_WW_COMMAND(command));  // eslint-disable-line new-cap
         }
 
         if (this.handlers[reply]) {
             this.handlers[reply](payload);
         } else {
-            throw new FatalError(`No se reconoce la respuesta del web worker «${reply}».`);
+            throw new FatalError(ERRMSG.UNKNOWN_WW_REPLY(reply));  // eslint-disable-line new-cap
         }
     }
 
@@ -425,16 +426,7 @@ class Presenter {
 
     fileReadOKHandler ({jobId, contents}) {
         const job = this.jobIds.get(jobId);
-        if (version.prerelease) {
-            const HEX_RADIX = 16;
-            const TARGET_LENGTH = 2;
-            const PAD_STRING = '0';
-            if (typeof contents === 'undefined') {
-                job.debugMarker = 'empty file';
-            } else {
-                job.debugMarker = `data <0x${contents.toString(HEX_RADIX).padStart(TARGET_LENGTH, PAD_STRING)}>`;
-            }
-        }
+        if (version.prerelease) job.debugMarker = STR.JOB_DEBUGMARKER(contents);  // eslint-disable-line new-cap
         job.state = Job.states.processed;
     }
 
@@ -451,7 +443,7 @@ class Presenter {
             job.state = Job.states.error;
         } else {
             // Unexpected error condition that should not happen in production.
-            throw new FatalError(`Error «${error.name}» leyendo el fichero «${error.fileName}»`, error.message);
+            throw new FatalError(ERRMSG.FILE_READ(error), error.message);  // eslint-disable-line new-cap
         }
     }
 }

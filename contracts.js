@@ -21,6 +21,7 @@ export const replies = {
     bytesRead: null,
     fileReadError: null,
     fileReadOK: null,
+    fileTooLarge: null,
 };
 Object.keys(replies).forEach(key => { replies[key] = key; });
 Object.freeze(replies);

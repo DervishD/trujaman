@@ -31,6 +31,13 @@ export const MSG = {
         const marker = `data <0x${contents.toString(HEX_RADIX).padStart(TARGET_LENGTH, PAD_STRING)}>`;
         return typeof contents === 'undefined' ? 'empty file' : marker;
     },
+    APP_STOPPED: '¡ERROR, la aplicación no puede funcionar!',
+    ERROR_LOCATION: (filename, line, column) => `En ${filename}, línea ${line}, columna ${column}`,
+    ERROR_MESSAGE: (name, message) => `${name ? `${name}` : 'Error'}(${message ? `'${message}'` : ''}) sin gestionar`,
+    ERROR_STACK_DUMP_SEPARATOR: '\n\n',
+    ERROR_STACK_DUMP_HEADER: 'Información de depurado:\n',
+    ERROR_STACK_DUMP_FRAME: frame => `    ${frame.trim()}\n`,
+    ERROR_CONSOLE_DUMP: (message, location, details) => [message, location, details].filter(Boolean).join('\n\n'),
 }
 
 

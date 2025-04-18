@@ -15,45 +15,38 @@ class FatalError extends Error {
 
 // Default handler for unhandled errors which should not happen in production.
 globalThis.addEventListener('error', event => {
-    const error = event instanceof PromiseRejectionEvent ? event.reason : event.error;
-    let message = '';
-    let details = '';
+    event.preventDefault();
+
+    const error = event instanceof ErrorEvent ? event.error : {name: event.constructor.name, message: ''};
+
+    const message = MSG.ERROR_MESSAGE(error.name, error.message);  // eslint-disable-line new-cap
     let location = '';
+    let details = event.message || '';
 
     if (event.filename) {
+        let {filename, lineno, colno} = event;
+
         try {
             const FROM_SLASH = 1;
-            location = new URL(event.filename).pathname.substring(FROM_SLASH);
+            filename = new URL(filename).pathname.substring(FROM_SLASH);
         } catch (exc) {
-            if (exc instanceof TypeError) {
-                location = event.filename;
-            } else throw exc;
+            if (!(exc instanceof TypeError)) throw exc;
         }
-        location = `En ${location}, línea ${event.lineno}, columna ${event.colno}.`;
+        if (typeof lineno !== 'number') lineno = 'N/A';
+        if (typeof colno !== 'number') colno = 'N/A';
+
+        location = MSG.ERROR_LOCATION(filename, lineno, colno);  // eslint-disable-line new-cap
     }
 
-    if (error) {
-        ({message} = error.message ? error : {message});
-
-        if (error instanceof FatalError) {
-            ({details} = error);
-        } else {
-            message = `${error.name ? `${error.name}` : 'Error'}(${message ? `'${message}'` : ''}) sin gestionar.`;
-            details = '';
+    if (error.stack) {
+        details += details ? MSG.ERROR_STACK_DUMP_SEPARATOR : '';
+        details += MSG.ERROR_STACK_DUMP_HEADER;
+        for (const line of error.stack.trim().split('\n')) {
+            details += MSG.ERROR_STACK_DUMP_FRAME(line);  // eslint-disable-line new-cap
         }
-
-        if (error.stack) {
-            details += `${details ? '\n\n' : ''}Información de depurado:\n`;
-            for (const line of error.stack.trim().split('\n')) {
-                details += `    ${line.trim()}\n`;
-            }
-        }
-    } else {
-        ({message} = error.message ? error : {message});
-        message += message && !message.endsWith('.') ? '.' : '';
     }
 
-    console.error(`${message}${location ? `\n\n${location}` : ''}${details ? `\n\n${details}` : ''}`);
+    details = details.trim();
 
     const errorTemplate = document.querySelector('#error_template');
 
@@ -69,20 +62,20 @@ globalThis.addEventListener('error', event => {
 
     const errorElement = errorTemplate.content.firstElementChild.cloneNode(true);
 
-    errorElement.querySelector('.error_header').textContent = '¡ERROR, la aplicación no puede funcionar!';
+    errorElement.querySelector('.error_header').textContent = MSG.APP_STOPPED;
     errorElement.querySelector('.error_message').textContent = message;
     errorElement.querySelector('.error_location').textContent = location;
-    errorElement.querySelector('.error_details').textContent = details.trim();
+    errorElement.querySelector('.error_details').textContent = details;
 
-    // Errors are shown in a first-happenned, first-shown manner.
     errorTemplate.before(errorElement);
-    event.preventDefault();
+
+    console.error(MSG.ERROR_CONSOLE_DUMP(message, location, details));  // eslint-disable-line new-cap
 });
 
 
 globalThis.addEventListener('unhandledrejection', event => {
-    globalThis.reportError(event.reason);
     event.preventDefault();
+    globalThis.reportError(event.reason);
 });
 
 

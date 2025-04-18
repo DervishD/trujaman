@@ -1,11 +1,11 @@
 import {version} from './version.js';
 import {commands, replies} from './contracts.js';
+import {MAX_FILE_SIZE_MIB} from './constants.js';
 import * as MSG from './strings.js';
 
 
 let knownFormats = null;
 const jobs = new Map();
-const MAX_FILE_SIZE_MIB = 99;
 
 // For delaying file reading operations so the UI can be tested better, in "slow mode".
 const FILE_READING_DELAY_MILLISECONDS = 500;

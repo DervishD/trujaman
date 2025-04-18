@@ -159,13 +159,14 @@ class UI {
 
 class Job {
     static states = {
-        processing: Symbol(MSG.JOB_STATES_PROCESSING),
-        reading: Symbol(MSG.JOB_STATES_READING),
-        processed: Symbol(MSG.JOB_STATES_PROCESSED),
-        retrying: Symbol(MSG.JOB_STATES_RETRYING),
-        cancelling: Symbol(MSG.JOB_STATES_CANCELLING),
-        cancelled: Symbol(MSG.JOB_STATES_CANCELLED),
-        error: Symbol(MSG.JOB_STATES_ERROR),
+        test: Symbol('HItherer'),
+        processing: Symbol(MSG.JOB_STATE_PROCESSING),
+        reading: Symbol(MSG.JOB_STATE_READING),
+        processed: Symbol(MSG.JOB_STATE_PROCESSED),
+        retrying: Symbol(MSG.JOB_STATE_RETRYING),
+        cancelling: Symbol(MSG.JOB_STATE_CANCELLING),
+        cancelled: Symbol(MSG.JOB_STATE_CANCELLED),
+        error: Symbol(MSG.JOB_STATE_ERROR),
     };
 
     static errors = {

@@ -2,7 +2,7 @@
 import { LOG } from './strings.js';
 export const version = {
     major: '0',
-    minor: '2',
+    minor: '3',
     patch: '0',
     prerelease: 'alpha',
     build: new Date().toISOString().split('T')[0].replaceAll('-', ''),

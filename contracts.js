@@ -1,4 +1,4 @@
-import { LOG } from './strings.js';
+import {SCRIPT_PROCESSED} from './strings.js';
 
 
 export const commands = {
@@ -41,4 +41,4 @@ Object.keys(customEvents).forEach(key => { customEvents[key] = `custom:${key}`; 
 Object.freeze(customEvents);
 
 
-console.info(LOG.SCRIPT_PROCESSED('Constants'));  // eslint-disable-line new-cap
+console.info(SCRIPT_PROCESSED('Constants'));  // eslint-disable-line new-cap

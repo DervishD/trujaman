@@ -1,6 +1,6 @@
 import {version} from './version.js';
 import {commands, replies, customEvents} from './contracts.js';
-import {ERRMSG, MSG, STR, LOG} from './strings.js';
+import * as MSG from './strings.js';
 import * as C from './constants.js';
 
 
@@ -77,7 +77,7 @@ globalThis.addEventListener('error', event => {
 
     errorTemplate.before(errorElement);
 
-    console.error(MSG.ERROR_CONSOLE_DUMP(message, location, details));  // eslint-disable-line new-cap
+    console.error(MSG.ERROR_FULL_DUMP(message, location, details));  // eslint-disable-line new-cap
 });
 
 
@@ -152,7 +152,7 @@ class UI {
     }
 
     set slowMode (state) {
-        this.slowModeIndicator.textContent = state ? STR.UPLOAD_MODE_SLOW : STR.UPLOAD_MODE_FAST;
+        this.slowModeIndicator.textContent = state ? MSG.UPLOAD_MODE_SLOW : MSG.UPLOAD_MODE_FAST;
     }
 }
 
@@ -169,10 +169,10 @@ class Job {
     };
 
     static errors = {
-        FileTooLargeError: ERRMSG.FILE_TOO_LARGE,
-        NotFoundError: ERRMSG.FILE_NOT_FOUND,
-        NotReadableError: ERRMSG.FILE_NOT_READABLE,
-        SecurityError: ERRMSG.FILE_SECURITY,
+        FileTooLargeError: MSG.FILE_TOO_LARGE,
+        NotFoundError: MSG.FILE_NOT_FOUND,
+        NotReadableError: MSG.FILE_NOT_READABLE,
+        SecurityError: MSG.FILE_SECURITY_ERROR,
     };
 
     constructor (id, fileName) {
@@ -285,7 +285,7 @@ class Presenter {
         fetch(C.FORMATS_URL)
         .then(response => {
             if (!response.ok) {
-                throw new FatalError(ERRMSG.FORMATS_NOT_FOUND);
+                throw new FatalError(MSG.FORMATS_NOT_FOUND);
             }
             return response.json();
         })
@@ -294,7 +294,7 @@ class Presenter {
             this.UI.formats = Object.keys(formats);
         })
         .catch(error => {
-            throw new FatalError(ERRMSG.CANNOT_PROCESS_FORMATS, error);
+            throw new FatalError(MSG.CANNOT_PROCESS_FORMATS, error);
         });
     }
 
@@ -317,9 +317,9 @@ class Presenter {
         .catch(error => {
             // Service workers are considered site data, so cookies have to be enabled for the application to work.
             if (navigator.cookieEnabled) {
-                throw new FatalError(ERRMSG.CANNOT_RUN_SW, error);
+                throw new FatalError(MSG.CANNOT_RUN_SW, error);
             } else {
-                throw new FatalError(ERRMSG.COOKIES_ARE_DISABLED, error);
+                throw new FatalError(MSG.COOKIES_ARE_DISABLED, error);
             }
         });
     }
@@ -333,10 +333,10 @@ class Presenter {
                 // For syntax errors, that should not happen in production,
                 // the event will be an ErrorEvent instance and will contain
                 // information pertaining to the error.
-                throw new FatalError(ERRMSG.WW_SYNTAX(event.lineno), event.message);  // eslint-disable-line new-cap
+                throw new FatalError(MSG.WW_SYNTAX(event.lineno), event.message);  // eslint-disable-line new-cap
             } else {
                 // For loading errors the error will be an Event.
-                throw new FatalError(ERRMSG.CANNOT_RUN_WW);
+                throw new FatalError(MSG.CANNOT_RUN_WW);
             }
         });
     }
@@ -372,23 +372,23 @@ class Presenter {
     }
 
     webWorkerDo (command, payload) {
-        console.debug(LOG.WW_SENDING_COMMAND(command), payload);  // eslint-disable-line new-cap
+        console.debug(MSG.WW_SENDING_COMMAND(command), payload);  // eslint-disable-line new-cap
         this.worker.postMessage({command, payload});
     }
 
     handleWebWorkerMessage (message) {
         const {reply, payload} = message.data;
-        console.debug(LOG.WW_RECEIVED_REPLY(reply), payload);  // eslint-disable-line new-cap
+        console.debug(MSG.WW_RECEIVED_REPLY(reply), payload);  // eslint-disable-line new-cap
 
         if (reply === replies.commandNotFound) {
             const command = payload;
-            throw new FatalError(ERRMSG.UNKNOWN_WW_COMMAND(command));  // eslint-disable-line new-cap
+            throw new FatalError(MSG.UNKNOWN_WW_COMMAND(command));  // eslint-disable-line new-cap
         }
 
         if (this.handlers[reply]) {
             this.handlers[reply](payload);
         } else {
-            throw new FatalError(ERRMSG.UNKNOWN_WW_REPLY(reply));  // eslint-disable-line new-cap
+            throw new FatalError(MSG.UNKNOWN_WW_REPLY(reply));  // eslint-disable-line new-cap
         }
     }
 
@@ -427,7 +427,7 @@ class Presenter {
 
     fileReadOKHandler ({jobId, contents}) {
         const job = this.jobIds.get(jobId);
-        if (version.prerelease) job.debugMarker = STR.JOB_DEBUGMARKER(contents);  // eslint-disable-line new-cap
+        if (version.prerelease) job.debugMarker = MSG.JOB_DEBUGMARKER(contents);  // eslint-disable-line new-cap
         job.state = Job.states.processed;
     }
 
@@ -444,7 +444,7 @@ class Presenter {
             job.state = Job.states.error;
         } else {
             // Unexpected error condition that should not happen in production.
-            throw new FatalError(ERRMSG.FILE_READ(error), error.message);  // eslint-disable-line new-cap
+            throw new FatalError(MSG.FILE_READ(error), error.message);  // eslint-disable-line new-cap
         }
     }
 }
@@ -456,4 +456,4 @@ globalThis.addEventListener('load', () => {
 });
 
 
-console.info(LOG.SCRIPT_PROCESSED('Main'));  // eslint-disable-line new-cap
+console.info(MSG.SCRIPT_PROCESSED('Main'));  // eslint-disable-line new-cap

@@ -324,7 +324,7 @@ button:active {
 }
 
 .error_message {
-    margin: 1em 0;
+    margin: 1em 0 0;
 }
 
 .error_location {

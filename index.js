@@ -64,8 +64,16 @@ globalThis.addEventListener('error', event => {
 
     errorElement.querySelector('.error_header').textContent = MSG.APP_STOPPED;
     errorElement.querySelector('.error_message').textContent = message;
-    errorElement.querySelector('.error_location').textContent = location;
-    errorElement.querySelector('.error_details').textContent = details;
+
+    const errorLocationElement = errorElement.querySelector('.error_location');
+    if (location) {
+        errorLocationElement.textContent = location;
+    } else errorLocationElement.hidden = true;
+
+    const errorDetailsElement = errorElement.querySelector('.error_details');
+    if (details) {
+        errorDetailsElement.textContent = details;
+    } else errorDetailsElement.hidden = true;
 
     errorTemplate.before(errorElement);
 

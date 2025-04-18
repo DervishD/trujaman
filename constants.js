@@ -31,6 +31,8 @@ export const S_JOB_CANCEL = '[data-role="js-job-cancel"]'
 export const S_JOB_RETRY = '[data-role="js-job-retry"]'
 export const S_JOB_DOWNLOAD_DROPDOWN = '[data-element="js-job-download-dropdown"]'
 export const S_JOB_FORMATS_LIST = '[data-element="js-job-formats-list"]'
+export const S_DOWNLOADABLE_FORMAT_TEMPLATE = '[data-element="js-downloadable-format-template"]'
+export const S_DOWNLOADABLE_FORMAT_NAME = '[data-placeholder="js-downloadable-format-name"]'
 
 // States
 export const DROPZONE_HIDDEN = 'hidden'

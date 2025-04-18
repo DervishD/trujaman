@@ -143,10 +143,11 @@ class UI {
     }
 
     set formats (formats) {
+        const template = document.querySelector(C.S_DOWNLOADABLE_FORMAT_TEMPLATE).content.firstElementChild;
         formats.forEach(format => {
-            const paragraph = document.createElement('p');
-            paragraph.textContent = format;
-            this.formatsList.append(paragraph);
+            const element = template.cloneNode(true);
+            element.querySelector(C.S_DOWNLOADABLE_FORMAT_NAME).textContent = format;
+            this.formatsList.append(element);
         });
     }
 

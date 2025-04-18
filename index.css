@@ -295,7 +295,7 @@ button:active {
     background-color: var(--accent);
 }
 
-.job_formats_list * {
+.job_formats_list > * {
     cursor: pointer;
     background-color: var(--accent);
     margin: 0.5em;

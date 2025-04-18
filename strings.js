@@ -2,6 +2,8 @@ export const SCRIPT_PROCESSED = script => `${script} script processed.`
 export const UPLOAD_MODE_SLOW = '⊖'
 export const UPLOAD_MODE_FAST = '⊕'
 
+export const NOT_AVAILABLE = 'N/A'
+
 export const FORMATS_NOT_FOUND = 'No se encontró el fichero con la lista de formatos'
 export const CANNOT_PROCESS_FORMATS = 'No se pudo procesar el fichero con la lista de formatos'
 

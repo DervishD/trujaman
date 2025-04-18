@@ -32,8 +32,8 @@ globalThis.addEventListener('error', event => {
         } catch (exc) {
             if (!(exc instanceof TypeError)) throw exc;
         }
-        if (typeof lineno !== 'number') lineno = 'N/A';
-        if (typeof colno !== 'number') colno = 'N/A';
+        if (typeof lineno !== 'number') lineno = MSG.NOT_AVAILABLE;
+        if (typeof colno !== 'number') colno = MSG.NOT_AVAILABLE;
 
         location = MSG.ERROR_LOCATION(filename, lineno, colno);  // eslint-disable-line new-cap
     }

@@ -21,13 +21,13 @@
 </head>
 
 <body>
-    <div hidden id="dropzone"><p>Suelte aquí los ficheros</p></div>
+    <div hidden data-element="js-dropzone" id="dropzone"><p>Suelte aquí los ficheros</p></div>
 
-    <header>
-        <div id="logo">trujamán</div>
+    <header data-keep-on-error>
+        <div data-element="js-logo" id="logo">trujamán</div>
         <div>
-            <span hidden id="slow_mode" class="monospaced"></span>
-            <span id="version" class="monospaced">loading…</span>
+            <span hidden data-placeholder="js-slow-mode-indicator" id="slow_mode" class="monospaced"></span>
+            <span data-placeholder="js-version" id="version" class="monospaced">loading…</span>
         </div>
     </header>
 
@@ -35,35 +35,35 @@
         <div>¡Este navegador no permite el uso de JavaScript por lo que la aplicación no podrá funcionar!</div>
     </noscript>
 
-    <div hidden id="filepicker">
-        <input type="file" multiple>
-        <button type="button">Escoger ficheros</button>
+    <div hidden data-element="js-filepicker" id="filepicker">
+        <input data-role="js-filepicker" type="file" multiple>
+        <button data-element="js-default-control" type="button">Escoger ficheros</button>
     </div>
 
-    <div id="jobs"></div>
+    <div data-element="js-jobs-container" id="jobs"></div>
 
-    <template id="error_template">
+    <template data-element="js-error-template" data-keep-on-error>
         <div class="error">
-            <div class="error_header"></div>
-            <div class="error_message"></div>
-            <pre class="error_location"></pre>
-            <pre class="error_details"></pre>
+            <div class="error_header js-error-header"></div>
+            <div class="error_message js-error-message"></div>
+            <pre class="error_location js-error-location"></pre>
+            <pre class="error_details js-error-details"></pre>
         </div>
     </template>
 
-    <template id="job_template">
+    <template data-element="js-job-template">
         <div class="job">
             <div class="job_header">
-                <p class="job_filename"></p>
-                <button type="button" class="job_dismiss_button">×</button>
+                <p data-placeholder="js-job-filename" class="job_filename"></p>
+                <button data-role="js-job-dismiss" type="button" class="job_dismisser">×</button>
             </div>
             <div class="job_body">
-                <p class="job_message"></p>
-                <button type="button" hidden class="job_cancel_button">Cancelar</button>
-                <button type="button" hidden class="job_retry_button">Reintentar</button>
-                <div hidden class="job_download_dropdown">
+                <p data-placeholder="js-job-message" class="job_message"></p>
+                <button data-role="js-job-cancel" type="button" hidden>Cancelar</button>
+                <button data-role="js-job-retry"  type="button" hidden>Reintentar</button>
+                <div data-element="js-job-download-dropdown" hidden class="job_download_dropdown">
                     <button type="button">Descargar en formato…</button>
-                    <div hidden class="job_formats_list"></div>
+                    <div data-element="js-job-formats-list" hidden class="job_formats_list"></div>
                 </div>
             </div>
         </div>

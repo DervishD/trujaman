@@ -24,7 +24,7 @@
  * License, and to Philipp Nurullin <philipp.nurullin@jetbrains.com> and
  * Konstantin Bulenkov <kb@jetbrains.com>, the font creators.
 
- cspell: ignore Philipp Nurullin Konstantin Bulenkov
+ cspell: ignore Philipp Nurullin Konstantin Bulenkov dismisser
  */
 @font-face {
     font-family: 'JetBrains Mono';
@@ -255,7 +255,7 @@ button:active {
     min-width: 0px;
 }
 
-.job_dismiss_button {
+.job_dismisser {
     font-size: 1.5em;
     padding: 0;
     color: var(--accent);

@@ -48,13 +48,11 @@ globalThis.addEventListener('error', event => {
 
     details = details.trim();
 
-    const errorTemplate = document.querySelector('#error_template');
+    const errorTemplate = document.querySelector(C.S_ERROR_TEMPLATE);
 
     // Disable UI interaction by removing all page elements.
     Array.from(document.body.children).forEach(element => {
-        if (['HEADER', 'TEMPLATE'].includes(element.tagName)) return;
-        if (element.tagName === 'DIV' && element.classList.contains('error')) return;
-        element.remove();
+        if (!element.matches(C.S_KEEP_ON_ERROR)) element.remove();
     });
 
     // At this point no further interaction with the page is possible so the
@@ -62,15 +60,15 @@ globalThis.addEventListener('error', event => {
 
     const errorElement = errorTemplate.content.firstElementChild.cloneNode(true);
 
-    errorElement.querySelector('.error_header').textContent = MSG.APP_STOPPED;
-    errorElement.querySelector('.error_message').textContent = message;
+    errorElement.querySelector(C.S_ERROR_HEADER).textContent = MSG.APP_STOPPED;
+    errorElement.querySelector(C.S_ERROR_MESSAGE).textContent = message;
 
-    const errorLocationElement = errorElement.querySelector('.error_location');
+    const errorLocationElement = errorElement.querySelector(C.S_ERROR_LOCATION);
     if (location) {
         errorLocationElement.textContent = location;
     } else errorLocationElement.hidden = true;
 
-    const errorDetailsElement = errorElement.querySelector('.error_details');
+    const errorDetailsElement = errorElement.querySelector(C.S_ERROR_DETAILS);
     if (details) {
         errorDetailsElement.textContent = details;
     } else errorDetailsElement.hidden = true;
@@ -89,21 +87,22 @@ globalThis.addEventListener('unhandledrejection', event => {
 
 class UI {
     constructor () {
-        document.querySelector('#version').textContent = `v${version}`;
+        document.querySelector(C.S_VERSION_TEXT).textContent = `v${version}`;
 
-        this.formatsList = document.querySelector('#job_template').content.querySelector('.job_formats_list');
+        this.formatsList = document.querySelector(C.S_JOB_TEMPLATE).content.querySelector(C.S_JOB_FORMATS_LIST);
 
-        this.slowModeIndicator = document.querySelector('#slow_mode');
+        this.slowModeIndicator = document.querySelector(C.S_SLOW_MODE_INDICATOR);
         this.slowModeIndicator.addEventListener('click', () => {
             globalThis.dispatchEvent(new CustomEvent(customEvents.slowModeToggle));
         });
 
-        this.filePicker = document.querySelector('#filepicker');
-        this.filePicker.querySelector('button').addEventListener('click', () => {
-            this.filePicker.querySelector('input').click();
-        });
+        this.defaultControl = document.querySelector(C.S_DEFAULT_CONTROL);
 
-        this.filePicker.querySelector('input').addEventListener('change', event => {
+        this.filePicker = document.querySelector(C.S_FILEPICKER);
+        this.filePicker.addEventListener('click', () => {
+            this.filePicker.querySelector(C.S_FILEPICKER_INPUT).click();
+        });
+        this.filePicker.addEventListener('change', event => {
             globalThis.dispatchEvent(new CustomEvent(customEvents.processFiles, {detail: event.target.files}));
             event.target.value = null;  // Otherwise the event won't be fired again if the user selects the same file…
         });
@@ -112,16 +111,16 @@ class UI {
         // Detection is performed by testing for the existence of the drag and drop events used.
         // This is not orthodox but works well enough.
         if (['dragenter', 'dragover', 'dragleave', 'drop'].every(event => `on${event}` in globalThis)) {
-            this.dropZone = document.querySelector('#dropzone');
-            globalThis.addEventListener('dragenter', () => { this.dropZone.dataset.state = 'visible'; });
-            this.dropZone.addEventListener('dragleave', () => { this.dropZone.dataset.state = 'hidden'; });
+            this.dropZone = document.querySelector(C.S_DROPZONE);
+            globalThis.addEventListener('dragenter', () => { this.dropZone.dataset.state = C.DROPZONE_VISIBLE; });
+            this.dropZone.addEventListener('dragleave', () => { this.dropZone.dataset.state = C.DROPZONE_HIDDEN; });
 
             // This is needed because otherwise the page is NOT a valid drop target,
             // and when the file is dropped the default action is performed by the browser.
             this.dropZone.addEventListener('dragover', event => { event.preventDefault(); });
 
             this.dropZone.addEventListener('drop', event => {
-                this.dropZone.dataset.state = 'dismissed';
+                this.dropZone.dataset.state = C.DROPZONE_DISMISSED;
                 const {files} = event.dataTransfer;
                 globalThis.dispatchEvent(new CustomEvent(customEvents.processFiles, {detail: files}));
                 event.preventDefault();  // Prevent the browser from opening the file.
@@ -131,12 +130,12 @@ class UI {
 
     show () {
         this.filePicker.hidden = false;
-        this.filePicker.querySelector('button').focus();
+        this.defaultControl.focus();
         if (this.dropZone) {
             this.dropZone.hidden = false;
-            this.dropZone.dataset.state = 'hidden';
+            this.dropZone.dataset.state = C.DROPZONE_HIDDEN;
         }
-        document.querySelector('#logo').dataset.state = 'running';
+        document.querySelector(C.S_LOGO).dataset.state = C.APP_RUNNING;
     }
 
     showSlowModeIndicator () {
@@ -159,7 +158,6 @@ class UI {
 
 class Job {
     static states = {
-        test: Symbol('HItherer'),
         processing: Symbol(MSG.JOB_STATE_PROCESSING),
         reading: Symbol(MSG.JOB_STATE_READING),
         processed: Symbol(MSG.JOB_STATE_PROCESSED),
@@ -182,15 +180,15 @@ class Job {
         this.debugInfo = '';
         this.errorName = '';
 
-        this.element = document.getElementById('job_template').content.firstElementChild.cloneNode(true);
-        this.element.querySelector('.job_filename').textContent = fileName;
+        this.element = document.querySelector(C.S_JOB_TEMPLATE).content.firstElementChild.cloneNode(true);
+        this.element.querySelector(C.S_JOB_FILENAME).textContent = fileName;
 
-        this.message = this.element.querySelector('.job_message');
+        this.message = this.element.querySelector(C.S_JOB_MESSAGE);
 
-        this.dismissButton = this.element.querySelector('.job_dismiss_button');
-        this.retryButton = this.element.querySelector('.job_retry_button');
-        this.cancelButton = this.element.querySelector('.job_cancel_button');
-        this.downloadDropdown = this.element.querySelector('.job_download_dropdown');
+        this.dismissButton = this.element.querySelector(C.S_JOB_DISMISS);
+        this.retryButton = this.element.querySelector(C.S_JOB_RETRY);
+        this.cancelButton = this.element.querySelector(C.S_JOB_CANCEL);
+        this.downloadDropdown = this.element.querySelector(C.S_JOB_DOWNLOAD_DROPDOWN);
 
         this.controller = new AbortController();
 
@@ -207,12 +205,12 @@ class Job {
             event.target.dispatchEvent(new CustomEvent(customEvents.jobRetry, {detail: this, bubbles: true}));
         }, {signal: this.controller.signal});
 
-        this.element.querySelector('.job_download_dropdown').addEventListener('click', () => {
-            const formatsList = this.element.querySelector('.job_formats_list');
+        this.downloadDropdown.addEventListener('click', () => {
+            const formatsList = this.element.querySelector(C.S_JOB_FORMATS_LIST);
             formatsList.hidden = !formatsList.hidden;
         }, {signal: this.controller.signal});
 
-        document.querySelector('#jobs').append(this.element);
+        document.querySelector(C.S_JOBS_CONTAINER).append(this.element);
     }
 
     remove () {

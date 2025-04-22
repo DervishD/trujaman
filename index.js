@@ -186,23 +186,23 @@ class Job {
 
         this.message = this.element.querySelector(C.S_JOB_MESSAGE);
 
-        this.dismissButton = this.element.querySelector(C.S_JOB_DISMISS);
-        this.retryButton = this.element.querySelector(C.S_JOB_RETRY);
-        this.cancelButton = this.element.querySelector(C.S_JOB_CANCEL);
+        this.jobDismissControl = this.element.querySelector(C.S_JOB_DISMISS);
+        this.jobRetryControl = this.element.querySelector(C.S_JOB_RETRY);
+        this.jobCancelControl = this.element.querySelector(C.S_JOB_CANCEL);
         this.downloadDropdown = this.element.querySelector(C.S_JOB_DOWNLOAD_DROPDOWN);
 
         this.controller = new AbortController();
 
-        this.dismissButton.addEventListener('click', event => {
+        this.jobDismissControl.addEventListener('click', event => {
             event.target.dispatchEvent(new CustomEvent(customEvents.jobDismiss, {detail: this, bubbles: true}));
         }, {once: true});
 
-        this.cancelButton.addEventListener('click', event => {
-            this.cancelButton.disabled = true;
+        this.jobCancelControl.addEventListener('click', event => {
+            this.jobCancelControl.disabled = true;
             event.target.dispatchEvent(new CustomEvent(customEvents.jobCancel, {detail: this, bubbles: true}));
         }, {signal: this.controller.signal});
 
-        this.retryButton.addEventListener('click', event => {
+        this.jobRetryControl.addEventListener('click', event => {
             event.target.dispatchEvent(new CustomEvent(customEvents.jobRetry, {detail: this, bubbles: true}));
         }, {signal: this.controller.signal});
 
@@ -238,26 +238,26 @@ class Job {
         switch (state) {
         case Job.states.processing:
         case Job.states.retrying:
-            this.retryButton.hidden = true;
-            this.cancelButton.disabled = false;
-            this.cancelButton.hidden = false;
+            this.jobRetryControl.hidden = true;
+            this.jobCancelControl.disabled = false;
+            this.jobCancelControl.hidden = false;
             break;
         case Job.states.reading:
             this.message.innerHTML += `(${this.progressString}%).`;
             break;
         case Job.states.processed:
             this.message.innerHTML += this.debugInfo;
-            this.cancelButton.hidden = true;
+            this.jobCancelControl.hidden = true;
             this.downloadDropdown.hidden = false;
             break;
         case Job.states.cancelled:
-            this.cancelButton.hidden = true;
-            this.retryButton.hidden = false;
+            this.jobCancelControl.hidden = true;
+            this.jobRetryControl.hidden = false;
             break;
         case Job.states.error:
             this.message.innerHTML += `${Job.errors[this.errorName]}.`;
-            this.cancelButton.hidden = true;
-            this.retryButton.hidden = true;
+            this.jobCancelControl.hidden = true;
+            this.jobRetryControl.hidden = true;
             this.downloadDropdown.hidden = true;
             break;
         default:

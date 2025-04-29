@@ -1,13 +1,12 @@
 import {version} from './version.js';
 import {commands, replies} from './contracts.js';
-import {MAX_FILE_SIZE, PERCENT_FACTOR, FILE_READING_DELAY_MILLISECONDS} from './constants.js';
+import {MAX_FILE_SIZE, PERCENT_FACTOR} from './constants.js';
 import * as MSG from './strings.js';
 
 
 const handlers = Object.fromEntries(Object.keys(commands).map(command => [command, null]));
 
 let knownFormats = null;
-const jobs = new Map();
 
 let slowMode = Boolean(version.prerelease);  // Enabled by default on prereleases.
 if (slowMode) postReply(replies.showSlowModeIndicator);
@@ -31,20 +30,6 @@ function postReply (reply, payload, transferables = []) {
 }
 
 
-const generateJobId = (function *generateJobId () {
-    // According to ECMA-262 Number.MAX_SAFE_INTEGER is (2^53)-1. So, even in an
-    // scenario where 1000 jobs are added each millisecond, which is, in fact, a
-    // bit optimistic, jobs could be added at that rate for a bit over 285 years
-    // for the test below to be true.
-    //
-    // So, it is perfectly safe to end the generator in that case.
-    let id = 0;
-    while (Number.isSafeInteger(id)) {
-        yield id++;
-    }
-}());
-
-
 handlers.registerFormats = registerFormatsHandler;
 function registerFormatsHandler (formats) {
     knownFormats = formats;
@@ -58,77 +43,116 @@ function slowModeToggleHandler () {
 }
 
 
-handlers.createJob = createJobHandler;
-function createJobHandler (file) {
-    const job = {file, reader: null};
-    const jobId = generateJobId.next().value;
+class Job {
+    static jobRegistry = new Map();
+    static generateId = (function *generateId () {
+        // According to ECMA-262 Number.MAX_SAFE_INTEGER is (2^53)-1. So, even in an
+        // scenario where 1000 jobs are added each millisecond, which is, in fact, a
+        // bit optimistic, jobs could be added at that rate for a bit over 285 years
+        // for the test below to be true.
+        //
+        // So, it is perfectly safe to end the generator in that case.
+        let id = 0;
+        while (Number.isSafeInteger(id)) {
+            yield id++;
+        }
+    }());
 
-    if (typeof jobId === 'undefined' || !knownFormats) {
-        return;
+    constructor (file, callbacks) {
+        this.file = file;
+        this.callbacks = callbacks;
+
+        this.id = this.constructor.generateId.next().value;
+        this.constructor.jobRegistry.set(this.id, this);
+
+        this.reader = new FileReader();
+        this.reader.onload = event => this.callbacks.onComplete(this.id, event.target.result);
+        this.reader.onprogress = event => this.callbacks.onBytesRead(this.id, event.loaded);
+        this.reader.onerror = event => {
+            console.error(event);
+            const error = {
+                name: event.target.error.name,
+                message: event.target.error.message,
+                fileName: this.file,
+            };
+            this.callbacks.onError(this.id, error);
+        }
     }
 
-    job.reader = new FileReader();
+    readFile () {
+        this.reader.readAsArrayBuffer(this.file);
+    }
 
-    job.reader.onprogress = event => {
-        const percent = event.total ? Math.floor(PERCENT_FACTOR * event.loaded / event.total) : PERCENT_FACTOR;
+    cancel () {
+        if (this.reader.readyState === this.reader.DONE) return false;
+        this.reader.abort();
+        return true;
+    }
 
-        if (slowMode) {
-            const start = Date.now(); while (Date.now() - start < FILE_READING_DELAY_MILLISECONDS);
-        }
-        postReply(replies.bytesRead, {jobId, percent});
-    };
+    delete () {
+        this.file = null;
+        this.reader.abort();
+        this.reader.onload = null;
+        this.reader.onerror = null;
+        this.reader.onprogress = null;
+        this.reader = null;
+        this.callbacks = null;
+        this.constructor.jobRegistry.delete(this.id);
+    }
+}
 
-    job.reader.onerror = event => {
-        const error = {
-            name: event.target.error.name,
-            message: event.target.error.message,
-            fileName: job.file.name,
-        };
-        postReply(replies.fileReadError, {jobId, error});
-    };
-    job.reader.onload = event => {
-        const contents = event.target.result;
-        postReply(replies.fileReadComplete, {jobId, contents}, [contents]);
-    };
-    job.reader.onabort = () => {
-        postReply(replies.jobCancelled, jobId);
-    };
 
-    jobs.set(jobId, job);
-    postReply(replies.jobCreated, {jobId, fileName: job.file.name});
+handlers.createJob = createJobHandler;
+function createJobHandler (file) {
+    const job = new Job(file, {
+        onError: (jobId, error) => {
+            postReply(replies.fileReadError, {jobId, error});
+        },
+        onBytesRead: (jobId, bytesRead) => {
+            const percent = file.size ? Math.floor(PERCENT_FACTOR * bytesRead / file.size) : PERCENT_FACTOR;
+            postReply(replies.bytesRead, {jobId, percent});
+        },
+        onComplete: (jobId, contents) => {
+            postReply(replies.fileReadComplete, {jobId, contents}, [contents]);
+        },
+    });
+
+    if (typeof job.id === 'undefined' || !knownFormats) return;
+
+    postReply(replies.jobCreated, {jobId: job.id, fileName: job.file.name});
 }
 
 
 handlers.processJob = processJobHandler;
 handlers.retryJob = processJobHandler;
 function processJobHandler (jobId) {
-    const job = jobs.get(jobId);
+    const job = Job.jobRegistry.get(jobId);
 
     if (job.file.size > MAX_FILE_SIZE) {
         postReply(replies.fileTooLarge, jobId);
-    } else {
-        // The file is read using the HTML5 File API.
-        // Read the file as ArrayBuffer.
-        job.reader.readAsArrayBuffer(job.file);
+        return;
     }
+
+    job.readFile();
 }
 
 
 handlers.cancelJob = cancelJobHandler;
 function cancelJobHandler (jobId) {
-    const job = jobs.get(jobId);
-    job.reader.abort();
+    const job = Job.jobRegistry.get(jobId);
+
+    if (!job.cancel()) return;
+
+    postReply(replies.jobCancelled, jobId);
 }
 
 
 handlers.deleteJob = deleteJobHandler;
 function deleteJobHandler (jobId) {
-    const job = jobs.get(jobId);
-    job.reader.abort();
-    job.reader.onload = null;
-    job.reader.onerror = null;
-    job.reader.onabort = null;
-    jobs.delete(jobId);
+    const job = Job.jobRegistry.get(jobId);
+
+    job.delete();
+
     postReply(replies.jobDeleted, jobId);
 }
 

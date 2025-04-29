@@ -22,7 +22,6 @@ export const WW_SENDING_REPLY = reply => `Sending reply '${reply}'`
 export const WW_RECEIVED_REPLY = reply => `Received reply '${reply}'`
 export const UNKNOWN_WW_REPLY = reply => `No se reconoce la respuesta del web worker «${reply}»`
 
-export const JOB_STATE_PROCESSING = 'Leyendo el fichero…'
 export const JOB_STATE_READING = 'Leyendo el fichero '
 export const JOB_STATE_PROCESSED = 'El fichero se leyó correctamente.'
 export const JOB_STATE_ERROR = 'Error: '

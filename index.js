@@ -146,7 +146,6 @@ class UI {
 
 class Job {
     static states = {
-        processing: Symbol(MSG.JOB_STATE_PROCESSING),
         reading: Symbol(MSG.JOB_STATE_READING),
         processed: Symbol(MSG.JOB_STATE_PROCESSED),
         error: Symbol(MSG.JOB_STATE_ERROR),
@@ -337,10 +336,11 @@ class Presenter {
     }
 
     jobCreatedHandler ({jobId, fileName}) {
-        const newJob = new Job(jobId, fileName);
-        this.jobIds.set(jobId, newJob);
-        newJob.state = Job.states.processing;
-        this.webWorkerDo(commands.processJob, newJob.id);
+        const job = new Job(jobId, fileName);
+        this.jobIds.set(jobId, job);
+        job.progress = 0;
+        job.state = Job.states.reading;
+        this.webWorkerDo(commands.processJob, job.id);
     }
 
     jobDeletedHandler (jobId) {
@@ -352,7 +352,6 @@ class Presenter {
     bytesReadHandler ({jobId, percent}) {
         const job = this.jobIds.get(jobId);
         job.progress = percent;
-        job.state = Job.states.reading;
     }
 
     fileReadCompleteHandler ({jobId, contents}) {

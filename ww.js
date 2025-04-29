@@ -1,6 +1,6 @@
 import {version} from './version.js';
 import {commands, replies} from './contracts.js';
-import {MAX_FILE_SIZE_MIB, FILE_READING_DELAY_MILLISECONDS} from './constants.js';
+import {MAX_FILE_SIZE, PERCENT_FACTOR, FILE_READING_DELAY_MILLISECONDS} from './constants.js';
 import * as MSG from './strings.js';
 
 
@@ -70,7 +70,6 @@ function createJobHandler (file) {
     job.reader = new FileReader();
 
     job.reader.onprogress = event => {
-        const PERCENT_FACTOR = 100;
         const percent = event.total ? Math.floor(PERCENT_FACTOR * event.loaded / event.total) : PERCENT_FACTOR;
 
         if (slowMode) {
@@ -104,9 +103,8 @@ handlers.processJob = processJobHandler;
 handlers.retryJob = processJobHandler;
 function processJobHandler (jobId) {
     const job = jobs.get(jobId);
-    const KIB_MULTIPLIER = 1024;
 
-    if (job.file.size > MAX_FILE_SIZE_MIB * KIB_MULTIPLIER * KIB_MULTIPLIER) {
+    if (job.file.size > MAX_FILE_SIZE) {
         postReply(replies.fileTooLarge, jobId);
     } else {
         // The file is read using the HTML5 File API.

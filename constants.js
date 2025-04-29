@@ -2,8 +2,12 @@ export const WEB_WORKER_URL = './ww.js'
 export const SERVICE_WORKER_URL = './sw.js'
 export const FORMATS_URL = './formats.json'
 
+export const BINARY_PREFIX_MULTIPLIER = 1024;
+export const PERCENT_FACTOR = 100;
+
 // Arbitrary file size limit.
-export const MAX_FILE_SIZE_MIB = 99;
+const MAX_FILE_SIZE_MIB = 99;
+export const MAX_FILE_SIZE = MAX_FILE_SIZE_MIB * BINARY_PREFIX_MULTIPLIER * BINARY_PREFIX_MULTIPLIER;
 
 // For delaying file reading operations so the UI can be tested better, in "slow mode".
 export const FILE_READING_DELAY_MILLISECONDS = 500;

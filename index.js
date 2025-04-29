@@ -425,7 +425,7 @@ class Presenter {
         job.state = Job.states.reading;
     }
 
-    fileReadOKHandler ({jobId, contents}) {
+    fileReadCompleteHandler ({jobId, contents}) {
         const job = this.jobIds.get(jobId);
         if (version.prerelease) job.debugMarker = MSG.JOB_DEBUGMARKER(contents);  // eslint-disable-line new-cap
         job.state = Job.states.processed;

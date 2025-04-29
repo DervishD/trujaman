@@ -23,7 +23,7 @@ export const replies = {
     jobDeleted: null,
     bytesRead: null,
     fileReadError: null,
-    fileReadOK: null,
+    fileReadComplete: null,
     fileTooLarge: null,
 };
 Object.keys(replies).forEach(key => { replies[key] = key; });

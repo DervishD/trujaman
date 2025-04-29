@@ -89,7 +89,7 @@ function createJobHandler (file) {
     };
     job.reader.onload = event => {
         const [contents] = new Uint8Array(event.target.result);
-        postReply(replies.fileReadOK, {jobId, contents});
+        postReply(replies.fileReadComplete, {jobId, contents});
     };
     job.reader.onabort = () => {
         postReply(replies.jobCancelled, jobId);

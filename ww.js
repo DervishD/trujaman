@@ -5,6 +5,8 @@ import * as MSG from './strings.js';
 
 const handlers = Object.fromEntries(Object.keys(commands).map(command => [command, null]));
 
+const jobRegistry = new Map();
+
 let knownFormats = null;
 
 
@@ -32,31 +34,28 @@ function registerFormatsHandler (formats) {
 }
 
 
-class Job {
-    static jobRegistry = new Map();
-    static generateId = (function *generateId () {
-        // According to ECMA-262 Number.MAX_SAFE_INTEGER is (2^53)-1. So, even in an
-        // scenario where 1000 jobs are added each millisecond, which is, in fact, a
-        // bit optimistic, jobs could be added at that rate for a bit over 285 years
-        // for the test below to be true.
-        //
-        // So, it is perfectly safe to end the generator in that case.
-        let id = 0;
-        while (Number.isSafeInteger(id)) {
-            yield id++;
-        }
-    }());
+const generateJobId = (function *generateJobId () {
+    // According to ECMA-262 Number.MAX_SAFE_INTEGER is (2^53)-1. So, even in an
+    // scenario where 1000 jobs are added each millisecond, which is, in fact, a
+    // bit optimistic, jobs could be added at that rate for a bit over 285 years
+    // for the test below to be true.
+    //
+    // So, it is perfectly safe to end the generator in that case.
+    let id = 0;
+    while (Number.isSafeInteger(id)) {
+        yield id++;
+    }
+}());
 
+
+class Job {
     constructor (file, callbacks) {
         this.file = file;
         this.callbacks = callbacks;
 
-        this.id = this.constructor.generateId.next().value;
-        this.constructor.jobRegistry.set(this.id, this);
-
         this.reader = new FileReader();
-        this.reader.onload = event => this.callbacks.onComplete(this.id, event.target.result);
-        this.reader.onprogress = event => this.callbacks.onBytesRead(this.id, event.loaded);
+        this.reader.onload = event => this.callbacks.onComplete(event.target.result);
+        this.reader.onprogress = event => this.callbacks.onBytesRead(event.loaded);
         this.reader.onerror = event => {
             console.error(event);
             const error = {
@@ -64,7 +63,7 @@ class Job {
                 message: event.target.error.message,
                 fileName: this.file,
             };
-            this.callbacks.onError(this.id, error);
+            this.callbacks.onError(error);
         }
     }
 
@@ -80,35 +79,39 @@ class Job {
         this.reader.onprogress = null;
         this.reader = null;
         this.callbacks = null;
-        this.constructor.jobRegistry.delete(this.id);
     }
 }
 
 
 handlers.createJob = createJobHandler;
 function createJobHandler (file) {
+    const jobId = generateJobId.next().value;
+
+    if (typeof jobId === 'undefined' || !knownFormats) return;
+
     const job = new Job(file, {
-        onError: (jobId, error) => {
+        onError: error => {
             postReply(replies.fileReadError, {jobId, error});
         },
-        onBytesRead: (jobId, bytesRead) => {
+        onBytesRead: bytesRead => {
             const percent = file.size ? Math.floor(PERCENT_FACTOR * bytesRead / file.size) : PERCENT_FACTOR;
             postReply(replies.bytesRead, {jobId, percent});
         },
-        onComplete: (jobId, contents) => {
+        onComplete: contents => {
             postReply(replies.fileReadComplete, {jobId, contents}, [contents]);
         },
     });
 
-    if (typeof job.id === 'undefined' || !knownFormats) return;
+    jobRegistry.set(jobId, job);
 
-    postReply(replies.jobCreated, {jobId: job.id, fileName: job.file.name});
+    postReply(replies.jobCreated, {jobId, fileName: job.file.name});
 }
 
 
 handlers.processJob = processJobHandler;
 function processJobHandler (jobId) {
-    const job = Job.jobRegistry.get(jobId);
+    const job = jobRegistry.get(jobId);
+
     if (typeof job === 'undefined') return;
 
     if (job.file.size > MAX_FILE_SIZE) {
@@ -122,10 +125,12 @@ function processJobHandler (jobId) {
 
 handlers.deleteJob = deleteJobHandler;
 function deleteJobHandler (jobId) {
-    const job = Job.jobRegistry.get(jobId);
+    const job = jobRegistry.get(jobId);
     if (typeof job === 'undefined') return;
 
     job.delete();
+
+    jobRegistry.delete(jobId);
 
     postReply(replies.jobDeleted, jobId);
 }

@@ -1,4 +1,3 @@
-import {version} from './version.js';
 import {commands, replies} from './contracts.js';
 import {MAX_FILE_SIZE, PERCENT_FACTOR} from './constants.js';
 import * as MSG from './strings.js';
@@ -7,9 +6,6 @@ import * as MSG from './strings.js';
 const handlers = Object.fromEntries(Object.keys(commands).map(command => [command, null]));
 
 let knownFormats = null;
-
-let slowMode = version.isPrerelease();  // Enabled by default on prereleases.
-if (slowMode) postReply(replies.showSlowModeIndicator);
 
 
 globalThis.addEventListener('message', message => {
@@ -33,13 +29,6 @@ function postReply (reply, payload, transferables = []) {
 handlers.registerFormats = registerFormatsHandler;
 function registerFormatsHandler (formats) {
     knownFormats = formats;
-}
-
-
-handlers.slowModeToggle = slowModeToggleHandler;
-function slowModeToggleHandler () {
-    slowMode = !slowMode;
-    postReply(replies.slowModeState, slowMode);
 }
 
 

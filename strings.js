@@ -1,6 +1,4 @@
 export const SCRIPT_PROCESSED = script => `${script} script processed.`
-export const UPLOAD_MODE_SLOW = '⊖'
-export const UPLOAD_MODE_FAST = '⊕'
 
 export const NOT_AVAILABLE = 'N/A'
 

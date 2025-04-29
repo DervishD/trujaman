@@ -91,11 +91,6 @@ class UI {
 
         this.formatsList = document.querySelector(C.S_JOB_TEMPLATE).content.querySelector(C.S_JOB_FORMATS_LIST);
 
-        this.slowModeIndicator = document.querySelector(C.S_SLOW_MODE_INDICATOR);
-        this.slowModeIndicator.addEventListener('click', () => {
-            globalThis.dispatchEvent(new CustomEvent(customEvents.slowModeToggle));
-        });
-
         this.defaultControl = document.querySelector(C.S_DEFAULT_CONTROL);
 
         this.filePicker = document.querySelector(C.S_FILEPICKER);
@@ -138,10 +133,6 @@ class UI {
         document.querySelector(C.S_LOGO).dataset.state = C.APP_RUNNING;
     }
 
-    showSlowModeIndicator () {
-        this.slowModeIndicator.hidden = false;
-    }
-
     set formats (formats) {
         const template = document.querySelector(C.S_DOWNLOADABLE_FORMAT_TEMPLATE).content.firstElementChild;
         formats.forEach(format => {
@@ -149,10 +140,6 @@ class UI {
             element.querySelector(C.S_DOWNLOADABLE_FORMAT_NAME).textContent = format;
             this.formatsList.append(element);
         });
-    }
-
-    set slowMode (state) {
-        this.slowModeIndicator.textContent = state ? MSG.UPLOAD_MODE_SLOW : MSG.UPLOAD_MODE_FAST;
     }
 }
 
@@ -322,10 +309,6 @@ class Presenter {
             }
         });
 
-        globalThis.addEventListener(customEvents.slowModeToggle, () => {
-            this.webWorkerDo(commands.slowModeToggle);
-        });
-
         globalThis.addEventListener(customEvents.jobDismiss, event => {
             const job = event.detail;
             this.webWorkerDo(commands.deleteJob, job.id);
@@ -351,15 +334,6 @@ class Presenter {
         } else {
             throw new FatalError(MSG.UNKNOWN_WW_REPLY(reply));  // eslint-disable-line new-cap
         }
-    }
-
-    showSlowModeIndicatorHandler () {
-        this.UI.slowMode = true;
-        this.UI.showSlowModeIndicator();
-    }
-
-    slowModeStateHandler (state) {
-        this.UI.slowMode = state;
     }
 
     jobCreatedHandler ({jobId, fileName}) {

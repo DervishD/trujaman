@@ -3,7 +3,6 @@ import {SCRIPT_PROCESSED} from './strings.js';
 
 export const commands = Object.freeze(Object.fromEntries(Object.keys({
     registerFormats: null,
-    slowModeToggle: null,
     createJob: null,
     processJob: null,
     deleteJob: null,
@@ -12,8 +11,6 @@ export const commands = Object.freeze(Object.fromEntries(Object.keys({
 
 export const replies = Object.freeze(Object.fromEntries(Object.keys({
     commandNotFound: null,
-    showSlowModeIndicator: null,
-    slowModeState: null,
     jobCreated: null,
     jobDeleted: null,
     bytesRead: null,
@@ -25,7 +22,6 @@ export const replies = Object.freeze(Object.fromEntries(Object.keys({
 
 export const customEvents = Object.freeze(Object.fromEntries(Object.keys({
     jobDismiss: null,
-    slowModeToggle: null,
     processFiles: null,
 }).map(key => [key, key])));
 

@@ -35,8 +35,8 @@ export const JOB_DEBUGMARKER = contents => {
     const HEX_RADIX = 16;
     const TARGET_LENGTH = 2;
     const PAD_STRING = '0';
-    const marker = `data <0x${contents.toString(HEX_RADIX).padStart(TARGET_LENGTH, PAD_STRING)}>`;
-    return typeof contents === 'undefined' ? 'empty file' : marker;
+    const marker = `data <0x${contents[0].toString(HEX_RADIX).padStart(TARGET_LENGTH, PAD_STRING)}>`;
+    return typeof contents === 'undefined' ? 'empty file' : `${contents.length} bytes, marker ${marker}`;
 }
 
 export const FILE_READ = error => `Error «${error.name}» leyendo el fichero «${error.fileName}»`

@@ -25,9 +25,9 @@ globalThis.addEventListener('message', message => {
 });
 
 
-function postReply (reply, payload) {
+function postReply (reply, payload, transferables = []) {
     console.debug(MSG.WW_SENDING_REPLY(reply), payload);  // eslint-disable-line new-cap
-    globalThis.postMessage({reply, payload});
+    globalThis.postMessage({reply, payload}, transferables);
 }
 
 
@@ -88,8 +88,8 @@ function createJobHandler (file) {
         postReply(replies.fileReadError, {jobId, error});
     };
     job.reader.onload = event => {
-        const [contents] = new Uint8Array(event.target.result);
-        postReply(replies.fileReadComplete, {jobId, contents});
+        const contents = event.target.result;
+        postReply(replies.fileReadComplete, {jobId, contents}, [contents]);
     };
     job.reader.onabort = () => {
         postReply(replies.jobCancelled, jobId);

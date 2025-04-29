@@ -27,9 +27,6 @@ export const UNKNOWN_WW_REPLY = reply => `No se reconoce la respuesta del web wo
 export const JOB_STATE_PROCESSING = 'Leyendo el fichero…'
 export const JOB_STATE_READING = 'Leyendo el fichero '
 export const JOB_STATE_PROCESSED = 'El fichero se leyó correctamente.'
-export const JOB_STATE_RETRYING = 'Reintentando…'  // cspell:disable-line
-export const JOB_STATE_CANCELLING = 'Cancelando el fichero…'
-export const JOB_STATE_CANCELLED = 'Lectura cancelada.'
 export const JOB_STATE_ERROR = 'Error: '
 export const JOB_DEBUGMARKER = contents => {
     const HEX_RADIX = 16;

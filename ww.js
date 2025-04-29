@@ -83,12 +83,6 @@ class Job {
         this.reader.readAsArrayBuffer(this.file);
     }
 
-    cancel () {
-        if (this.reader.readyState === this.reader.DONE) return false;
-        this.reader.abort();
-        return true;
-    }
-
     delete () {
         this.file = null;
         this.reader.abort();
@@ -124,7 +118,6 @@ function createJobHandler (file) {
 
 
 handlers.processJob = processJobHandler;
-handlers.retryJob = processJobHandler;
 function processJobHandler (jobId) {
     const job = Job.jobRegistry.get(jobId);
 
@@ -134,16 +127,6 @@ function processJobHandler (jobId) {
     }
 
     job.readFile();
-}
-
-
-handlers.cancelJob = cancelJobHandler;
-function cancelJobHandler (jobId) {
-    const job = Job.jobRegistry.get(jobId);
-
-    if (!job.cancel()) return;
-
-    postReply(replies.jobCancelled, jobId);
 }
 
 

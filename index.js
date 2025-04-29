@@ -162,9 +162,6 @@ class Job {
         processing: Symbol(MSG.JOB_STATE_PROCESSING),
         reading: Symbol(MSG.JOB_STATE_READING),
         processed: Symbol(MSG.JOB_STATE_PROCESSED),
-        retrying: Symbol(MSG.JOB_STATE_RETRYING),
-        cancelling: Symbol(MSG.JOB_STATE_CANCELLING),
-        cancelled: Symbol(MSG.JOB_STATE_CANCELLED),
         error: Symbol(MSG.JOB_STATE_ERROR),
     };
 
@@ -187,8 +184,6 @@ class Job {
         this.message = this.element.querySelector(C.S_JOB_MESSAGE);
 
         this.jobDismissControl = this.element.querySelector(C.S_JOB_DISMISS);
-        this.jobRetryControl = this.element.querySelector(C.S_JOB_RETRY);
-        this.jobCancelControl = this.element.querySelector(C.S_JOB_CANCEL);
         this.downloadDropdown = this.element.querySelector(C.S_JOB_DOWNLOAD_DROPDOWN);
 
         this.controller = new AbortController();
@@ -196,15 +191,6 @@ class Job {
         this.jobDismissControl.addEventListener('click', event => {
             event.target.dispatchEvent(new CustomEvent(customEvents.jobDismiss, {detail: this, bubbles: true}));
         }, {once: true});
-
-        this.jobCancelControl.addEventListener('click', event => {
-            this.jobCancelControl.disabled = true;
-            event.target.dispatchEvent(new CustomEvent(customEvents.jobCancel, {detail: this, bubbles: true}));
-        }, {signal: this.controller.signal});
-
-        this.jobRetryControl.addEventListener('click', event => {
-            event.target.dispatchEvent(new CustomEvent(customEvents.jobRetry, {detail: this, bubbles: true}));
-        }, {signal: this.controller.signal});
 
         this.downloadDropdown.addEventListener('click', () => {
             const formatsList = this.element.querySelector(C.S_JOB_FORMATS_LIST);
@@ -236,28 +222,15 @@ class Job {
     set state (state) {
         this.message.innerHTML = state.description;
         switch (state) {
-        case Job.states.processing:
-        case Job.states.retrying:
-            this.jobRetryControl.hidden = true;
-            this.jobCancelControl.disabled = false;
-            this.jobCancelControl.hidden = false;
-            break;
         case Job.states.reading:
             this.message.innerHTML += `(${this.progressString}%).`;
             break;
         case Job.states.processed:
             this.message.innerHTML += this.debugInfo;
-            this.jobCancelControl.hidden = true;
             this.downloadDropdown.hidden = false;
-            break;
-        case Job.states.cancelled:
-            this.jobCancelControl.hidden = true;
-            this.jobRetryControl.hidden = false;
             break;
         case Job.states.error:
             this.message.innerHTML += `${Job.errors[this.errorName]}.`;
-            this.jobCancelControl.hidden = true;
-            this.jobRetryControl.hidden = true;
             this.downloadDropdown.hidden = true;
             break;
         default:
@@ -357,18 +330,6 @@ class Presenter {
             const job = event.detail;
             this.webWorkerDo(commands.deleteJob, job.id);
         });
-
-        globalThis.addEventListener(customEvents.jobCancel, event => {
-            const job = event.detail;
-            job.state = Job.states.cancelling;
-            this.webWorkerDo(commands.cancelJob, job.id);
-        });
-
-        globalThis.addEventListener(customEvents.jobRetry, event => {
-            const job = event.detail;
-            job.state = Job.states.retrying;
-            this.webWorkerDo(commands.retryJob, job.id);
-        });
     }
 
     webWorkerDo (command, payload) {
@@ -412,11 +373,6 @@ class Presenter {
         const job = this.jobIds.get(jobId);
         job.remove();
         this.jobIds.delete(job.id);
-    }
-
-    jobCancelledHandler (jobId) {
-        const job = this.jobIds.get(jobId);
-        job.state = Job.states.cancelled;
     }
 
     bytesReadHandler ({jobId, percent}) {

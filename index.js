@@ -429,7 +429,7 @@ class Presenter {
         const job = this.jobIds.get(jobId);
         const data = new Uint8Array(contents);
         console.debug(contents);
-        if (version.prerelease) job.debugMarker = MSG.JOB_DEBUGMARKER(data);  // eslint-disable-line new-cap
+        if (version.isPrerelease()) job.debugMarker = MSG.JOB_DEBUGMARKER(data);  // eslint-disable-line new-cap
         job.state = Job.states.processed;
     }
 

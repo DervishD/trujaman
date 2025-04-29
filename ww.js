@@ -8,7 +8,7 @@ const handlers = Object.fromEntries(Object.keys(commands).map(command => [comman
 
 let knownFormats = null;
 
-let slowMode = Boolean(version.prerelease);  // Enabled by default on prereleases.
+let slowMode = version.isPrerelease();  // Enabled by default on prereleases.
 if (slowMode) postReply(replies.showSlowModeIndicator);
 
 

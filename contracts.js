@@ -1,7 +1,7 @@
 import {SCRIPT_PROCESSED} from './strings.js';
 
 
-export const commands = {
+export const commands = Object.freeze(Object.fromEntries(Object.keys({
     registerFormats: null,
     slowModeToggle: null,
     createJob: null,
@@ -9,12 +9,10 @@ export const commands = {
     retryJob: null,
     cancelJob: null,
     deleteJob: null,
-};
-Object.keys(commands).forEach(key => { commands[key] = key; });
-Object.freeze(commands);
+}).map(key => [key, key])));
 
 
-export const replies = {
+export const replies = Object.freeze(Object.fromEntries(Object.keys({
     commandNotFound: null,
     showSlowModeIndicator: null,
     slowModeState: null,
@@ -25,20 +23,16 @@ export const replies = {
     fileReadError: null,
     fileReadComplete: null,
     fileTooLarge: null,
-};
-Object.keys(replies).forEach(key => { replies[key] = key; });
-Object.freeze(replies);
+}).map(key => [key, key])));
 
 
-export const customEvents = {
+export const customEvents = Object.freeze(Object.fromEntries(Object.keys({
     jobDismiss: null,
     jobCancel: null,
     jobRetry: null,
     slowModeToggle: null,
     processFiles: null,
-};
-Object.keys(customEvents).forEach(key => { customEvents[key] = `custom:${key}`; });
-Object.freeze(customEvents);
+}).map(key => [key, key])));
 
 
 console.info(SCRIPT_PROCESSED('Constants'));  // eslint-disable-line new-cap

@@ -4,14 +4,14 @@ import {MAX_FILE_SIZE, PERCENT_FACTOR, FILE_READING_DELAY_MILLISECONDS} from './
 import * as MSG from './strings.js';
 
 
+const handlers = Object.fromEntries(Object.keys(commands).map(command => [command, null]));
+
 let knownFormats = null;
 const jobs = new Map();
 
 let slowMode = Boolean(version.prerelease);  // Enabled by default on prereleases.
 if (slowMode) postReply(replies.showSlowModeIndicator);
 
-const handlers = {...commands};
-Object.keys(handlers).forEach(command => { handlers[command] = null; });
 
 globalThis.addEventListener('message', message => {
     const {command, payload} = message.data;

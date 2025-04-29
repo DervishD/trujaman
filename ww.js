@@ -120,6 +120,7 @@ function createJobHandler (file) {
 handlers.processJob = processJobHandler;
 function processJobHandler (jobId) {
     const job = Job.jobRegistry.get(jobId);
+    if (typeof job === 'undefined') return;
 
     if (job.file.size > MAX_FILE_SIZE) {
         postReply(replies.fileTooLarge, jobId);
@@ -133,6 +134,7 @@ function processJobHandler (jobId) {
 handlers.deleteJob = deleteJobHandler;
 function deleteJobHandler (jobId) {
     const job = Job.jobRegistry.get(jobId);
+    if (typeof job === 'undefined') return;
 
     job.delete();
 

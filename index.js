@@ -158,8 +158,7 @@ class Job {
         SecurityError: MSG.FILE_SECURITY_ERROR,
     };
 
-    constructor (id, fileName) {
-        this.id = id;
+    constructor (fileName) {
         this.progressString = '';
         this.debugInfo = '';
         this.errorName = '';
@@ -221,7 +220,7 @@ class Job {
 
 class Presenter {
     constructor () {
-        this.jobIds = new Map();
+        this.jobRegistry = new Map();
         this.UI = new UI();
         this.handlers = {};
         Object.keys(replies).forEach(reply => {
@@ -304,7 +303,8 @@ class Presenter {
 
         globalThis.addEventListener(customEvents.jobDismiss, event => {
             const job = event.detail;
-            this.webWorkerDo(commands.deleteJob, job.id);
+            const jobId = this.jobRegistry.get(job);
+            this.webWorkerDo(commands.deleteJob, jobId);
         });
     }
 
@@ -330,26 +330,28 @@ class Presenter {
     }
 
     jobCreatedHandler ({jobId, fileName}) {
-        const job = new Job(jobId, fileName);
-        this.jobIds.set(jobId, job);
+        const job = new Job(fileName);
+        this.jobRegistry.set(jobId, job);
+        this.jobRegistry.set(job, jobId);
         job.progress = 0;
         job.state = Job.states.reading;
-        this.webWorkerDo(commands.processJob, job.id);
+        this.webWorkerDo(commands.processJob, jobId);
     }
 
     jobDeletedHandler (jobId) {
-        const job = this.jobIds.get(jobId);
+        const job = this.jobRegistry.get(jobId);
         job.remove();
-        this.jobIds.delete(job.id);
+        this.jobRegistry.delete(job);
+        this.jobRegistry.delete(jobId);
     }
 
     bytesReadHandler ({jobId, percent}) {
-        const job = this.jobIds.get(jobId);
+        const job = this.jobRegistry.get(jobId);
         job.progress = percent;
     }
 
     fileReadCompleteHandler ({jobId, contents}) {
-        const job = this.jobIds.get(jobId);
+        const job = this.jobRegistry.get(jobId);
         const data = new Uint8Array(contents);
         console.debug(contents);
         if (version.isPrerelease()) job.debugInfo = MSG.JOB_DEBUG_INFO(jobId, data);  // eslint-disable-line new-cap
@@ -357,13 +359,13 @@ class Presenter {
     }
 
     fileTooLargeHandler (jobId) {
-        const job = this.jobIds.get(jobId);
+        const job = this.jobRegistry.get(jobId);
         job.error = Object.keys(Job.errors).find(property => Job.errors[property] === Job.errors.FileTooLargeError);
         job.state = Job.states.error;
     }
 
     fileReadErrorHandler ({jobId, error}) {
-        const job = this.jobIds.get(jobId);
+        const job = this.jobRegistry.get(jobId);
         if (error.name in Job.errors) {
             job.error = error.name;
             job.state = Job.states.error;

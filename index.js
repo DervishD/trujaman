@@ -197,10 +197,6 @@ class Job {
         this.progressString = progress;
     }
 
-    set debugMarker (marker) {
-        this.debugInfo = `<br><span class="monospaced">Id <${this.id}>, ${marker}</span>`;
-    }
-
     set error (error) {
         this.errorName = error;
     }
@@ -358,7 +354,7 @@ class Presenter {
         const job = this.jobIds.get(jobId);
         const data = new Uint8Array(contents);
         console.debug(contents);
-        if (version.isPrerelease()) job.debugMarker = MSG.JOB_DEBUGMARKER(data);  // eslint-disable-line new-cap
+        if (version.isPrerelease()) job.debugInfo = MSG.JOB_DEBUG_INFO(jobId, data);  // eslint-disable-line new-cap
         job.state = Job.states.processed;
     }
 

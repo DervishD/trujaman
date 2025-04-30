@@ -25,12 +25,13 @@ export const UNKNOWN_WW_REPLY = reply => `No se reconoce la respuesta del web wo
 export const JOB_STATE_READING = 'Leyendo el fichero '
 export const JOB_STATE_PROCESSED = 'El fichero se leyó correctamente.'
 export const JOB_STATE_ERROR = 'Error: '
-export const JOB_DEBUGMARKER = contents => {
+export const JOB_DEBUG_INFO = (id, data) => {
     const HEX_RADIX = 16;
     const TARGET_LENGTH = 2;
     const PAD_STRING = '0';
-    const marker = `data <0x${contents[0].toString(HEX_RADIX).padStart(TARGET_LENGTH, PAD_STRING)}>`;
-    return typeof contents === 'undefined' ? 'empty file' : `${contents.length} bytes, marker ${marker}`;
+    const info = typeof data === 'undefined' ? 'empty file' : `${data.length} bytes`;
+    const marker = `data <0x${data[0].toString(HEX_RADIX).padStart(TARGET_LENGTH, PAD_STRING)}>`;
+    return `<br><span class="monospaced">Id <${id}>, ${info}, ${marker}</span>`;
 }
 
 export const FILE_READ = error => `Error «${error.name}» leyendo el fichero «${error.fileName}»`

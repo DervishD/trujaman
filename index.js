@@ -348,6 +348,7 @@ class Presenter {
     bytesReadHandler ({jobId, percent}) {
         const job = this.jobRegistry.get(jobId);
         job.progress = percent;
+        job.state = Job.states.reading;
     }
 
     fileReadCompleteHandler ({jobId, contents}) {

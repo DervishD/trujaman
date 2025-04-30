@@ -172,16 +172,14 @@ class Job {
         this.jobDismissControl = this.element.querySelector(C.S_JOB_DISMISS);
         this.downloadDropdown = this.element.querySelector(C.S_JOB_DOWNLOAD_DROPDOWN);
 
-        this.controller = new AbortController();
-
         this.jobDismissControl.addEventListener('click', event => {
             event.target.dispatchEvent(new CustomEvent(customEvents.jobDismiss, {detail: this, bubbles: true}));
         }, {once: true});
 
-        this.downloadDropdown.addEventListener('click', () => {
+        this.downloadDropdown.addEventListener('click', this.downloadDropdownEventListener = () => {
             const formatsList = this.element.querySelector(C.S_JOB_FORMATS_LIST);
             formatsList.hidden = !formatsList.hidden;
-        }, {signal: this.controller.signal});
+        });
 
         document.querySelector(C.S_JOBS_CONTAINER).append(this.element);
     }
@@ -189,7 +187,7 @@ class Job {
     remove () {
         // Remove event listeners before removing the DOM element.
         // Not really needed, apparently, but it's the Tao.
-        this.controller.abort();
+        this.downloadDropdown.removeEventListener('click', this.downloadDropdownEventListener);
         this.element.remove();
     }
 

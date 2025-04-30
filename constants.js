@@ -33,7 +33,10 @@ export const S_DOWNLOADABLE_FORMAT_TEMPLATE = '[data-element="js-downloadable-fo
 export const S_DOWNLOADABLE_FORMAT_NAME = '[data-placeholder="js-downloadable-format-name"]'
 
 // States
-export const DROPZONE_HIDDEN = 'hidden'
-export const DROPZONE_VISIBLE = 'visible'
-export const DROPZONE_DISMISSED = 'dismissed'
-export const APP_RUNNING = 'running'
+export const DROPZONE_STATE_HIDDEN = 'hidden'
+export const DROPZONE_STATE_VISIBLE = 'visible'
+export const DROPZONE_STATE_DISMISSED = 'dismissed'
+export const APP_STATE_RUNNING = 'running'
+export const JOB_STATE_READING = 'reading'
+export const JOB_STATE_PROCESSED = 'processed'
+export const JOB_STATE_ERROR = 'error'

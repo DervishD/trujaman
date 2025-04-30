@@ -22,9 +22,9 @@ export const WW_SENDING_REPLY = reply => `Sending reply '${reply}'`
 export const WW_RECEIVED_REPLY = reply => `Received reply '${reply}'`
 export const UNKNOWN_WW_REPLY = reply => `No se reconoce la respuesta del web worker «${reply}»`
 
-export const JOB_STATE_READING = 'Leyendo el fichero '
+export const JOB_STATE_READING = percentage => `Leyendo el fichero (${percentage}%).`
 export const JOB_STATE_PROCESSED = 'El fichero se leyó correctamente.'
-export const JOB_STATE_ERROR = 'Error: '
+export const JOB_STATE_ERROR = errorMessage => `Error: ${errorMessage}.`
 export const JOB_DEBUG_INFO = (id, data) => {
     const HEX_RADIX = 16;
     const TARGET_LENGTH = 2;

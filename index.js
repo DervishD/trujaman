@@ -107,15 +107,19 @@ class UI {
         // This is not orthodox but works well enough.
         if (['dragenter', 'dragover', 'dragleave', 'drop'].every(event => `on${event}` in globalThis)) {
             this.dropZone = document.querySelector(C.S_DROPZONE);
-            globalThis.addEventListener('dragenter', () => { this.dropZone.dataset.state = C.DROPZONE_VISIBLE; });
-            this.dropZone.addEventListener('dragleave', () => { this.dropZone.dataset.state = C.DROPZONE_HIDDEN; });
+            globalThis.addEventListener('dragenter', () => {
+                this.dropZone.dataset.state = C.DROPZONE_STATE_VISIBLE;
+            });
+            this.dropZone.addEventListener('dragleave', () => {
+                this.dropZone.dataset.state = C.DROPZONE_STATE_HIDDEN;
+            });
 
             // This is needed because otherwise the page is NOT a valid drop target,
             // and when the file is dropped the default action is performed by the browser.
             this.dropZone.addEventListener('dragover', event => { event.preventDefault(); });
 
             this.dropZone.addEventListener('drop', event => {
-                this.dropZone.dataset.state = C.DROPZONE_DISMISSED;
+                this.dropZone.dataset.state = C.DROPZONE_STATE_DISMISSED;
                 const {files} = event.dataTransfer;
                 globalThis.dispatchEvent(new CustomEvent(customEvents.processFiles, {detail: files}));
                 event.preventDefault();  // Prevent the browser from opening the file.
@@ -128,9 +132,9 @@ class UI {
         this.defaultControl.focus();
         if (this.dropZone) {
             this.dropZone.hidden = false;
-            this.dropZone.dataset.state = C.DROPZONE_HIDDEN;
+            this.dropZone.dataset.state = C.DROPZONE_STATE_HIDDEN;
         }
-        document.querySelector(C.S_LOGO).dataset.state = C.APP_RUNNING;
+        document.querySelector(C.S_LOGO).dataset.state = C.APP_STATE_RUNNING;
     }
 
     set formats (formats) {
@@ -146,9 +150,9 @@ class UI {
 
 class Job {
     static states = {
-        reading: Symbol(MSG.JOB_STATE_READING),
-        processed: Symbol(MSG.JOB_STATE_PROCESSED),
-        error: Symbol(MSG.JOB_STATE_ERROR),
+        reading: Symbol(C.JOB_STATE_READING),
+        processed: Symbol(C.JOB_STATE_PROCESSED),
+        error: Symbol(C.JOB_STATE_ERROR),
     };
 
     static errors = {
@@ -191,6 +195,7 @@ class Job {
     }
 
     set progress (progress) {
+        console.error(progress);
         this.progressString = progress;
     }
 
@@ -199,17 +204,17 @@ class Job {
     }
 
     set state (state) {
-        this.message.innerHTML = state.description;
         switch (state) {
         case Job.states.reading:
-            this.message.innerHTML += `(${this.progressString}%).`;
+            this.message.innerHTML = MSG.JOB_STATE_READING(this.progressString);  // eslint-disable-line new-cap
             break;
         case Job.states.processed:
+            this.message.innerHTML = MSG.JOB_STATE_PROCESSED;
             this.message.innerHTML += this.debugInfo;
             this.downloadDropdown.hidden = false;
             break;
         case Job.states.error:
-            this.message.innerHTML += `${Job.errors[this.errorName]}.`;
+            this.message.innerHTML = MSG.JOB_STATE_ERROR(Job.errors[this.errorName]);  // eslint-disable-line new-cap
             this.downloadDropdown.hidden = true;
             break;
         default:

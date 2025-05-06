@@ -2,11 +2,10 @@ export const SCRIPT_PROCESSED = script => `${script} script processed.`;
 
 export const NOT_AVAILABLE = 'N/A';
 
-export const FORMATS_NOT_FOUND = 'No se encontró el fichero con la lista de formatos'
-export const CANNOT_PROCESS_FORMATS = 'No se pudo procesar el fichero con la lista de formatos'
+export const DEFAULT_ERROR_NAME = 'Error desconocido';
 
 export const FORMATS_NOT_FOUND = 'No se encontró el fichero con la lista de formatos';
-export const CANNOT_PROCESS_FORMATS = 'No se pudo procesar el fichero con la lista de formatos';
+export const CANNOT_PROCESS_FORMATS = 'No se pudo procesar la lista de formatos';
 
 export const CANNOT_RUN_SW = 'No se pudo iniciar el service worker';
 export const COOKIES_ARE_DISABLED = 'Las cookies están desactivadas';
@@ -16,7 +15,7 @@ export const SW_FETCH_REQUEST = url => `Fetch request for ${url}`;
 export const SW_FETCH_REQUEST_NON_GET = method => `Fetch request with non-GET method '${method}'`;
 export const SW_FETCH_REQUEST_CROSS_ORIGIN = url => `Cross-origin fetch request for '${url}'`;
 
-export const WW_SYNTAX = lineno => `Error de sintaxis en el web worker, línea ${lineno}`;
+export const WW_SYNTAX = (line, column) => `Error de sintaxis en el web worker, línea ${line}, columna ${column}`;
 export const CANNOT_RUN_WW = 'No se pudo iniciar el web worker';
 export const WW_SENDING_COMMAND = command =>`Sending command '${command}'`;
 export const WW_RECEIVED_COMMAND = command => `Received command '${command}'`;
@@ -44,9 +43,10 @@ export const FILE_NOT_READABLE = 'el fichero no se puede leer';
 export const FILE_SECURITY_ERROR = 'el fichero no se puede leer de forma segura';
 
 export const APP_STOPPED = '¡ERROR, la aplicación no puede funcionar!';
-export const ERROR_MESSAGE = (name, message) => `${name || 'Error'}(${message ? `'${message}'` : ''}) sin gestionar.`;
-export const ERROR_LOCATION = (filename, line, column) => `En ${filename}, línea ${line}, columna ${column}.`;
+export const ERROR_MESSAGE = name => `${name ? `«${name}»` : DEFAULT_ERROR_NAME} sin gestionar`;
+export const ERROR_LOCATION = (filename, line, column) => `En ${filename}, línea ${line}, columna ${column}`;
+export const ERROR_SUBSTACK_SEPARATOR = '\n—\n';
 export const ERROR_STACK_DUMP_SEPARATOR = '\n\n';
 export const ERROR_STACK_DUMP_HEADER = 'Información de depurado:\n';
 export const ERROR_STACK_DUMP_FRAME = frame => `    ${frame.trim()}\n`;
-export const ERROR_FULL_DUMP = (message, location, details) => [message, location, details].filter(Boolean).join('\n\n');
+export const ERROR_FULL_STR = (message, location, details) => [message, location, details].filter(Boolean).join('\n\n');

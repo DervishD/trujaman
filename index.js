@@ -6,48 +6,74 @@ import * as C from './constants.js';
 
 class FatalError extends Error {
     constructor (message, details = '') {
-        super(`${message}.`);
+        super(message);
         this.details = details;
         this.name = new.target.name;
     }
 }
 
 
-// Default handler for unhandled errors which should not happen in production.
+// Default handler for errors which should not happen in production.
 globalThis.addEventListener('error', event => {
     event.preventDefault();
 
-    const error = event instanceof ErrorEvent ? event.error : {name: event.constructor.name, message: ''};
+    let errorMessage = MSG.ERROR_MESSAGE(MSG.DEFAULT_ERROR_NAME);  // eslint-disable-line new-cap
+    let errorLocation = '';
+    let errorDetails = '';
+    let errorStack = '';
 
-    const message = MSG.ERROR_MESSAGE(error.name, error.message);  // eslint-disable-line new-cap
-    let location = '';
-    let details = event.message || '';
+    if (event instanceof ErrorEvent) {
+        errorMessage = MSG.ERROR_MESSAGE(event.error.name);  // eslint-disable-line new-cap
+        errorStack = event.error.stack;
 
-    if (event.filename) {
-        let {filename, lineno, colno} = event;
+        if (event.filename) {
+            let {filename, lineno, colno} = event;
 
-        try {
-            const FROM_SLASH = 1;
-            filename = new URL(filename).pathname.substring(FROM_SLASH);
-        } catch (exc) {
-            if (!(exc instanceof TypeError)) throw exc;
-        }
-        if (typeof lineno !== 'number') lineno = MSG.NOT_AVAILABLE;
-        if (typeof colno !== 'number') colno = MSG.NOT_AVAILABLE;
+            try {
+                const FROM_SLASH = 1;
+                filename = new URL(filename).pathname.substring(FROM_SLASH);
+            } catch (exc) {
+                if (!(exc instanceof TypeError)) throw exc;
+            }
+            if (typeof lineno !== 'number') lineno = MSG.NOT_AVAILABLE;
+            if (typeof colno !== 'number') colno = MSG.NOT_AVAILABLE;
 
-        location = MSG.ERROR_LOCATION(filename, lineno, colno);  // eslint-disable-line new-cap
-    }
-
-    if (error.stack) {
-        details += details ? MSG.ERROR_STACK_DUMP_SEPARATOR : '';
-        details += MSG.ERROR_STACK_DUMP_HEADER;
-        for (const line of error.stack.trim().split('\n')) {
-            details += MSG.ERROR_STACK_DUMP_FRAME(line);  // eslint-disable-line new-cap
+            errorLocation = MSG.ERROR_LOCATION(filename, lineno, colno);  // eslint-disable-line new-cap
         }
     }
 
-    details = details.trim();
+    if (event.error instanceof FatalError) {
+        errorMessage = event.error.message;
+        errorDetails = event.error.details.message;
+        if (event.error.details.stack) {
+            errorStack += errorStack ? MSG.ERROR_SUBSTACK_SEPARATOR : '';
+            errorStack += event.error.details.stack;
+        }
+    }
 
+    errorDetails += errorDetails && !errorDetails.endsWith('.') ? '.' : '';
+
+    if (errorStack) {
+        errorDetails += errorDetails ? MSG.ERROR_STACK_DUMP_SEPARATOR : '';
+        errorDetails += MSG.ERROR_STACK_DUMP_HEADER;
+        for (const line of errorStack.trim().split('\n')) {
+            errorDetails += MSG.ERROR_STACK_DUMP_FRAME(line);  // eslint-disable-line new-cap
+        }
+    }
+
+    errorDetails = errorDetails.trim();
+
+    reportError(errorMessage, errorLocation, errorDetails);
+});
+
+
+globalThis.addEventListener('unhandledrejection', event => {
+    event.preventDefault();
+    globalThis.reportError(event.reason);
+});
+
+
+function reportError(message, location, details) {
     const errorTemplate = document.querySelector(C.S_ERROR_TEMPLATE);
 
     // Disable UI interaction by removing all page elements.
@@ -57,7 +83,6 @@ globalThis.addEventListener('error', event => {
 
     // At this point no further interaction with the page is possible so the
     // application is effectively stopped, even though it is still running…
-
     const errorElement = errorTemplate.content.firstElementChild.cloneNode(true);
 
     errorElement.querySelector(C.S_ERROR_HEADER).textContent = MSG.APP_STOPPED;
@@ -75,14 +100,8 @@ globalThis.addEventListener('error', event => {
 
     errorTemplate.before(errorElement);
 
-    console.error(MSG.ERROR_FULL_DUMP(message, location, details));  // eslint-disable-line new-cap
-});
-
-
-globalThis.addEventListener('unhandledrejection', event => {
-    event.preventDefault();
-    globalThis.reportError(event.reason);
-});
+    console.error(MSG.ERROR_FULL_STR(message, location, details));  // eslint-disable-line new-cap
+}
 
 
 class UI {
@@ -290,7 +309,8 @@ class Presenter {
                 // For syntax errors, that should not happen in production,
                 // the event will be an ErrorEvent instance and will contain
                 // information pertaining to the error.
-                throw new FatalError(MSG.WW_SYNTAX(event.lineno), event.message);  // eslint-disable-line new-cap
+                const error = new Error(event.message);
+                throw new FatalError(MSG.WW_SYNTAX(event.lineno, event.colno), error);  // eslint-disable-line new-cap
             } else {
                 // For loading errors the error will be an Event.
                 throw new FatalError(MSG.CANNOT_RUN_WW);
@@ -377,7 +397,7 @@ class Presenter {
             job.state = Job.states.error;
         } else {
             // Unexpected error condition that should not happen in production.
-            throw new FatalError(MSG.FILE_READ(error), error.message);  // eslint-disable-line new-cap
+            throw new FatalError(MSG.FILE_READ(error), new Error(error.message));  // eslint-disable-line new-cap
         }
     }
 }

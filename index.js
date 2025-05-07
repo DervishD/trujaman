@@ -24,6 +24,7 @@ globalThis.addEventListener('error', event => {
 
     if (event instanceof ErrorEvent) {
         errorMessage = MSG.ERROR_MESSAGE(event.error.name);  // eslint-disable-line new-cap
+        errorDetails = event.error.message;
         errorStack = event.error.stack;
 
         if (event.filename) {

@@ -2,6 +2,11 @@ export const SCRIPT_PROCESSED = script => `${script} script processed.`;
 
 export const NOT_AVAILABLE = 'N/A';
 
+export const TEXT_LOADING = 'Cargando…';
+export const TEXT_DROPZONE = 'Arrastre y suelte aquí los ficheros';
+export const TEXT_DEFAULT_CONTROL = 'Escoger ficheros';
+export const TEXT_DOWNLOAD_DROPDOWN = 'Descargar en formato…';
+
 export const DEFAULT_ERROR_NAME = 'Error desconocido';
 
 export const FORMATS_NOT_FOUND = 'No se encontró el fichero con la lista de formatos';

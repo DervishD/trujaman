@@ -69,4 +69,5 @@ globalThis.addEventListener('fetch', event => {
     }))());
 });
 
+
 console.info(MSG.SCRIPT_PROCESSED('Service Worker'));

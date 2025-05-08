@@ -21,12 +21,12 @@
 </head>
 
 <body>
-    <div hidden data-element="js-dropzone" id="dropzone"><p>Suelte aquí los ficheros</p></div>
+    <div hidden data-element="js-dropzone" id="dropzone"><p data-placeholder="js-dropzone-text"></p></div>
 
     <header>
         <div data-element="js-logo" id="logo">trujamán</div>
         <div>
-            <span data-placeholder="js-version" id="version" class="monospaced">loading…</span>
+            <span data-placeholder="js-version-text" id="version" class="monospaced"></span>
         </div>
     </header>
 
@@ -36,7 +36,7 @@
 
     <div hidden data-element="js-filepicker" id="filepicker">
         <input data-role="js-filepicker" type="file" multiple>
-        <button data-element="js-default-control" type="button">Escoger ficheros</button>
+        <button data-placeholder="js-default-control-text" data-element="js-default-control" type="button"></button>
     </div>
 
     <div data-element="js-jobs-container" id="jobs"></div>
@@ -53,13 +53,13 @@
     <template data-element="js-job-template">
         <div class="job">
             <div class="job_header">
-                <p data-placeholder="js-job-filename" class="job_filename"></p>
+                <p data-placeholder="js-job-filename-text" class="job_filename"></p>
                 <button data-role="js-job-dismiss" type="button" class="job_dismisser">×</button>
             </div>
             <div class="job_body">
-                <p data-placeholder="js-job-message" class="job_message"></p>
+                <p data-placeholder="js-job-message-text" class="job_message"></p>
                 <div data-element="js-job-download-dropdown" hidden class="job_download_dropdown">
-                    <button type="button">Descargar en formato…</button>
+                    <button data-placeholder="js-job-download-dropdown-text" type="button"></button>
                     <div data-element="js-job-formats-list" hidden class="job_formats_list"></div>
                 </div>
             </div>
@@ -67,7 +67,7 @@
     </template>
 
     <template data-element="js-downloadable-format-template">
-        <p><span data-placeholder="js-downloadable-format-name" class="downloadable-format-name"></span></p>
+        <p><span data-placeholder="js-downloadable-format-name-text" class="downloadable-format-name"></span></p>
     </template>
 </body>
 

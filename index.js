@@ -103,7 +103,8 @@ function reportError(message, location, details) {
 
 class UI {
     constructor () {
-        document.querySelector(C.S_VERSION_TEXT).textContent = `v${version}`;
+        this.versionText = document.querySelector(C.S_VERSION_TEXT);
+        this.versionText.textContent = MSG.TEXT_LOADING;
 
         this.formatsList = document.querySelector(C.S_JOB_TEMPLATE).content.querySelector(C.S_JOB_FORMATS_LIST);
 
@@ -144,8 +145,13 @@ class UI {
     }
 
     show () {
+        this.versionText.textContent = `v${version}`;
+        document.querySelector(C.S_DROPZONE_TEXT).textContent = MSG.TEXT_DROPZONE;
+        document.querySelector(C.S_DEFAULT_CONTROL_TEXT).textContent = MSG.TEXT_DEFAULT_CONTROL;
+
         this.filePicker.hidden = false;
         this.defaultControl.focus();
+
         if (this.dropZone) {
             this.dropZone.hidden = false;
             this.dropZone.dataset.state = C.DROPZONE_STATE_HIDDEN;
@@ -163,7 +169,7 @@ class UI {
         const template = document.querySelector(C.S_DOWNLOADABLE_FORMAT_TEMPLATE).content.firstElementChild;
         formats.forEach(format => {
             const element = template.cloneNode(true);
-            element.querySelector(C.S_DOWNLOADABLE_FORMAT_NAME).textContent = format;
+            element.querySelector(C.S_DOWNLOADABLE_FORMAT_NAME_TEXT).textContent = format;
             this.formatsList.append(element);
         });
     }
@@ -190,12 +196,13 @@ class Job {
         this.errorName = '';
 
         this.element = document.querySelector(C.S_JOB_TEMPLATE).content.firstElementChild.cloneNode(true);
-        this.element.querySelector(C.S_JOB_FILENAME).textContent = fileName;
+        this.element.querySelector(C.S_JOB_FILENAME_TEXT).textContent = fileName;
 
-        this.message = this.element.querySelector(C.S_JOB_MESSAGE);
+        this.message = this.element.querySelector(C.S_JOB_MESSAGE_TEXT);
 
         this.jobDismissControl = this.element.querySelector(C.S_JOB_DISMISS);
         this.downloadDropdown = this.element.querySelector(C.S_JOB_DOWNLOAD_DROPDOWN);
+        this.downloadDropdown.querySelector(C.S_JOB_DOWNLOAD_DROPDOWN_TEXT).textContent = MSG.TEXT_DOWNLOAD_DROPDOWN;
 
         this.jobDismissControl.addEventListener('click', event => {
             event.target.dispatchEvent(new CustomEvent(customEvents.jobDismissed, {detail: this, bubbles: true}));

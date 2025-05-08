@@ -12,7 +12,7 @@ let knownFormats = null;
 
 globalThis.addEventListener('message', message => {
     const {command, payload} = message.data;
-    console.debug(MSG.WW_RECEIVED_COMMAND(command), payload);  // eslint-disable-line new-cap
+    console.debug(MSG.WW_RECEIVED_COMMAND(command), payload);
 
     if (handlers[command]) {
         handlers[command](payload);
@@ -23,7 +23,7 @@ globalThis.addEventListener('message', message => {
 
 
 function postReply (reply, payload, transferables = []) {
-    console.debug(MSG.WW_SENDING_REPLY(reply), payload);  // eslint-disable-line new-cap
+    console.debug(MSG.WW_SENDING_REPLY(reply), payload);
     globalThis.postMessage({reply, payload}, transferables);
 }
 
@@ -136,4 +136,4 @@ function deleteJobHandler (jobId) {
 }
 
 
-console.info(MSG.SCRIPT_PROCESSED('Web Worker'));  // eslint-disable-line new-cap
+console.info(MSG.SCRIPT_PROCESSED('Web Worker'));

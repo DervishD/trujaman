@@ -27,4 +27,4 @@ export const customEvents = Object.freeze(Object.fromEntries(Object.keys({
 }).map(key => [key, key])));
 
 
-console.info(SCRIPT_PROCESSED('Constants'));  // eslint-disable-line new-cap
+console.info(SCRIPT_PROCESSED('Constants'));

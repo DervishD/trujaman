@@ -21,13 +21,13 @@ globalThis.addEventListener('error', event => {
     // At this point no further interaction with the page is possible so the
     // application is effectively stopped, even though it is still running…
 
-    let errorMessage = MSG.ERROR_MESSAGE(MSG.DEFAULT_ERROR_NAME);  // eslint-disable-line new-cap
+    let errorMessage = MSG.ERROR_MESSAGE(MSG.DEFAULT_ERROR_NAME);
     let errorLocation = '';
     let errorDetails = '';
     let errorStack = '';
 
     if (event instanceof ErrorEvent) {
-        errorMessage = MSG.ERROR_MESSAGE(event.error.name);  // eslint-disable-line new-cap
+        errorMessage = MSG.ERROR_MESSAGE(event.error.name);
         errorDetails = event.error.message;
         errorStack = event.error.stack;
 
@@ -43,7 +43,7 @@ globalThis.addEventListener('error', event => {
             if (typeof lineno !== 'number') lineno = MSG.NOT_AVAILABLE;
             if (typeof colno !== 'number') colno = MSG.NOT_AVAILABLE;
 
-            errorLocation = MSG.ERROR_LOCATION(filename, lineno, colno);  // eslint-disable-line new-cap
+            errorLocation = MSG.ERROR_LOCATION(filename, lineno, colno);
         }
     }
 
@@ -62,7 +62,7 @@ globalThis.addEventListener('error', event => {
         errorDetails += errorDetails ? MSG.ERROR_STACK_DUMP_SEPARATOR : '';
         errorDetails += MSG.ERROR_STACK_DUMP_HEADER;
         for (const line of errorStack.trim().split('\n')) {
-            errorDetails += MSG.ERROR_STACK_DUMP_FRAME(line);  // eslint-disable-line new-cap
+            errorDetails += MSG.ERROR_STACK_DUMP_FRAME(line);
         }
     }
 
@@ -97,7 +97,7 @@ function reportError(message, location, details) {
 
     errorTemplate.before(errorElement);
 
-    console.error(MSG.ERROR_FULL_STR(message, location, details));  // eslint-disable-line new-cap
+    console.error(MSG.ERROR_FULL_STR(message, location, details));
 }
 
 
@@ -228,7 +228,7 @@ class Job {
     set state (state) {
         switch (state) {
         case Job.states.reading:
-            this.message.innerHTML = MSG.JOB_STATE_READING(this.progressString);  // eslint-disable-line new-cap
+            this.message.innerHTML = MSG.JOB_STATE_READING(this.progressString);
             break;
         case Job.states.processed:
             this.message.innerHTML = MSG.JOB_STATE_PROCESSED;
@@ -236,7 +236,7 @@ class Job {
             this.downloadDropdown.hidden = false;
             break;
         case Job.states.error:
-            this.message.innerHTML = MSG.JOB_STATE_ERROR(Job.errors[this.errorName]);  // eslint-disable-line new-cap
+            this.message.innerHTML = MSG.JOB_STATE_ERROR(Job.errors[this.errorName]);
             this.downloadDropdown.hidden = true;
             break;
         default:
@@ -313,7 +313,7 @@ class Presenter {
                 // the event will be an ErrorEvent instance and will contain
                 // information pertaining to the error.
                 const error = new Error(event.message);
-                throw new FatalError(MSG.WW_SYNTAX(event.lineno, event.colno), error);  // eslint-disable-line new-cap
+                throw new FatalError(MSG.WW_SYNTAX(event.lineno, event.colno), error);
             } else {
                 // For loading errors the error will be an Event.
                 throw new FatalError(MSG.CANNOT_RUN_WW);
@@ -346,23 +346,23 @@ class Presenter {
     }
 
     webWorkerDo (command, payload) {
-        console.debug(MSG.WW_SENDING_COMMAND(command), payload);  // eslint-disable-line new-cap
+        console.debug(MSG.WW_SENDING_COMMAND(command), payload);
         this.worker.postMessage({command, payload});
     }
 
     handleWebWorkerMessage (message) {
         const {reply, payload} = message.data;
-        console.debug(MSG.WW_RECEIVED_REPLY(reply), payload);  // eslint-disable-line new-cap
+        console.debug(MSG.WW_RECEIVED_REPLY(reply), payload);
 
         if (reply === replies.commandNotFound) {
             const command = payload;
-            throw new FatalError(MSG.UNKNOWN_WW_COMMAND(command));  // eslint-disable-line new-cap
+            throw new FatalError(MSG.UNKNOWN_WW_COMMAND(command));
         }
 
         if (this.handlers[reply]) {
             this.handlers[reply](payload);
         } else {
-            throw new FatalError(MSG.UNKNOWN_WW_REPLY(reply));  // eslint-disable-line new-cap
+            throw new FatalError(MSG.UNKNOWN_WW_REPLY(reply));
         }
     }
 
@@ -392,7 +392,7 @@ class Presenter {
         const job = this.jobRegistry.get(jobId);
         const data = new Uint8Array(contents);
         console.debug(contents);
-        if (version.isPrerelease()) job.debugInfo = MSG.JOB_DEBUG_INFO(jobId, data);  // eslint-disable-line new-cap
+        if (version.isPrerelease()) job.debugInfo = MSG.JOB_DEBUG_INFO(jobId, data);
         job.state = Job.states.processed;
     }
 
@@ -409,7 +409,7 @@ class Presenter {
             job.state = Job.states.error;
         } else {
             // Unexpected error condition that should not happen in production.
-            throw new FatalError(MSG.FILE_READ(error), new Error(error.message));  // eslint-disable-line new-cap
+            throw new FatalError(MSG.FILE_READ(error), new Error(error.message));
         }
     }
 }
@@ -421,4 +421,4 @@ globalThis.addEventListener('load', () => {
 });
 
 
-console.info(MSG.SCRIPT_PROCESSED('Main'));  // eslint-disable-line new-cap
+console.info(MSG.SCRIPT_PROCESSED('Main'));

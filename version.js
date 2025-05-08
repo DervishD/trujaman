@@ -15,4 +15,4 @@ export const version = {
     },
 };
 
-console.info(SCRIPT_PROCESSED('Version'));  // eslint-disable-line new-cap
+console.info(SCRIPT_PROCESSED('Version'));

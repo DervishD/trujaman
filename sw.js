@@ -21,7 +21,7 @@ const assets = [
 
 
 globalThis.addEventListener('install', event => {
-    console.debug(MSG.SW_INSTALLING(version));  // eslint-disable-line new-cap
+    console.debug(MSG.SW_INSTALLING(version));
     event.waitUntil(
         caches.open(currentCacheName)
         .then(cache => cache.addAll(assets))
@@ -31,7 +31,7 @@ globalThis.addEventListener('install', event => {
 
 
 globalThis.addEventListener('activate', event => {
-    console.debug(MSG.SW_ACTIVATING(version));  // eslint-disable-line new-cap
+    console.debug(MSG.SW_ACTIVATING(version));
     event.waitUntil(
         caches.keys()
         .then(keys => Promise.all(
@@ -49,14 +49,14 @@ globalThis.addEventListener('activate', event => {
 // This makes sure the PWA fully works when offline,
 // and it's perfect for the core assets.
 globalThis.addEventListener('fetch', event => {
-    console.debug(MSG.SW_FETCH_REQUEST(event.request.url));  // eslint-disable-line new-cap
+    console.debug(MSG.SW_FETCH_REQUEST(event.request.url));
     if (event.request.method !== 'GET') {
-        console.error(MSG.SW_FETCH_REQUEST_NON_GET(event.request.method));  // eslint-disable-line new-cap
+        console.error(MSG.SW_FETCH_REQUEST_NON_GET(event.request.method));
         return;
     }
 
     if (!event.request.url.startsWith(globalThis.location.origin)) {
-        console.error(MSG.SW_FETCH_REQUEST_CROSS_ORIGIN(event.request.url));  // eslint-disable-line new-cap
+        console.error(MSG.SW_FETCH_REQUEST_CROSS_ORIGIN(event.request.url));
         return;
     }
 
@@ -69,4 +69,4 @@ globalThis.addEventListener('fetch', event => {
     }))());
 });
 
-console.info(MSG.SCRIPT_PROCESSED('Service Worker'));  // eslint-disable-line new-cap
+console.info(MSG.SCRIPT_PROCESSED('Service Worker'));

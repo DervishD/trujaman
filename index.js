@@ -17,6 +17,10 @@ class FatalError extends Error {
 globalThis.addEventListener('error', event => {
     event.preventDefault();
 
+    globalThis.dispatchEvent(new Event(customEvents.interactionHalted));
+    // At this point no further interaction with the page is possible so the
+    // application is effectively stopped, even though it is still running…
+
     let errorMessage = MSG.ERROR_MESSAGE(MSG.DEFAULT_ERROR_NAME);  // eslint-disable-line new-cap
     let errorLocation = '';
     let errorDetails = '';
@@ -76,14 +80,6 @@ globalThis.addEventListener('unhandledrejection', event => {
 
 function reportError(message, location, details) {
     const errorTemplate = document.querySelector(C.S_ERROR_TEMPLATE);
-
-    // Disable UI interaction by removing all page elements.
-    Array.from(document.body.children).forEach(element => {
-        if (!element.matches(C.S_KEEP_ON_ERROR)) element.remove();
-    });
-
-    // At this point no further interaction with the page is possible so the
-    // application is effectively stopped, even though it is still running…
     const errorElement = errorTemplate.content.firstElementChild.cloneNode(true);
 
     errorElement.querySelector(C.S_ERROR_HEADER).textContent = MSG.APP_STOPPED;
@@ -155,6 +151,12 @@ class UI {
             this.dropZone.dataset.state = C.DROPZONE_STATE_HIDDEN;
         }
         document.querySelector(C.S_LOGO).dataset.state = C.APP_STATE_RUNNING;
+    }
+
+    halt () {
+        this.filePicker.remove();
+        this.dropZone.remove();
+        document.querySelector(C.S_JOBS_CONTAINER).hidden = true;
     }
 
     set formats (formats) {
@@ -331,6 +333,15 @@ class Presenter {
             const job = event.detail;
             const jobId = this.jobRegistry.get(job);
             this.webWorkerDo(commands.deleteJob, jobId);
+        });
+
+        globalThis.addEventListener(customEvents.interactionHalted, () => {
+            this.UI.halt();
+            for (const job of this.jobRegistry.values()) {
+                if (typeof job !== 'object') {
+                    this.webWorkerDo(commands.deleteJob, job);
+                }
+            }
         });
     }
 

@@ -103,6 +103,8 @@ function reportError(message, location, details) {
 
 class UI {
     constructor () {
+        this.halted = false;
+
         this.versionText = document.querySelector(C.S_VERSION_TEXT);
         this.versionText.textContent = MSG.TEXT_LOADING;
 
@@ -146,6 +148,9 @@ class UI {
 
     show () {
         this.versionText.textContent = `v${version}`;
+
+        if (this.halted) return;
+
         document.querySelector(C.S_DROPZONE_TEXT).textContent = MSG.TEXT_DROPZONE;
         document.querySelector(C.S_DEFAULT_CONTROL_TEXT).textContent = MSG.TEXT_DEFAULT_CONTROL;
 
@@ -160,6 +165,7 @@ class UI {
     }
 
     halt () {
+        this.halted = true;
         this.filePicker.remove();
         this.dropZone.remove();
         document.querySelector(C.S_JOBS_CONTAINER).hidden = true;

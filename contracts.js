@@ -21,8 +21,8 @@ export const replies = Object.freeze(Object.fromEntries(Object.keys({
 
 
 export const customEvents = Object.freeze(Object.fromEntries(Object.keys({
-    jobDismiss: null,
-    processFiles: null,
+    jobDismissed: null,
+    processingRequested: null,
 }).map(key => [key, key])));
 
 

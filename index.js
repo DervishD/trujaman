@@ -118,7 +118,7 @@ class UI {
             this.filePicker.querySelector(C.S_FILEPICKER_INPUT).click();
         });
         this.filePicker.addEventListener('change', event => {
-            globalThis.dispatchEvent(new CustomEvent(customEvents.processFiles, {detail: event.target.files}));
+            globalThis.dispatchEvent(new CustomEvent(customEvents.processingRequested, {detail: event.target.files}));
             event.target.value = null;  // Otherwise the event won't be fired again if the user selects the same file…
         });
 
@@ -141,7 +141,7 @@ class UI {
             this.dropZone.addEventListener('drop', event => {
                 this.dropZone.dataset.state = C.DROPZONE_STATE_DISMISSED;
                 const {files} = event.dataTransfer;
-                globalThis.dispatchEvent(new CustomEvent(customEvents.processFiles, {detail: files}));
+                globalThis.dispatchEvent(new CustomEvent(customEvents.processingRequested, {detail: files}));
                 event.preventDefault();  // Prevent the browser from opening the file.
             });
         }
@@ -196,7 +196,7 @@ class Job {
         this.downloadDropdown = this.element.querySelector(C.S_JOB_DOWNLOAD_DROPDOWN);
 
         this.jobDismissControl.addEventListener('click', event => {
-            event.target.dispatchEvent(new CustomEvent(customEvents.jobDismiss, {detail: this, bubbles: true}));
+            event.target.dispatchEvent(new CustomEvent(customEvents.jobDismissed, {detail: this, bubbles: true}));
         }, {once: true});
 
         this.downloadDropdown.addEventListener('click', this.downloadDropdownEventListener = () => {
@@ -320,14 +320,14 @@ class Presenter {
     }
 
     initCustomEventHandlers () {
-        globalThis.addEventListener(customEvents.processFiles, event => {
+        globalThis.addEventListener(customEvents.processingRequested, event => {
             const files = event.detail;
             for (const file of files) {
                 this.webWorkerDo(commands.createJob, file);
             }
         });
 
-        globalThis.addEventListener(customEvents.jobDismiss, event => {
+        globalThis.addEventListener(customEvents.jobDismissed, event => {
             const job = event.detail;
             const jobId = this.jobRegistry.get(job);
             this.webWorkerDo(commands.deleteJob, jobId);

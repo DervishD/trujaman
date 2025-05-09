@@ -234,7 +234,13 @@ button:active {
 }
 
 .job > * {
-    padding: 0.75em;
+    padding: 0.75rem;
+    border: 1px solid;
+    border-top: none;
+}
+
+.job > :first-child {
+    border-top: 1px solid;
 }
 
 .job_header {
@@ -242,8 +248,6 @@ button:active {
     justify-content: space-between;
     gap: 0.5em;
     align-items: center;
-    border: 1px solid;
-    border-bottom: none;
 }
 
 .job_header > p {
@@ -259,13 +263,18 @@ button:active {
     background-color: unset;
 }
 
+.job_debuginfo {
+    font-family: var(--monospace-font);
+    font-size: 0.8em;
+    font-weight: 700;
+}
+
 .job_body {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
     gap: 0.75em;
-    border: 1px solid;
 }
 
 .job_body p  {

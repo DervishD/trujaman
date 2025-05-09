@@ -28,6 +28,8 @@ export const S_JOBS_CONTAINER = '[data-element="js-jobs-container"]';
 export const S_JOB_TEMPLATE = '[data-element="js-job-template"]';
 export const S_JOB_FILENAME_TEXT = '[data-placeholder="js-job-filename-text"]';
 export const S_JOB_MESSAGE_TEXT = '[data-placeholder="js-job-message-text"]';
+export const S_JOB_DEBUG_INFO = '[data-element="js-job-debuginfo"]';
+export const S_JOB_DEBUG_INFO_TEXT = '[data-placeholder="js-job-debuginfo-text"]';
 export const S_JOB_DISMISS = '[data-role="js-job-dismiss"]';
 export const S_JOB_DOWNLOAD_DROPDOWN = '[data-element="js-job-download-dropdown"]';
 export const S_JOB_DOWNLOAD_DROPDOWN_TEXT = '[data-placeholder="js-job-download-dropdown-text"]';

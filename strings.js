@@ -38,7 +38,7 @@ export const JOB_DEBUG_INFO = (id, data) => {
     const PAD_STRING = '0';
     const info = typeof data === 'undefined' ? 'empty file' : `${data.length} bytes`;
     const marker = `data <0x${data[0].toString(HEX_RADIX).padStart(TARGET_LENGTH, PAD_STRING)}>`;
-    return `<br><span class="monospaced">Id <${id}>, ${info}, ${marker}</span>`;
+    return `Id <${id}>, ${info}, ${marker}`;
 };
 
 export const FILE_READ = error => `Error «${error.name}» leyendo el fichero «${error.fileName}»`;

@@ -198,13 +198,15 @@ class Job {
 
     constructor (fileName) {
         this.progressString = '';
-        this.debugInfo = '';
         this.errorName = '';
 
         this.element = document.querySelector(C.S_JOB_TEMPLATE).content.firstElementChild.cloneNode(true);
         this.element.querySelector(C.S_JOB_FILENAME_TEXT).textContent = fileName;
 
         this.message = this.element.querySelector(C.S_JOB_MESSAGE_TEXT);
+
+        this.debugInfoElement = this.element.querySelector(C.S_JOB_DEBUG_INFO);
+        this.debugInfoText = this.element.querySelector(C.S_JOB_DEBUG_INFO_TEXT);
 
         this.jobDismissControl = this.element.querySelector(C.S_JOB_DISMISS);
         this.downloadDropdown = this.element.querySelector(C.S_JOB_DOWNLOAD_DROPDOWN);
@@ -238,18 +240,26 @@ class Job {
         this.errorName = error;
     }
 
+    set debugInfo (debugInfo) {
+        if (!debugInfo) {
+            this.debugInfoElement.hidden = true;
+            return;
+        }
+        this.debugInfoElement.hidden = false;
+        this.debugInfoText.textContent = debugInfo;
+    }
+
     set state (state) {
         switch (state) {
         case Job.states.reading:
-            this.message.innerHTML = MSG.JOB_STATE_READING(this.progressString);
+            this.message.textContent = MSG.JOB_STATE_READING(this.progressString);
             break;
         case Job.states.processed:
-            this.message.innerHTML = MSG.JOB_STATE_PROCESSED;
-            this.message.innerHTML += this.debugInfo;
+            this.message.textContent = MSG.JOB_STATE_PROCESSED;
             this.downloadDropdown.hidden = false;
             break;
         case Job.states.error:
-            this.message.innerHTML = MSG.JOB_STATE_ERROR(Job.errors[this.errorName]);
+            this.message.textContent = MSG.JOB_STATE_ERROR(Job.errors[this.errorName]);
             this.downloadDropdown.hidden = true;
             break;
         default:

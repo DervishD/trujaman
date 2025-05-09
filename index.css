@@ -35,7 +35,9 @@
 }
 
 :root {
-    font-family: "Noto Sans", sans-serif;
+    --main-font: "Noto Sans", sans-serif;
+    --monospace-font: "JetBrains Mono", monospace;
+    font-family: var(--main-font);
     font-size: clamp(1em, 1vw + 1vh + .5vmin, 3em);
     /*
         Some other alternatives for a dynamic font size:
@@ -143,7 +145,7 @@ button:active {
 }
 
 .monospaced, pre {
-    font-family: "JetBrains Mono";
+    font-family: var(--monospace-font);
 }
 
 #logo {
@@ -319,6 +321,7 @@ button:active {
 }
 
 .error_message {
+    font-family: var(--monospace-font);
     margin: 1em 0 0;
 }
 

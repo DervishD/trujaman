@@ -43,33 +43,33 @@
 
     <template data-element="js-error-template">
         <div class="error">
-            <div class="error_header" data-placeholder="js-error-header"></div>
-            <div class="error_body">
+            <div class="error-header" data-placeholder="js-error-header"></div>
+            <div class="error-body">
                 <div>
-                    <span class="error_name" data-placeholder="js-error-name" hidden></span>
+                    <span class="error-name" data-placeholder="js-error-name" hidden></span>
                     <span data-placeholder="js-error-message" hidden></span>
                 </div>
-                <div class="error_location js-error-location" hidden></div>
-                <div class="error_details js-error-details" hidden></div>
-                <div class="error_stack js-error-stack" hidden></div>
+                <div class="error-location" data-placeholder="js-error-location" hidden></div>
+                <div class="error-details" data-placeholder="js-error-details" hidden></div>
+                <div class="error-stack" data-placeholder="js-error-stack" hidden></div>
             </div>
         </div>
     </template>
 
     <template data-element="js-job-template">
         <div class="job">
-            <div class="job_header">
-                <p data-placeholder="js-job-filename-text" class="job_filename"></p>
-                <button data-role="js-job-dismiss" type="button" class="job_dismisser">×</button>
+            <div class="job-header">
+                <p data-placeholder="js-job-filename-text" class="job-filename"></p>
+                <button data-role="js-job-dismiss" type="button" class="job-dismisser">×</button>
             </div>
-            <div data-element="js-job-debuginfo" hidden class="job_debuginfo">
+            <div data-element="js-job-debuginfo" hidden class="job-debuginfo">
                 <p data-placeholder="js-job-debuginfo-text"></p>
             </div>
-            <div class="job_body">
+            <div class="job-body">
                 <p data-placeholder="js-job-message-text"></p>
-                <div data-element="js-job-download-dropdown" hidden class="job_download_dropdown">
+                <div data-element="js-job-download-dropdown" hidden class="job-download-dropdown">
                     <button data-placeholder="js-job-download-dropdown-text" type="button"></button>
-                    <div data-element="js-job-formats-list" hidden class="job_formats_list"></div>
+                    <div data-element="js-job-formats-list" hidden class="job-formats-list"></div>
                 </div>
             </div>
         </div>

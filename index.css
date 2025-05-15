@@ -65,9 +65,9 @@
 
     /* Default color scheme is light. */
     --fg:     var(--base00);
-    --fg_lo:  var(--base1);
+    --fg-lo:  var(--base1);
     --bg:     var(--base3);
-    --bg_hi:  var(--base2);
+    --bg-hi:  var(--base2);
     --em:     var(--base01);
     --accent: var(--blue);
 }
@@ -76,9 +76,9 @@
 @media (prefers-color-scheme: dark) {
     :root {
         --fg:     var(--base0);
-        --fg_lo:  var(--base01);
+        --fg-lo:  var(--base01);
         --bg:     var(--base03);
-        --bg_hi:  var(--base02);
+        --bg-hi:  var(--base02);
         --em:     var(--base1);
         --accent: var(--violet);
     }
@@ -225,7 +225,7 @@ button:active {
 }
 
 .job {
-    background-color: var(--bg_hi);
+    background-color: var(--bg-hi);
     margin-top: 1rem;
     font-size: 0.75rem;
 }
@@ -240,33 +240,33 @@ button:active {
     border-top: 1px solid;
 }
 
-.job_header {
+.job-header {
     display: flex;
     justify-content: space-between;
     gap: 0.5em;
     align-items: center;
 }
 
-.job_header > p {
+.job-header > p {
     font-weight: 700;
     overflow-wrap: break-word;
     min-width: 0px;
 }
 
-.job_dismisser {
+.job-dismisser {
     font-size: 1.5em;
     padding: 0;
     color: var(--accent);
     background-color: unset;
 }
 
-.job_debuginfo {
+.job-debuginfo {
     font-family: var(--monospace-font);
     font-size: 0.8em;
     font-weight: 700;
 }
 
-.job_body {
+.job-body {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -274,22 +274,22 @@ button:active {
     gap: 0.75em;
 }
 
-.job_body p  {
+.job-body p  {
     flex: 1 0 50%;
     overflow-wrap: break-word;
     min-width: 0px;
 }
 
-.job_body button {
+.job-body button {
     flex: 0 0 auto;
     font-size: 0.8em;
 }
 
-.job_download_dropdown {
+.job-download-dropdown {
     position: relative;
 }
 
-.job_formats_list {
+.job-formats-list {
     font-size: 0.75em;
     position: absolute;
     z-index: 1;
@@ -298,7 +298,7 @@ button:active {
     background-color: var(--accent);
 }
 
-.job_formats_list > * {
+.job-formats-list > * {
     cursor: pointer;
     background-color: var(--accent);
     margin: 0.5em;
@@ -306,7 +306,7 @@ button:active {
     white-space: nowrap;
 }
 
-.job_formats_list *:hover {
+.job-formats-list *:hover {
     filter: brightness(111%);
 }
 
@@ -326,35 +326,35 @@ noscript {
     text-align: center;
 }
 
-.error_header {
+.error-header {
     border: .25em solid var(--fg);
     font-size: 1.2rem;
     font-weight: 700;
 }
 
-.error_body, noscript > div {
+.error-body, noscript > div {
     font-family: var(--monospace-font);
     color: var(--bg);
     background-color: var(--fg);
 }
 
-.error_name {
+.error-name {
     border-radius: 5em;
     padding: 0 0.5em;
-    background-color: var(--fg_lo);
+    background-color: var(--fg-lo);
 }
 
-.error_location {
+.error-location {
     font-size: 0.8em;
 }
 
-.error_details, .error_stack {
+.error-details, .error-stack {
     font-size: 0.75em;
     white-space: break-spaces;
     margin-top: 1em;
 }
 
-.error_stack {
+.error-stack {
     text-align: left;
     display: inline-block;
     margin-top: 1.5em;

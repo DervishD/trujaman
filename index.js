@@ -12,6 +12,69 @@ class FatalError extends Error {
     }
 }
 
+function mungeErrorInfo (errorInfo) {
+    let {name, message, filename, line, column, details, stack} = errorInfo;
+    let consoleErrorMessage = MSG.APP_STOPPED + MSG.ERROR_CONSOLE_SECTION_SEPARATOR;
+
+    name = name ? MSG.ERROR_FORMATTED_NAME(name) : '';
+
+    message = message.trim();
+    if (!message) {
+        message = name ? MSG.ERROR_DEFAULT_MESSAGE : MSG.ERROR_UNKNOWN;
+    }
+    message += message && !message.endsWith('.') && '.';
+    consoleErrorMessage += message && message + MSG.ERROR_CONSOLE_SECTION_SEPARATOR;
+
+    let location = '';
+    if (filename) {
+        try {
+            const FROM_SLASH = 1;
+            filename = new URL(filename).pathname.substring(FROM_SLASH);
+        } catch (exc) {
+            if (!(exc instanceof TypeError)) throw exc;
+        }
+        if (typeof line !== 'number') line = MSG.NOT_AVAILABLE;
+        if (typeof column !== 'number') column = MSG.NOT_AVAILABLE;
+
+        location = MSG.ERROR_LOCATION(filename, line, column);
+    }
+    consoleErrorMessage += location && location + MSG.ERROR_CONSOLE_SECTION_SEPARATOR;
+
+    details = details.trim();
+    details += details && !details.endsWith('.') && '.';
+    consoleErrorMessage += details && details + MSG.ERROR_CONSOLE_SECTION_SEPARATOR;
+
+    stack &&= MSG.ERROR_STACKDUMP_HEADER + stack
+    .replace(C.SUBSTACKDUMP_SEPARATOR, MSG.ERROR_SUBSTACKDUMP_SEPARATOR)
+    .split('\n')
+    .map(frameLine => MSG.ERROR_STACKDUMP_FRAMELINE(frameLine))
+    .join('');
+    consoleErrorMessage += stack && stack + MSG.ERROR_CONSOLE_SECTION_SEPARATOR;
+    consoleErrorMessage = consoleErrorMessage.trimEnd();
+
+    return {name, message, location, details, stack, consoleErrorMessage};
+}
+
+
+function reportError(errorInfo) {
+    const {consoleErrorMessage, ...mungedErrorInfo} = mungeErrorInfo(errorInfo);
+    const errorTemplate = document.querySelector(C.S_ERROR_TEMPLATE);
+    const errorElement = errorTemplate.content.firstElementChild.cloneNode(true);
+
+    errorElement.querySelector(C.S_ERROR_HEADER).textContent = MSG.APP_STOPPED;
+
+    for (const [key, value] of Object.entries(mungedErrorInfo)) {
+        if (!value) continue;  // eslint-disable-line no-continue
+        const element = errorElement.querySelector(C[`S_ERROR_${key.toUpperCase()}`]);
+        element.textContent = value;
+        element.hidden = false;
+    }
+
+    errorTemplate.before(errorElement);
+
+    console.error(consoleErrorMessage);
+}
+
 
 // Default handler for errors which should not happen in production.
 globalThis.addEventListener('error', event => {
@@ -21,54 +84,36 @@ globalThis.addEventListener('error', event => {
     // At this point no further interaction with the page is possible so the
     // application is effectively stopped, even though it is still running…
 
-    let errorMessage = MSG.ERROR_MESSAGE(MSG.DEFAULT_ERROR_NAME);
-    let errorLocation = '';
-    let errorDetails = '';
-    let errorStack = '';
+    const errorInfo = {
+        name: '',
+        message: '',
+        filename: '',
+        line: '',
+        column: '',
+        details: '',
+        stack: '',
+    };
 
     if (event instanceof ErrorEvent) {
-        errorMessage = MSG.ERROR_MESSAGE(event.error.name);
-        errorDetails = event.error.message;
-        errorStack = event.error.stack;
+        errorInfo.name = event.error.name;
+        errorInfo.details = event.error.message;
+        errorInfo.stack = event.error.stack;
 
         if (event.filename) {
-            let {filename, lineno, colno} = event;
-
-            try {
-                const FROM_SLASH = 1;
-                filename = new URL(filename).pathname.substring(FROM_SLASH);
-            } catch (exc) {
-                if (!(exc instanceof TypeError)) throw exc;
-            }
-            if (typeof lineno !== 'number') lineno = MSG.NOT_AVAILABLE;
-            if (typeof colno !== 'number') colno = MSG.NOT_AVAILABLE;
-
-            errorLocation = MSG.ERROR_LOCATION(filename, lineno, colno);
+            errorInfo.filename = event.filename;
+            errorInfo.line = event.lineno;
+            errorInfo.column = event.colno;
         }
     }
 
     if (event.error instanceof FatalError) {
-        errorMessage = event.error.message;
-        errorDetails = event.error.details.message;
-        if (event.error.details.stack) {
-            errorStack += errorStack ? MSG.ERROR_SUBSTACK_SEPARATOR : '';
-            errorStack += event.error.details.stack;
-        }
+        errorInfo.name = '';
+        errorInfo.message = event.error.message;
+        errorInfo.details = event.error.details.message || '';
+        errorInfo.stack += event.error.details.stack && C.SUBSTACKDUMP_SEPARATOR + event.error.details.stack;
     }
 
-    errorDetails += errorDetails && !errorDetails.endsWith('.') ? '.' : '';
-
-    if (errorStack) {
-        errorDetails += errorDetails ? MSG.ERROR_STACK_DUMP_SEPARATOR : '';
-        errorDetails += MSG.ERROR_STACK_DUMP_HEADER;
-        for (const line of errorStack.trim().split('\n')) {
-            errorDetails += MSG.ERROR_STACK_DUMP_FRAME(line);
-        }
-    }
-
-    errorDetails = errorDetails.trim();
-
-    reportError(errorMessage, errorLocation, errorDetails);
+    reportError(errorInfo);
 });
 
 
@@ -76,29 +121,6 @@ globalThis.addEventListener('unhandledrejection', event => {
     event.preventDefault();
     globalThis.reportError(event.reason);
 });
-
-
-function reportError(message, location, details) {
-    const errorTemplate = document.querySelector(C.S_ERROR_TEMPLATE);
-    const errorElement = errorTemplate.content.firstElementChild.cloneNode(true);
-
-    errorElement.querySelector(C.S_ERROR_HEADER).textContent = MSG.APP_STOPPED;
-    errorElement.querySelector(C.S_ERROR_MESSAGE).textContent = message;
-
-    const errorLocationElement = errorElement.querySelector(C.S_ERROR_LOCATION);
-    if (location) {
-        errorLocationElement.textContent = location;
-    } else errorLocationElement.hidden = true;
-
-    const errorDetailsElement = errorElement.querySelector(C.S_ERROR_DETAILS);
-    if (details) {
-        errorDetailsElement.textContent = details;
-    } else errorDetailsElement.hidden = true;
-
-    errorTemplate.before(errorElement);
-
-    console.error(MSG.ERROR_FULL_STR(message, location, details));
-}
 
 
 class UI {

@@ -7,8 +7,6 @@ export const TEXT_DROPZONE = 'Arrastre y suelte aquí los ficheros';
 export const TEXT_DEFAULT_CONTROL = 'Escoger ficheros';
 export const TEXT_DOWNLOAD_DROPDOWN = 'Descargar en formato…';
 
-export const DEFAULT_ERROR_NAME = 'Error desconocido';
-
 export const FORMATS_NOT_FOUND = 'No se encontró el fichero con la lista de formatos';
 export const CANNOT_PROCESS_FORMATS = 'No se pudo procesar la lista de formatos';
 
@@ -48,10 +46,12 @@ export const FILE_NOT_READABLE = 'el fichero no se puede leer';
 export const FILE_SECURITY_ERROR = 'el fichero no se puede leer de forma segura';
 
 export const APP_STOPPED = '¡ERROR, la aplicación no puede funcionar!';
-export const ERROR_MESSAGE = name => `${name ? `«${name}»` : DEFAULT_ERROR_NAME} sin gestionar`;
+
+export const ERROR_UNKNOWN = 'Error desconocido';
+export const ERROR_DEFAULT_MESSAGE = 'sin gestionar';
+export const ERROR_FORMATTED_NAME = name => `${name}()`;
 export const ERROR_LOCATION = (filename, line, column) => `En ${filename}, línea ${line}, columna ${column}`;
-export const ERROR_SUBSTACK_SEPARATOR = '\n—\n';
-export const ERROR_STACK_DUMP_SEPARATOR = '\n\n';
-export const ERROR_STACK_DUMP_HEADER = 'Información de depurado:\n';
-export const ERROR_STACK_DUMP_FRAME = frame => `    ${frame.trim()}\n`;
-export const ERROR_FULL_STR = (message, location, details) => [message, location, details].filter(Boolean).join('\n\n');
+export const ERROR_SUBSTACKDUMP_SEPARATOR = '\n—\n';
+export const ERROR_STACKDUMP_HEADER = 'Información de depurado:\n';
+export const ERROR_STACKDUMP_FRAMELINE = frame => `    ${frame.trim()}\n`;
+export const ERROR_CONSOLE_SECTION_SEPARATOR = '\n\n';

@@ -2,8 +2,11 @@ export const WEB_WORKER_URL = './ww.js'
 export const SERVICE_WORKER_URL = './sw.js'
 export const FORMATS_URL = './formats.json'
 
+
+// Miscellaneous constants
 export const IEC_BINARY_PREFIX_MULTIPLIER = 1024;
 export const PERCENT_FACTOR = 100;
+export const SUBSTACKDUMP_SEPARATOR = '\uEEEE';
 
 // Arbitrary file size limit.
 const MAX_FILE_SIZE_MIB = 99;
@@ -20,10 +23,12 @@ export const S_LOGO = '[data-element="js-logo"]';
 export const S_FILEPICKER = '[data-element="js-filepicker"]';
 export const S_FILEPICKER_INPUT = '[data-role="js-filepicker"]';
 export const S_ERROR_TEMPLATE = '[data-element="js-error-template"]';
-export const S_ERROR_HEADER = '.js-error-header';
-export const S_ERROR_MESSAGE = '.js-error-message';
+export const S_ERROR_HEADER = '[data-placeholder="js-error-header"]';
+export const S_ERROR_NAME = '[data-placeholder="js-error-name"]';
+export const S_ERROR_MESSAGE = '[data-placeholder="js-error-message"]';
 export const S_ERROR_LOCATION = '.js-error-location';
 export const S_ERROR_DETAILS = '.js-error-details';
+export const S_ERROR_STACK = '.js-error-stack';
 export const S_JOBS_CONTAINER = '[data-element="js-jobs-container"]';
 export const S_JOB_TEMPLATE = '[data-element="js-job-template"]';
 export const S_JOB_FILENAME_TEXT = '[data-placeholder="js-job-filename-text"]';

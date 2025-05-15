@@ -310,40 +310,52 @@ button:active {
     filter: brightness(111%);
 }
 
-.error, noscript > div {
+noscript {
+    display: block;
+    font-size: clamp(0.5em, 5vw, 1.5em);
+    margin: 2rem auto 0;
+}
+
+.error {
     font-size: clamp(0.5em, 5vw, 1em);
     margin: 2rem auto 0;
-    padding: 1em;
+}
+
+.error > div, noscript > div {
+    padding: 0.5em;
+    text-align: center;
+}
+
+.error_header {
+    border: .25em solid var(--fg);
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.error_body, noscript > div {
+    font-family: var(--monospace-font);
     color: var(--bg);
     background-color: var(--fg);
 }
 
-.error, .error p, noscript > div {
-    text-align: center;
-}
-
-.error > div {
-    font-family: var(--monospace-font);
-}
-
-.error_header, noscript > div {
-    font-family: var(--normal-font);
-    font-weight: 700;
-}
-
-.error_message {
-    margin: 1em 0 0;
+.error_name {
+    border-radius: 5em;
+    padding: 0 0.5em;
+    background-color: var(--fg_lo);
 }
 
 .error_location {
-    text-align: center;
     font-size: 0.8em;
 }
 
-.error_details {
-    text-align: left;
-    font-size: 0.6em;
-    margin: 2em 0 0.5em 0;
-    display: inline-block;
+.error_details, .error_stack {
+    font-size: 0.75em;
     white-space: break-spaces;
+    margin-top: 1em;
+}
+
+.error_stack {
+    text-align: left;
+    display: inline-block;
+    margin-top: 1.5em;
 }

@@ -43,10 +43,16 @@
 
     <template data-element="js-error-template">
         <div class="error">
-            <div class="error_header js-error-header"></div>
-            <div class="error_message js-error-message"></div>
-            <div class="error_location js-error-location"></div>
-            <div class="error_details js-error-details"></div>
+            <div class="error_header" data-placeholder="js-error-header"></div>
+            <div class="error_body">
+                <div>
+                    <span class="error_name" data-placeholder="js-error-name" hidden></span>
+                    <span data-placeholder="js-error-message" hidden></span>
+                </div>
+                <div class="error_location js-error-location" hidden></div>
+                <div class="error_details js-error-details" hidden></div>
+                <div class="error_stack js-error-stack" hidden></div>
+            </div>
         </div>
     </template>
 

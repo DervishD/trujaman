@@ -12,6 +12,17 @@ class FatalError extends Error {
     }
 }
 
+
+function ensureTrailingPeriod (string) {
+    if (typeof string !== 'string') return string;
+
+    let outputString = string.trim();
+    if (!outputString) return '';
+    outputString += outputString.endsWith('.') ? '' : '.';
+    return outputString
+}
+
+
 function mungeErrorInfo (errorInfo) {
     let {name, message, filename, line, column, details, stack} = errorInfo;
     let consoleErrorMessage = MSG.APP_STOPPED + MSG.ERROR_CONSOLE_SECTION_SEPARATOR;
@@ -22,7 +33,7 @@ function mungeErrorInfo (errorInfo) {
     if (!message) {
         message = name ? MSG.ERROR_DEFAULT_MESSAGE : MSG.ERROR_UNKNOWN;
     }
-    message += message && !message.endsWith('.') && '.';
+    message = ensureTrailingPeriod(message);
     consoleErrorMessage += message && message + MSG.ERROR_CONSOLE_SECTION_SEPARATOR;
 
     let location = '';
@@ -40,8 +51,7 @@ function mungeErrorInfo (errorInfo) {
     }
     consoleErrorMessage += location && location + MSG.ERROR_CONSOLE_SECTION_SEPARATOR;
 
-    details = details.trim();
-    details += details && !details.endsWith('.') && '.';
+    details = ensureTrailingPeriod(details);
     consoleErrorMessage += details && details + MSG.ERROR_CONSOLE_SECTION_SEPARATOR;
 
     stack &&= MSG.ERROR_STACKDUMP_HEADER + stack

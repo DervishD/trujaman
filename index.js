@@ -400,13 +400,13 @@ class Presenter {
     }
 
     webWorkerDo (command, payload) {
-        console.debug(MSG.WW_SENDING_COMMAND(command), payload);
+        console.debug(`Sending command '${command}' to worker\nPayload: %o`, payload);
         this.worker.postMessage({command, payload});
     }
 
     handleWebWorkerMessage (message) {
         const {reply, payload} = message.data;
-        console.debug(MSG.WW_RECEIVED_REPLY(reply), payload);
+        console.debug(`Received reply '${reply}' from worker\nPayload: %o`, payload);
 
         if (reply === replies.commandNotFound) {
             const command = payload;
@@ -473,6 +473,3 @@ globalThis.addEventListener('load', () => {
     const presenter = new Presenter();
     presenter.run();
 });
-
-
-console.info(MSG.SCRIPT_PROCESSED('Main'));

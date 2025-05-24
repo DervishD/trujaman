@@ -1,6 +1,3 @@
-import {SCRIPT_PROCESSED} from './strings.js';
-
-
 export const commands = Object.freeze(Object.fromEntries(Object.keys({
     registerFormats: null,
     createJob: null,
@@ -25,6 +22,3 @@ export const customEvents = Object.freeze(Object.fromEntries(Object.keys({
     processingRequested: null,
     interactionHalted: null,
 }).map(key => [key, key])));
-
-
-console.info(SCRIPT_PROCESSED('Constants'));

@@ -1,6 +1,5 @@
 import {commands, replies} from './contracts.js';
 import {MAX_FILE_SIZE, PERCENT_FACTOR} from './constants.js';
-import * as MSG from './strings.js';
 
 
 const handlers = Object.fromEntries(Object.keys(commands).map(command => [command, null]));
@@ -12,7 +11,7 @@ let knownFormats = null;
 
 globalThis.addEventListener('message', message => {
     const {command, payload} = message.data;
-    console.debug(MSG.WW_RECEIVED_COMMAND(command), payload);
+    console.debug(`Received command '${command}' from main thread\nPayload: %o`, payload);
 
     if (handlers[command]) {
         handlers[command](payload);
@@ -23,7 +22,8 @@ globalThis.addEventListener('message', message => {
 
 
 function postReply (reply, payload, transferables = []) {
-    console.debug(MSG.WW_SENDING_REPLY(reply), payload);
+    console.debug(`Sending reply '${reply}' to main thread\nPayload: %o\nTransferables: %o`, payload, transferables);
+
     globalThis.postMessage({reply, payload}, transferables);
 }
 
@@ -133,6 +133,3 @@ function deleteJobHandler (jobId) {
 
     postReply(replies.jobDeleted, jobId);
 }
-
-
-console.info(MSG.SCRIPT_PROCESSED('Web Worker'));

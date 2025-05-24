@@ -1,5 +1,3 @@
-export const SCRIPT_PROCESSED = script => `${script} script processed.`;
-
 export const NOT_AVAILABLE = 'N/A';
 
 export const TEXT_LOADING = 'Cargando…';
@@ -12,19 +10,10 @@ export const CANNOT_PROCESS_FORMATS = 'No se pudo procesar la lista de formatos'
 
 export const CANNOT_RUN_SW = 'No se pudo iniciar el service worker';
 export const COOKIES_ARE_DISABLED = 'Las cookies están desactivadas';
-export const SW_INSTALLING = version => `Installing service worker v${version}`;
-export const SW_ACTIVATING = version => `Activating service worker v${version}`;
-export const SW_FETCH_REQUEST = url => `Fetch request for ${url}`;
-export const SW_FETCH_REQUEST_NON_GET = method => `Fetch request with non-GET method '${method}'`;
-export const SW_FETCH_REQUEST_CROSS_ORIGIN = url => `Cross-origin fetch request for '${url}'`;
 
 export const WW_SYNTAX = (line, column) => `Error de sintaxis en el web worker, línea ${line}, columna ${column}`;
 export const CANNOT_RUN_WW = 'No se pudo iniciar el web worker';
-export const WW_SENDING_COMMAND = command =>`Sending command '${command}'`;
-export const WW_RECEIVED_COMMAND = command => `Received command '${command}'`;
 export const UNKNOWN_WW_COMMAND = command => `El web worker no reconoce el comando «${command}»`;
-export const WW_SENDING_REPLY = reply => `Sending reply '${reply}'`;
-export const WW_RECEIVED_REPLY = reply => `Received reply '${reply}'`;
 export const UNKNOWN_WW_REPLY = reply => `No se reconoce la respuesta del web worker «${reply}»`;
 
 export const JOB_STATE_READING = percentage => `Leyendo el fichero (${percentage}%).`;

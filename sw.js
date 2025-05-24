@@ -21,7 +21,7 @@ const assets = [
 
 
 globalThis.addEventListener('install', event => {
-    console.debug(MSG.SW_INSTALLING(version));
+    console.debug(`Installing service worker v${version}`);
     event.waitUntil(
         caches.open(currentCacheName)
         .then(cache => cache.addAll(assets))
@@ -31,7 +31,7 @@ globalThis.addEventListener('install', event => {
 
 
 globalThis.addEventListener('activate', event => {
-    console.debug(MSG.SW_ACTIVATING(version));
+    console.debug(`Activating service worker v${version}`);
     event.waitUntil(
         caches.keys()
         .then(keys => Promise.all(
@@ -49,16 +49,10 @@ globalThis.addEventListener('activate', event => {
 // This makes sure the PWA fully works when offline,
 // and it's perfect for the core assets.
 globalThis.addEventListener('fetch', event => {
-    console.debug(MSG.SW_FETCH_REQUEST(event.request.url));
-    if (event.request.method !== 'GET') {
-        console.error(MSG.SW_FETCH_REQUEST_NON_GET(event.request.method));
-        return;
-    }
+    console.debug(`Fetch request for ${event.request.url}, ${event.request.method} method`);
 
-    if (!event.request.url.startsWith(globalThis.location.origin)) {
-        console.error(MSG.SW_FETCH_REQUEST_CROSS_ORIGIN(event.request.url));
-        return;
-    }
+    if (event.request.method !== 'GET') return;
+    if (!event.request.url.startsWith(globalThis.location.origin)) return;
 
     // This is TEMPORARY!
     // This is needed to be able to test changes fast and at the same time having offline functionality.
@@ -68,6 +62,3 @@ globalThis.addEventListener('fetch', event => {
         return response || cache.match(landingPage);
     }))());
 });
-
-
-console.info(MSG.SCRIPT_PROCESSED('Service Worker'));

@@ -1,7 +1,5 @@
 // Follows Semantic Versioning 2.0.0 (https://semver.org/spec/v2.0.0.html).
-import {SCRIPT_PROCESSED} from './strings.js';
-
-export const version = {
+globalThis.version = {
     major: '0',
     minor: '4',
     patch: '0',
@@ -14,5 +12,3 @@ export const version = {
         return Boolean(this.prerelease);
     },
 };
-
-console.info(SCRIPT_PROCESSED('Version'));

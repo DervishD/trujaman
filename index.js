@@ -264,7 +264,6 @@ class Job {
     }
 
     set progress (progress) {
-        console.error(progress);
         this.progressString = progress;
     }
 

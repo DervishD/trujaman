@@ -57,7 +57,6 @@ class Job {
         this.reader.onload = event => this.callbacks.onComplete(event.target.result);
         this.reader.onprogress = event => this.callbacks.onBytesRead(event.loaded);
         this.reader.onerror = event => {
-            console.error(event);
             const error = {
                 name: event.target.error.name,
                 message: event.target.error.message,

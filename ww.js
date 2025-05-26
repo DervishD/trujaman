@@ -1,8 +1,8 @@
-import {commands, replies} from './contracts.js';
+import {webWorkerCommands, webWorkerReplies} from './contracts.js';
 import {MAX_FILE_SIZE, PERCENT_FACTOR} from './constants.js';
 
 
-const handlers = Object.fromEntries(Object.keys(commands).map(command => [command, null]));
+const handlers = Object.fromEntries(Object.keys(webWorkerCommands).map(command => [command, null]));
 
 const jobRegistry = new Map();
 
@@ -16,7 +16,7 @@ globalThis.addEventListener('message', message => {
     if (handlers[command]) {
         handlers[command](payload);
     } else {
-        postReply(replies.commandNotFound, command);
+        postReply(webWorkerReplies.commandNotFound, command);
     }
 });
 
@@ -90,20 +90,20 @@ function createJobHandler (file) {
 
     const job = new Job(file, {
         onError: error => {
-            postReply(replies.fileReadError, {jobId, error});
+            postReply(webWorkerReplies.fileReadError, {jobId, error});
         },
         onBytesRead: bytesRead => {
             const percent = file.size ? Math.floor(PERCENT_FACTOR * bytesRead / file.size) : PERCENT_FACTOR;
-            postReply(replies.bytesRead, {jobId, percent});
+            postReply(webWorkerReplies.bytesRead, {jobId, percent});
         },
         onComplete: contents => {
-            postReply(replies.fileReadComplete, {jobId, contents}, [contents]);
+            postReply(webWorkerReplies.fileReadComplete, {jobId, contents}, [contents]);
         },
     });
 
     jobRegistry.set(jobId, job);
 
-    postReply(replies.jobCreated, {jobId, fileName: job.file.name});
+    postReply(webWorkerReplies.jobCreated, {jobId, fileName: job.file.name});
 }
 
 
@@ -114,7 +114,7 @@ function processJobHandler (jobId) {
     if (typeof job === 'undefined') return;
 
     if (job.file.size > MAX_FILE_SIZE) {
-        postReply(replies.fileTooLarge, jobId);
+        postReply(webWorkerReplies.fileTooLarge, jobId);
         return;
     }
 
@@ -131,5 +131,5 @@ function deleteJobHandler (jobId) {
 
     jobRegistry.delete(jobId);
 
-    postReply(replies.jobDeleted, jobId);
+    postReply(webWorkerReplies.jobDeleted, jobId);
 }

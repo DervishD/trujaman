@@ -1,5 +1,5 @@
 import {version} from './version.js';
-import {commands, replies, customEvents} from './contracts.js';
+import {webWorkerCommands, webWorkerReplies, customEvents} from './contracts.js';
 import * as MSG from './strings.js';
 import * as C from './constants.js';
 
@@ -304,7 +304,7 @@ class Presenter {
         this.jobRegistry = new Map();
         this.UI = new UI();
         this.handlers = {};
-        Object.keys(replies).forEach(reply => {
+        Object.keys(webWorkerReplies).forEach(reply => {
             const handler = `${reply}Handler`;
             this.handlers[reply] = handler in this ? this[handler].bind(this) : null;
         });
@@ -323,7 +323,7 @@ class Presenter {
             return response.json();
         })
         .then(formats => {
-            this.webWorkerDo(commands.registerFormats, formats);
+            this.webWorkerDo(webWorkerCommands.registerFormats, formats);
             this.UI.formats = Object.keys(formats);
         })
         .catch(error => {
@@ -379,21 +379,21 @@ class Presenter {
         globalThis.addEventListener(customEvents.processingRequested, event => {
             const files = event.detail;
             for (const file of files) {
-                this.webWorkerDo(commands.createJob, file);
+                this.webWorkerDo(webWorkerCommands.createJob, file);
             }
         });
 
         globalThis.addEventListener(customEvents.jobDismissed, event => {
             const job = event.detail;
             const jobId = this.jobRegistry.get(job);
-            this.webWorkerDo(commands.deleteJob, jobId);
+            this.webWorkerDo(webWorkerCommands.deleteJob, jobId);
         });
 
         globalThis.addEventListener(customEvents.interactionHalted, () => {
             this.UI.halt();
             for (const job of this.jobRegistry.values()) {
                 if (typeof job !== 'object') {
-                    this.webWorkerDo(commands.deleteJob, job);
+                    this.webWorkerDo(webWorkerCommands.deleteJob, job);
                 }
             }
         });
@@ -408,7 +408,7 @@ class Presenter {
         const {reply, payload} = message.data;
         console.debug(`Received reply '${reply}' from worker\nPayload: %o`, payload);
 
-        if (reply === replies.commandNotFound) {
+        if (reply === webWorkerReplies.commandNotFound) {
             const command = payload;
             throw new FatalError(MSG.UNKNOWN_WW_COMMAND(command));
         }
@@ -426,7 +426,7 @@ class Presenter {
         this.jobRegistry.set(job, jobId);
         job.progress = 0;
         job.state = Job.states.reading;
-        this.webWorkerDo(commands.processJob, jobId);
+        this.webWorkerDo(webWorkerCommands.processJob, jobId);
     }
 
     jobDeletedHandler (jobId) {

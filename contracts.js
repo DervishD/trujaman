@@ -1,4 +1,4 @@
-export const commands = Object.freeze(Object.fromEntries(Object.keys({
+export const webWorkerCommands = Object.freeze(Object.fromEntries(Object.keys({
     registerFormats: null,
     createJob: null,
     processJob: null,
@@ -6,7 +6,7 @@ export const commands = Object.freeze(Object.fromEntries(Object.keys({
 }).map(key => [key, key])));
 
 
-export const replies = Object.freeze(Object.fromEntries(Object.keys({
+export const webWorkerReplies = Object.freeze(Object.fromEntries(Object.keys({
     commandNotFound: null,
     jobCreated: null,
     jobDeleted: null,

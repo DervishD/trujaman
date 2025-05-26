@@ -358,9 +358,9 @@ class Presenter {
     }
 
     initWebWorker (webWorker) {
-        this.worker = new Worker(webWorker, {type: 'module'});
-        this.worker.addEventListener('message', event => this.handleWebWorkerMessage(event));
-        this.worker.addEventListener('error', event => {
+        this.webWorker = new Worker(webWorker, {type: 'module'});
+        this.webWorker.addEventListener('message', event => this.handleWebWorkerMessage(event));
+        this.webWorker.addEventListener('error', event => {
             event.preventDefault();
             if (event instanceof ErrorEvent) {
                 // For syntax errors, that should not happen in production,
@@ -401,7 +401,7 @@ class Presenter {
 
     webWorkerDo (command, payload) {
         console.debug(`Sending message '${command}' to web worker\nPayload: %o`, payload);
-        this.worker.postMessage({command, payload});
+        this.webWorker.postMessage({command, payload});
     }
 
     handleWebWorkerMessage (message) {

@@ -400,13 +400,13 @@ class Presenter {
     }
 
     webWorkerDo (command, payload) {
-        console.debug(`Sending command '${command}' to worker\nPayload: %o`, payload);
+        console.debug(`Sending message '${command}' to web worker\nPayload: %o`, payload);
         this.worker.postMessage({command, payload});
     }
 
     handleWebWorkerMessage (message) {
         const {reply, payload} = message.data;
-        console.debug(`Received reply '${reply}' from worker\nPayload: %o`, payload);
+        console.debug(`Received message '${reply}' from web worker\nPayload: %o`, payload);
 
         if (reply === webWorkerReplies.commandNotFound) {
             const command = payload;

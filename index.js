@@ -120,7 +120,7 @@ globalThis.addEventListener('error', event => {
         errorInfo.name = '';
         errorInfo.message = event.error.message;
         errorInfo.details = event.error.details.message || '';
-        errorInfo.stack += event.error.details.stack && C.SUBSTACKDUMP_SEPARATOR + event.error.details.stack;
+        errorInfo.stack += event.error.details.stack ? C.SUBSTACKDUMP_SEPARATOR + event.error.details.stack : '';
     }
 
     reportError(errorInfo);

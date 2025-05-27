@@ -1,4 +1,4 @@
-import {webWorkerCommands, webWorkerReplies} from './contracts.js';
+import {unknownCommand, webWorkerCommands, webWorkerReplies} from './contracts.js';
 import {MAX_FILE_SIZE, PERCENT_FACTOR} from './constants.js';
 
 
@@ -16,7 +16,7 @@ globalThis.addEventListener('message', message => {
     if (handlers[command]) {
         handlers[command](payload);
     } else {
-        postReply(webWorkerReplies.commandNotFound, command);
+        postReply(unknownCommand, command);
     }
 });
 

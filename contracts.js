@@ -2,6 +2,11 @@ function buildContractObject(object) {
     return Object.freeze(Object.fromEntries(Object.keys(object).map(key => [key, key])));
 }
 
+
+export const {unknownCommand} = buildContractObject({unknownCommand: null});
+
+
+
 export const webWorkerCommands = buildContractObject({
     registerFormats: null,
     createJob: null,
@@ -11,7 +16,6 @@ export const webWorkerCommands = buildContractObject({
 
 
 export const webWorkerReplies = buildContractObject({
-    commandNotFound: null,
     jobCreated: null,
     jobDeleted: null,
     bytesRead: null,

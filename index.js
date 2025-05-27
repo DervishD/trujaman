@@ -1,5 +1,4 @@
-import {version} from './version.js';
-import {webWorkerCommands, webWorkerReplies, customEvents} from './contracts.js';
+import {webWorkerCommands, unknownCommand, customEvents} from './contracts.js';
 import * as MSG from './strings.js';
 import * as C from './constants.js';
 
@@ -408,7 +407,7 @@ class Presenter {
         const {reply, payload} = message.data;
         console.debug(`Received message '${reply}' from web worker\nPayload: %o`, payload);
 
-        if (reply === webWorkerReplies.commandNotFound) {
+        if (reply === unknownCommand) {
             const command = payload;
             throw new FatalError(MSG.UNKNOWN_WW_COMMAND(command));
         }

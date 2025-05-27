@@ -1,12 +1,16 @@
-export const webWorkerCommands = Object.freeze(Object.fromEntries(Object.keys({
+function buildContractObject(object) {
+    return Object.freeze(Object.fromEntries(Object.keys(object).map(key => [key, key])));
+}
+
+export const webWorkerCommands = buildContractObject({
     registerFormats: null,
     createJob: null,
     processJob: null,
     deleteJob: null,
-}).map(key => [key, key])));
+});
 
 
-export const webWorkerReplies = Object.freeze(Object.fromEntries(Object.keys({
+export const webWorkerReplies = buildContractObject({
     commandNotFound: null,
     jobCreated: null,
     jobDeleted: null,
@@ -14,11 +18,11 @@ export const webWorkerReplies = Object.freeze(Object.fromEntries(Object.keys({
     fileReadError: null,
     fileReadComplete: null,
     fileTooLarge: null,
-}).map(key => [key, key])));
+});
 
 
-export const customEvents = Object.freeze(Object.fromEntries(Object.keys({
+export const customEvents = buildContractObject({
     jobDismissed: null,
     processingRequested: null,
     interactionHalted: null,
-}).map(key => [key, key])));
+});

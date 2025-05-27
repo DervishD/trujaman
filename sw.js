@@ -1,5 +1,3 @@
-import {version} from './version.js';
-import * as MSG from './strings.js';
 
 
 const landingPage = '.';  // Maybe: "new URL(globalThis.registration.scope).pathname"???

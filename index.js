@@ -349,7 +349,7 @@ class Presenter {
             this.sendCommand(this.serviceWorker, serviceWorkerCommands.getVersion);
         });
 
-        navigator.serviceWorker.register(serviceWorker, {type: 'module'})
+        navigator.serviceWorker.register(serviceWorker)
         .catch(error => {
             // Service workers are considered site data, so cookies have to be enabled for the application to work.
             if (navigator.cookieEnabled) {

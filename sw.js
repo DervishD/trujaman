@@ -14,12 +14,12 @@ globalThis.addEventListener('message', event => {
 
 
 globalThis.addEventListener('install', event => {
-    console.debug(`Installing service worker v${version.tag}`);
+    console.debug(`Installing service worker v${version.semver}`);
 });
 
 
 globalThis.addEventListener('activate', event => {
-    console.debug(`Activating service worker v${version.tag}`);
+    console.debug(`Activating service worker v${version.semver}`);
 });
 
 

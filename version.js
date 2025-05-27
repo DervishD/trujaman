@@ -5,8 +5,8 @@ const version = {
     patch: '0',
     prerelease: 'alpha',
     build: new Date().toISOString().split('T')[0].replaceAll('-', ''),
-    tag: 'v',
+    semver: '',
 };
 
-version.tag += `${version.major}.${version.minor}.${version.patch}`
-version.tag += `${version.prerelease && `-${version.prerelease}+${version.build}`}`
+version.semver += `${version.major}.${version.minor}.${version.patch}`
+version.semver += `${version.prerelease && `-${version.prerelease}+${version.build}`}`

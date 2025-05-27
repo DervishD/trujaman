@@ -1,5 +1,7 @@
 export const NOT_AVAILABLE = 'N/A';
 
+export const MSG_VERSION = semver => `v${semver}`;
+
 export const TEXT_LOADING = 'Cargando…';
 export const TEXT_DROPZONE = 'Arrastre y suelte aquí los ficheros';
 export const TEXT_DEFAULT_CONTROL = 'Escoger ficheros';

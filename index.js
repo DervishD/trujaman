@@ -428,7 +428,7 @@ class Presenter {
 
     versionReportedHandler (version) {
         this.appVersion = version;
-        this.UI.versionText.textContent = version.tag;
+        this.UI.versionText.textContent = MSG.VERSION(version.semver);
         this.UI.show();
     }
 

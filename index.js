@@ -427,7 +427,8 @@ class Presenter {
     }
 
     versionReportedHandler (version) {
-        this.UI.versionText.textContent = `v${version}`;
+        this.appVersion = version;
+        this.UI.versionText.textContent = version.tag;
         this.UI.show();
     }
 
@@ -457,7 +458,7 @@ class Presenter {
         const job = this.jobRegistry.get(jobId);
         const data = new Uint8Array(contents);
         console.debug(contents);
-        if (version.isPrerelease()) job.debugInfo = MSG.JOB_DEBUG_INFO(jobId, data);
+        if (this.appVersion.prerelease) job.debugInfo = MSG.JOB_DEBUG_INFO(jobId, data);
         job.state = Job.states.processed;
     }
 

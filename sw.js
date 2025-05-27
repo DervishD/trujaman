@@ -1,45 +1,25 @@
+globalThis.importScripts('./version.js');  /* global version */
+globalThis.importScripts('./contracts.js');  /* global serviceWorkerCommands, serviceWorkerReplies */
 
 
 const landingPage = '.';  // Maybe: "new URL(globalThis.registration.scope).pathname"???
 const cachePrefix = `trujaman@${globalThis.registration.scope}`;
-const currentCacheName = `${cachePrefix} v${version}`;
-const assets = [
-    landingPage,
-    'index.css',
-    'font_sans_r_400.woff2',
-    'font_sans_r_700.woff2',
-    'font_mono_r_400.woff2',
-    'index.js',
-    'formats.json',
-    'ww.js',
-    'manifest.webmanifest',
-    'appicon.png',
-    'favicon.ico',
-];
+
+
+globalThis.addEventListener('message', event => {
+    if (event.data.command === serviceWorkerCommands.getVersion) {
+        event.source.postMessage({reply: serviceWorkerReplies.versionReported, payload: version});
+    }
+});
 
 
 globalThis.addEventListener('install', event => {
-    console.debug(`Installing service worker v${version}`);
-    event.waitUntil(
-        caches.open(currentCacheName)
-        .then(cache => cache.addAll(assets))
-        .then(globalThis.skipWaiting())  // Brutal, but effective for now.
-    );
+    console.debug(`Installing service worker v${version.tag}`);
 });
 
 
 globalThis.addEventListener('activate', event => {
-    console.debug(`Activating service worker v${version}`);
-    event.waitUntil(
-        caches.keys()
-        .then(keys => Promise.all(
-            keys
-            .filter(key => key.startsWith(cachePrefix))
-            .filter(key => key !== currentCacheName)
-            .map(key => caches.delete(key))
-        ))
-        .then(globalThis.clients.claim())  // Brutal, but effective for now.
-    );
+    console.debug(`Activating service worker v${version.tag}`);
 });
 
 

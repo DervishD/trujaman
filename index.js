@@ -302,11 +302,7 @@ class Presenter {
     constructor () {
         this.jobRegistry = new Map();
         this.UI = new UI();
-        this.handlers = {};
-        Object.keys(webWorkerReplies).forEach(reply => {
-            const handler = `${reply}Handler`;
-            this.handlers[reply] = handler in this ? this[handler].bind(this) : null;
-        });
+        this.channelDebugTags = new WeakMap();
     }
 
     run () {
@@ -322,7 +318,7 @@ class Presenter {
             return response.json();
         })
         .then(formats => {
-            this.webWorkerDo(webWorkerCommands.registerFormats, formats);
+            this.sendCommand(this.webWorker, webWorkerCommands.registerFormats, formats);
             this.UI.formats = Object.keys(formats);
         })
         .catch(error => {
@@ -356,9 +352,14 @@ class Presenter {
         });
     }
 
-    initWebWorker (webWorker) {
-        this.webWorker = new Worker(webWorker, {type: 'module'});
-        this.webWorker.addEventListener('message', event => this.handleWebWorkerMessage(event));
+    initWebWorker (webWorkerURL) {
+        this.webWorker = new Worker(webWorkerURL, {type: 'module'});
+        this.channelDebugTags.set(this.webWorker, MSG.WW_TAG);
+
+        this.webWorker.addEventListener('message', event => {
+            const {reply, payload} = event.data;
+            this.handleReply(this.webWorker, reply, payload);
+        });
         this.webWorker.addEventListener('error', event => {
             event.preventDefault();
             if (event instanceof ErrorEvent) {
@@ -378,45 +379,45 @@ class Presenter {
         globalThis.addEventListener(customEvents.processingRequested, event => {
             const files = event.detail;
             for (const file of files) {
-                this.webWorkerDo(webWorkerCommands.createJob, file);
+                this.sendCommand(this.webWorker, webWorkerCommands.createJob, file);
             }
         });
 
         globalThis.addEventListener(customEvents.jobDismissed, event => {
             const job = event.detail;
             const jobId = this.jobRegistry.get(job);
-            this.webWorkerDo(webWorkerCommands.deleteJob, jobId);
+            this.sendCommand(this.webWorker, webWorkerCommands.deleteJob, jobId);
         });
 
         globalThis.addEventListener(customEvents.interactionHalted, () => {
             this.UI.halt();
             for (const job of this.jobRegistry.values()) {
                 if (typeof job !== 'object') {
-                    this.webWorkerDo(webWorkerCommands.deleteJob, job);
+                    this.sendCommand(this.webWorker, webWorkerCommands.deleteJob, job);
                 }
             }
         });
     }
 
-    webWorkerDo (command, payload) {
-        console.debug(`Sending message '${command}' to web worker\nPayload: %o`, payload);
-        this.webWorker.postMessage({command, payload});
+    sendCommand(channel, command, payload) {
+        console.debug(`Sending command '${command}' to ${this.channelDebugTags.get(channel)}\nPayload: %o`, payload);
+        channel.postMessage({command, payload});
     }
 
-    handleWebWorkerMessage (message) {
-        const {reply, payload} = message.data;
-        console.debug(`Received message '${reply}' from web worker\nPayload: %o`, payload);
+    handleReply (channel, reply, payload) {
+        console.debug(`Received reply '${reply}' from ${this.channelDebugTags.get(channel)}\nPayload: %o`, payload);
 
         if (reply === unknownCommand) {
             const command = payload;
-            throw new FatalError(MSG.UNKNOWN_WW_COMMAND(command));
+            throw new FatalError(MSG.UNKNOWN_COMMAND(command));
         }
 
-        if (this.handlers[reply]) {
-            this.handlers[reply](payload);
-        } else {
-            throw new FatalError(MSG.UNKNOWN_WW_REPLY(reply));
+        const handler = `${reply}Handler`;
+        if (handler in this) {
+            this[handler](payload);
+            return;
         }
+        throw new FatalError(MSG.UNKNOWN_REPLY(reply));
     }
 
     jobCreatedHandler ({jobId, fileName}) {
@@ -425,7 +426,7 @@ class Presenter {
         this.jobRegistry.set(job, jobId);
         job.progress = 0;
         job.state = Job.states.reading;
-        this.webWorkerDo(webWorkerCommands.processJob, jobId);
+        this.sendCommand(this.webWorker, webWorkerCommands.processJob, jobId);
     }
 
     jobDeletedHandler (jobId) {

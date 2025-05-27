@@ -8,13 +8,13 @@ export const TEXT_DOWNLOAD_DROPDOWN = 'Descargar en formato…';
 export const FORMATS_NOT_FOUND = 'No se encontró el fichero con la lista de formatos';
 export const CANNOT_PROCESS_FORMATS = 'No se pudo procesar la lista de formatos';
 
-export const CANNOT_RUN_SW = 'No se pudo iniciar el service worker';
+export const WW_TAG = 'web worker';
+export const SW_TAG = 'service worker';
+
 export const COOKIES_ARE_DISABLED = 'Las cookies están desactivadas';
 
-export const WW_SYNTAX = (line, column) => `Error de sintaxis en el web worker, línea ${line}, columna ${column}`;
-export const CANNOT_RUN_WW = 'No se pudo iniciar el web worker';
-export const UNKNOWN_WW_COMMAND = command => `El web worker no reconoce el comando «${command}»`;
-export const UNKNOWN_WW_REPLY = reply => `No se reconoce la respuesta del web worker «${reply}»`;
+export const UNKNOWN_COMMAND = command => `Comando desconocido: «${command}»`;
+export const UNKNOWN_REPLY = reply => `Respuesta desconocida: «${reply}»`;
 
 export const JOB_STATE_READING = percentage => `Leyendo el fichero (${percentage}%).`;
 export const JOB_STATE_PROCESSED = 'El fichero se leyó correctamente.';

@@ -6,6 +6,15 @@ function buildContractObject(object) {
 export const {unknownCommand} = buildContractObject({unknownCommand: null});
 
 
+export const serviceWorkerCommands = buildContractObject({
+    getVersion: null,
+});
+
+
+export const serviceWorkerReplies = buildContractObject({
+    versionReported: null,
+});
+
 
 export const webWorkerCommands = buildContractObject({
     registerFormats: null,

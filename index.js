@@ -1,4 +1,4 @@
-import {webWorkerCommands, unknownCommand, customEvents} from './contracts.js';
+import {serviceWorkerCommands, webWorkerCommands, unknownCommand, customEvents} from './contracts.js';
 import * as MSG from './strings.js';
 import * as C from './constants.js';
 
@@ -328,6 +328,8 @@ class Presenter {
 
     initServiceWorker (serviceWorker) {
         let refreshing = false;
+        this.serviceWorker = null;
+
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             if (refreshing) return;
             globalThis.location.reload();
@@ -338,7 +340,13 @@ class Presenter {
         globalThis.addEventListener('beforeinstallprompt', event => event.preventDefault());
 
         navigator.serviceWorker.ready.then(() => {
-            this.UI.show();
+            this.serviceWorker = navigator.serviceWorker.controller;
+            this.channelDebugTags.set(this.serviceWorker, MSG.SW_TAG);
+            navigator.serviceWorker.addEventListener('message', event => {
+                const {reply, payload} = event.data;
+                this.handleReply(this.serviceWorker, reply, payload)
+            });
+            this.sendCommand(this.serviceWorker, serviceWorkerCommands.getVersion);
         });
 
         navigator.serviceWorker.register(serviceWorker, {type: 'module'})
@@ -418,6 +426,11 @@ class Presenter {
             return;
         }
         throw new FatalError(MSG.UNKNOWN_REPLY(reply));
+    }
+
+    versionReportedHandler (version) {
+        this.UI.versionText.textContent = `v${version}`;
+        this.UI.show();
     }
 
     jobCreatedHandler ({jobId, fileName}) {

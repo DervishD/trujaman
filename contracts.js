@@ -3,7 +3,7 @@ function buildContractObject(object) {
 }
 
 
-globalThis.unknownCommand = buildContractObject({unknownCommand: null}).unknownCommand;;
+globalThis.unknownCommand = buildContractObject({unknownCommand: null}).unknownCommand;
 
 
 globalThis.serviceWorkerCommands = buildContractObject({

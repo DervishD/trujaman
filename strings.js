@@ -11,7 +11,11 @@ export const CANNOT_PROCESS_FORMATS = 'No se pudo procesar la lista de formatos'
 export const WW_TAG = 'web worker';
 export const SW_TAG = 'service worker';
 
+export const CANNOT_RUN_SW = `No se pudo iniciar el ${SW_TAG}`;
 export const COOKIES_ARE_DISABLED = 'Las cookies están desactivadas';
+
+export const WW_SYNTAX = (line, column) => `Error de sintaxis en el ${WW_TAG}, línea ${line}, columna ${column}`;
+export const CANNOT_RUN_WW = `No se pudo iniciar el ${WW_TAG}`;
 
 export const UNKNOWN_COMMAND = command => `Comando desconocido: «${command}»`;
 export const UNKNOWN_REPLY = reply => `Respuesta desconocida: «${reply}»`;

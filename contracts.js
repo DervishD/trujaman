@@ -3,20 +3,20 @@ function buildContractObject(object) {
 }
 
 
-export const {unknownCommand} = buildContractObject({unknownCommand: null});
+globalThis.unknownCommand = buildContractObject({unknownCommand: null}).unknownCommand;;
 
 
-export const serviceWorkerCommands = buildContractObject({
+globalThis.serviceWorkerCommands = buildContractObject({
     getVersion: null,
 });
 
 
-export const serviceWorkerReplies = buildContractObject({
+globalThis.serviceWorkerReplies = buildContractObject({
     versionReported: null,
 });
 
 
-export const webWorkerCommands = buildContractObject({
+globalThis.webWorkerCommands = buildContractObject({
     registerFormats: null,
     createJob: null,
     processJob: null,
@@ -24,7 +24,7 @@ export const webWorkerCommands = buildContractObject({
 });
 
 
-export const webWorkerReplies = buildContractObject({
+globalThis.webWorkerReplies = buildContractObject({
     jobCreated: null,
     jobDeleted: null,
     bytesRead: null,
@@ -34,7 +34,7 @@ export const webWorkerReplies = buildContractObject({
 });
 
 
-export const customEvents = buildContractObject({
+globalThis.customEvents = buildContractObject({
     jobDismissed: null,
     processingRequested: null,
     interactionHalted: null,

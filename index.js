@@ -1,4 +1,4 @@
-import {serviceWorkerCommands, webWorkerCommands, unknownCommand, customEvents} from './contracts.js';
+import './contracts.js';  /* global customEvents, webWorkerCommands, serviceWorkerCommands, unknownCommand */
 import * as MSG from './strings.js';
 import * as C from './constants.js';
 
@@ -178,8 +178,6 @@ class UI {
     }
 
     show () {
-        this.versionText.textContent = `v${version}`;
-
         if (this.halted) return;
 
         document.querySelector(C.S_DROPZONE_TEXT).textContent = MSG.TEXT_DROPZONE;

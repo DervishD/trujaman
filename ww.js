@@ -1,4 +1,4 @@
-import {unknownCommand, webWorkerCommands, webWorkerReplies} from './contracts.js';
+import './contracts.js';  /* global webWorkerCommands, webWorkerReplies, unknownCommand */
 import {MAX_FILE_SIZE, PERCENT_FACTOR} from './constants.js';
 
 
